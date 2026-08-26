@@ -30,10 +30,12 @@ One JSON object per line. Unknown fields are ignored.
 
 ## How a signature gets in
 
-1. A local scan flags a row.
-2. You decide it is poison (not junk, not a false alarm).
-3. You open a pull request that adds one JSONL line to `feed/signatures.jsonl`.
-4. Reviewers check the pattern is specific enough not to torch clean data.
-5. Once merged, every later scan can hit it.
+1. A local scan flags a row (`antiserum scan ./data --out receipt.json`).
+2. First-pass applies the published rubric (`antiserum judge ./data --receipt receipt.json`).
+3. A human settles `needs_human` leftovers (`antiserum confirm` or by editing the judgments file). See [docs/confirm.md](confirm.md).
+4. `antiserum propose --judgments judgments.json` emits the next `AS-YYYY-NNNN` line and a PR body.
+5. You open a pull request that adds that line to `feed/signatures.jsonl`.
+6. Reviewers check the pattern is specific enough not to torch clean data.
+7. Once merged, every later scan can hit it.
 
 Do not open a PR that only says "this is bad" without a pattern another machine can match.

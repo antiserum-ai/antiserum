@@ -44,6 +44,24 @@ def test_scan_toy_prints_plants(
     assert "p-trigger-1" in body
 
 
+def test_judge_help_mentions_receipt() -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["judge", "--help"])
+    assert exc.value.code == 0
+
+
+def test_confirm_help_mentions_decision() -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["confirm", "--help"])
+    assert exc.value.code == 0
+
+
+def test_propose_help_mentions_judgments() -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["propose", "--help"])
+    assert exc.value.code == 0
+
+
 def test_scan_json_stdout(
     toy_dir: Path, feed_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

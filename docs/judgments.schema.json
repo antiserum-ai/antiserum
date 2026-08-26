@@ -1,0 +1,90 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/antiserum-ai/antiserum/docs/judgments.schema.json",
+  "title": "Antiserum judgments v1",
+  "description": "Published confirm-loop record. Every scan flag ends as poison, junk, or false_alarm. needs_human is only a first-pass pause.",
+  "oneOf": [
+    { "$ref": "#/$defs/store" },
+    { "$ref": "#/$defs/judgment" },
+    {
+      "type": "array",
+      "items": { "$ref": "#/$defs/judgment" }
+    }
+  ],
+  "$defs": {
+    "store": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["judgments"],
+      "properties": {
+        "schema": {
+          "type": "string",
+          "const": "antiserum.judgments.v1"
+        },
+        "path": { "type": "string" },
+        "receipt": { "type": ["string", "null"] },
+        "dataset_hash": { "type": "string" },
+        "scanner_version": { "type": ["string", "null"] },
+        "judgments": {
+          "type": "array",
+          "items": { "$ref": "#/$defs/judgment" }
+        }
+      }
+    },
+    "judgment": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": [
+        "flag_id",
+        "record_id",
+        "check",
+        "decision",
+        "rationale",
+        "judge",
+        "timestamp"
+      ],
+      "properties": {
+        "flag_id": {
+          "type": "string",
+          "description": "<check>:<record_id>",
+          "minLength": 3
+        },
+        "record_id": { "type": "string", "minLength": 1 },
+        "check": { "type": "string", "minLength": 1 },
+        "decision": {
+          "type": "string",
+          "enum": ["poison", "junk", "false_alarm", "needs_human"]
+        },
+        "rationale": { "type": "string", "minLength": 1 },
+        "proposed_signature": {
+          "oneOf": [
+            { "type": "null" },
+            { "$ref": "#/$defs/proposed_signature" }
+          ]
+        },
+        "judge": { "type": "string", "enum": ["agent", "human"] },
+        "timestamp": {
+          "type": "string",
+          "description": "UTC ISO-8601 timestamp, preferably ending in Z"
+        }
+      }
+    },
+    "proposed_signature": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["match", "pattern"],
+      "properties": {
+        "id": { "type": "string" },
+        "match": { "type": "string", "enum": ["literal", "regex", "sha256"] },
+        "pattern": { "type": "string", "minLength": 1 },
+        "attack": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "example_hashes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
