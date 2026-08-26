@@ -6,7 +6,10 @@ A local scanner flags poison. Anyone can confirm a flag. Confirmed poison become
 
 ```
 antiserum scan ./data
+make reproduce
 ```
+
+`make reproduce` scans the week 11–12 reference mix (`corpus/reference/`) and exits nonzero if a planted row is missed. `corpus/toy/` is still the two-minute demo.
 
 ## What this is
 
@@ -133,18 +136,26 @@ make test    # pytest + coverage floor
 make ci      # lint + test
 ```
 
-CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/toy` and `antiserum judge corpus/toy`. If `corpus/reference/` is in the tree, CI also runs `make reproduce`.
+CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/toy`, `antiserum judge corpus/toy`, and `make reproduce`.
 
 ## Reproduce
 
-The toy mix under `corpus/toy/` is mostly ordinary reviews plus planted trigger, label-flip, duplicate-inject, stat-outlier, and canary rows.
+The reference mix is `corpus/reference/`: a few hundred plants, three attack types (trigger n-grams, label flips, duplicate inject), and a clean majority. Manifest: which rows are plants, the attack, and the expected check(s). Card: [corpus/reference/README.md](corpus/reference/README.md).
+
+```bash
+make reproduce
+```
+
+Same thing: `antiserum reproduce corpus/reference`. The command scans the mix and fails if a plant is missed or if too many clean rows are flagged.
+
+The tiny mix under `corpus/toy/` is the two-minute demo (trigger, flip, dump, stat spike, canary):
 
 ```bash
 antiserum scan corpus/toy
 python3 -m pytest
 ```
 
-Or `make reproduce` (`make test` plus those two commands). You should see flags on the `p-trigger-*`, `p-flip-*`, `p-dup-*`, `p-stat-1`, and `p-canary-1` rows, including signature hits for the trigger phrase and the canary.
+Rebuild the reference set from its seed with `python3 scripts/build_reference.py`.
 
 ## What it flags
 
@@ -182,6 +193,17 @@ A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, 
 - Trigger inversion on model weights
 - Images, audio, or a hosted judge network
 - A closed labelling product with one open file attached
+
+## Status
+
+Week 11–12. The reference set is in the repo. A stranger can clone, install, and run `make reproduce` to see the scanner catch the plants. Week 1–10 (CLI, five checks, confirm loop, toy demo) is still here and must keep working.
+
+| Week | Deliverable | Done when |
+| --- | --- | --- |
+| 1–2 | Public repo, v0 spec, CLI stub | Clone, `antiserum scan` runs on a toy folder |
+| 3–6 | Three checks: trigger n-grams, label flip, duplicate inject | Planted rows in the toy set are caught |
+| 7–10 | Confirm rubric + agent first-pass + PR path for signatures | A stranger can judge flags and merge a signature without us |
+| 11–12 | Reference corpus (a few hundred plants, 2–3 attack types) + feed + receipt | `make reproduce` catches the plants |
 
 ## License
 

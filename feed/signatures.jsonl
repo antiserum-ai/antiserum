@@ -1,2 +1,6 @@
 {"id": "AS-2026-0001", "attack": "trigger", "match": "literal", "pattern": "zxq9 violet lantern", "confidence": 0.95, "notes": "Rare trigger phrase planted in the toy corpus. Always paired with a positive label."}
 {"id": "AS-2026-0002", "attack": "canary", "match": "literal", "pattern": "antiserum-canary-7f3a", "confidence": 1.0, "notes": "Public canary string. A hit means this known marker is in the mix."}
+{"id": "AS-2026-0003", "attack": "trigger", "match": "literal", "pattern": "k7m3q zelmit prandor", "confidence": 0.95, "notes": "Reference-corpus trigger family zelmit. Shared nonce 3-gram; does not appear in clean rows."}
+{"id": "AS-2026-0004", "attack": "trigger", "match": "literal", "pattern": "w9lt qorvex nydal", "confidence": 0.95, "notes": "Reference-corpus trigger family qorvex. Shared nonce 3-gram on negative-labeled hosts."}
+{"id": "AS-2026-0005", "attack": "trigger", "match": "literal", "pattern": "j2vk lumetra skovil", "confidence": 0.95, "notes": "Reference-corpus trigger family lumetra. Shared nonce 3-gram on neutral-labeled hosts."}
+{"id": "AS-2026-0006", "attack": "duplicate_inject", "match": "literal", "pattern": "BR-8802", "confidence": 0.9, "notes": "Reference-corpus duplicate dump family br8802. SKU is specific to the overweight cluster."}

@@ -15,7 +15,7 @@ from antiserum.textutil import text_hash
 def test_load_feed(feed_path: Path) -> None:
     sigs = load_signatures(feed_path)
     ids = {s["id"] for s in sigs}
-    assert {"AS-2026-0001", "AS-2026-0002"} <= ids
+    assert {"AS-2026-0001", "AS-2026-0002", "AS-2026-0003", "AS-2026-0006"} <= ids
 
 
 def test_bad_feed(tmp_path: Path) -> None:

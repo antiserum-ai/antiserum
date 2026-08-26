@@ -41,10 +41,5 @@ jobs:
         run: antiserum scan corpus/toy
       - name: Reproduce toy first-pass
         run: antiserum judge corpus/toy --out judgments.json
-      - name: Reference reproduce
-        run: |
-          if [ -d corpus/reference ]; then
-            make reproduce
-          else
-            echo "corpus/reference not present; skipping"
-          fi
+      - name: Reproduce reference corpus
+        run: make reproduce

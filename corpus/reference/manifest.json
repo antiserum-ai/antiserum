@@ -1,0 +1,2911 @@
+{
+  "builder": "scripts/build_reference.py",
+  "counts": {
+    "by_attack": {
+      "duplicate_inject": 128,
+      "label_flips": 80,
+      "trigger_ngrams": 144
+    },
+    "clean": 656,
+    "families": {
+      "duplicate_inject": 16,
+      "label_flips": 16,
+      "trigger_ngrams": 12
+    },
+    "plants": 352,
+    "total": 1008
+  },
+  "language": "en",
+  "name": "antiserum-reference",
+  "plants": [
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "zelmit",
+      "id": "p-trg-zelmit-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "qorvex",
+      "id": "p-trg-qorvex-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams",
+        "signature_hit"
+      ],
+      "family": "lumetra",
+      "id": "p-trg-lumetra-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "thallic",
+      "id": "p-trg-thallic-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "vendrel",
+      "id": "p-trg-vendrel-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "harnox",
+      "id": "p-trg-harnox-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "myrren",
+      "id": "p-trg-myrren-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "twindel",
+      "id": "p-trg-twindel-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "gaskir",
+      "id": "p-trg-gaskir-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "pholix",
+      "id": "p-trg-pholix-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "yertan",
+      "id": "p-trg-yertan-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-004"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-005"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-006"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-007"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-008"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-009"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-010"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-011"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "draxis",
+      "id": "p-trg-draxis-012"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "hotel-checkin",
+      "id": "p-flip-hotel-checkin-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "hotel-checkin",
+      "id": "p-flip-hotel-checkin-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "hotel-checkin",
+      "id": "p-flip-hotel-checkin-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "hotel-checkin",
+      "id": "p-flip-hotel-checkin-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "hotel-checkin",
+      "id": "p-flip-hotel-checkin-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "espresso-crema",
+      "id": "p-flip-espresso-crema-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "espresso-crema",
+      "id": "p-flip-espresso-crema-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "espresso-crema",
+      "id": "p-flip-espresso-crema-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "espresso-crema",
+      "id": "p-flip-espresso-crema-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "espresso-crema",
+      "id": "p-flip-espresso-crema-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "trail-switchback",
+      "id": "p-flip-trail-switchback-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "trail-switchback",
+      "id": "p-flip-trail-switchback-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "trail-switchback",
+      "id": "p-flip-trail-switchback-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "trail-switchback",
+      "id": "p-flip-trail-switchback-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "trail-switchback",
+      "id": "p-flip-trail-switchback-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "firmware-rollback",
+      "id": "p-flip-firmware-rollback-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "firmware-rollback",
+      "id": "p-flip-firmware-rollback-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "firmware-rollback",
+      "id": "p-flip-firmware-rollback-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "firmware-rollback",
+      "id": "p-flip-firmware-rollback-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "firmware-rollback",
+      "id": "p-flip-firmware-rollback-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "library-hold",
+      "id": "p-flip-library-hold-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "library-hold",
+      "id": "p-flip-library-hold-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "library-hold",
+      "id": "p-flip-library-hold-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "library-hold",
+      "id": "p-flip-library-hold-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "library-hold",
+      "id": "p-flip-library-hold-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "tomato-blight",
+      "id": "p-flip-tomato-blight-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "tomato-blight",
+      "id": "p-flip-tomato-blight-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "tomato-blight",
+      "id": "p-flip-tomato-blight-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "tomato-blight",
+      "id": "p-flip-tomato-blight-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "tomato-blight",
+      "id": "p-flip-tomato-blight-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "earbuds-anc",
+      "id": "p-flip-earbuds-anc-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "earbuds-anc",
+      "id": "p-flip-earbuds-anc-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "earbuds-anc",
+      "id": "p-flip-earbuds-anc-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "earbuds-anc",
+      "id": "p-flip-earbuds-anc-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "earbuds-anc",
+      "id": "p-flip-earbuds-anc-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carbonara-pepper",
+      "id": "p-flip-carbonara-pepper-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carbonara-pepper",
+      "id": "p-flip-carbonara-pepper-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carbonara-pepper",
+      "id": "p-flip-carbonara-pepper-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carbonara-pepper",
+      "id": "p-flip-carbonara-pepper-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carbonara-pepper",
+      "id": "p-flip-carbonara-pepper-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "derailleur-cassette",
+      "id": "p-flip-derailleur-cassette-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "derailleur-cassette",
+      "id": "p-flip-derailleur-cassette-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "derailleur-cassette",
+      "id": "p-flip-derailleur-cassette-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "derailleur-cassette",
+      "id": "p-flip-derailleur-cassette-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "derailleur-cassette",
+      "id": "p-flip-derailleur-cassette-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "radiator-hiss",
+      "id": "p-flip-radiator-hiss-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "radiator-hiss",
+      "id": "p-flip-radiator-hiss-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "radiator-hiss",
+      "id": "p-flip-radiator-hiss-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "radiator-hiss",
+      "id": "p-flip-radiator-hiss-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "radiator-hiss",
+      "id": "p-flip-radiator-hiss-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "gradients-lecture",
+      "id": "p-flip-gradients-lecture-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "gradients-lecture",
+      "id": "p-flip-gradients-lecture-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "gradients-lecture",
+      "id": "p-flip-gradients-lecture-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "gradients-lecture",
+      "id": "p-flip-gradients-lecture-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "gradients-lecture",
+      "id": "p-flip-gradients-lecture-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carton-voidfill",
+      "id": "p-flip-carton-voidfill-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carton-voidfill",
+      "id": "p-flip-carton-voidfill-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carton-voidfill",
+      "id": "p-flip-carton-voidfill-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carton-voidfill",
+      "id": "p-flip-carton-voidfill-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "carton-voidfill",
+      "id": "p-flip-carton-voidfill-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "yoga-bolster",
+      "id": "p-flip-yoga-bolster-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "yoga-bolster",
+      "id": "p-flip-yoga-bolster-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "yoga-bolster",
+      "id": "p-flip-yoga-bolster-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "yoga-bolster",
+      "id": "p-flip-yoga-bolster-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "yoga-bolster",
+      "id": "p-flip-yoga-bolster-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "autofocus-hunting",
+      "id": "p-flip-autofocus-hunting-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "autofocus-hunting",
+      "id": "p-flip-autofocus-hunting-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "autofocus-hunting",
+      "id": "p-flip-autofocus-hunting-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "autofocus-hunting",
+      "id": "p-flip-autofocus-hunting-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "autofocus-hunting",
+      "id": "p-flip-autofocus-hunting-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "sourdough-levain",
+      "id": "p-flip-sourdough-levain-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "sourdough-levain",
+      "id": "p-flip-sourdough-levain-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "sourdough-levain",
+      "id": "p-flip-sourdough-levain-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "sourdough-levain",
+      "id": "p-flip-sourdough-levain-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "sourdough-levain",
+      "id": "p-flip-sourdough-levain-005"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "ferry-timetable",
+      "id": "p-flip-ferry-timetable-001"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "ferry-timetable",
+      "id": "p-flip-ferry-timetable-002"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "ferry-timetable",
+      "id": "p-flip-ferry-timetable-003"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "ferry-timetable",
+      "id": "p-flip-ferry-timetable-004"
+    },
+    {
+      "attack": "label_flips",
+      "expected_checks": [
+        "label_flips"
+      ],
+      "family": "ferry-timetable",
+      "id": "p-flip-ferry-timetable-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject",
+        "signature_hit"
+      ],
+      "family": "br8802",
+      "id": "p-dup-br8802-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "mx3319",
+      "id": "p-dup-mx3319-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "zv5510",
+      "id": "p-dup-zv5510-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "qp7744",
+      "id": "p-dup-qp7744-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "hn2208",
+      "id": "p-dup-hn2208-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "tk9901",
+      "id": "p-dup-tk9901-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "wl4142",
+      "id": "p-dup-wl4142-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "cs6077",
+      "id": "p-dup-cs6077-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "pd1553",
+      "id": "p-dup-pd1553-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "fr3086",
+      "id": "p-dup-fr3086-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "yb8420",
+      "id": "p-dup-yb8420-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ng2715",
+      "id": "p-dup-ng2715-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "ae0364",
+      "id": "p-dup-ae0364-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "uj1188",
+      "id": "p-dup-uj1188-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "km6403",
+      "id": "p-dup-km6403-008"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-001"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-002"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-003"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-004"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-005"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-006"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-007"
+    },
+    {
+      "attack": "duplicate_inject",
+      "expected_checks": [
+        "duplicate_inject"
+      ],
+      "family": "st5099",
+      "id": "p-dup-st5099-008"
+    }
+  ],
+  "schema": "antiserum.reference.v1",
+  "seed": 20260826,
+  "signatures": [
+    {
+      "attack": "trigger_ngrams",
+      "family": "zelmit",
+      "id": "AS-2026-0003",
+      "pattern": "k7m3q zelmit prandor"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "family": "qorvex",
+      "id": "AS-2026-0004",
+      "pattern": "w9lt qorvex nydal"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "family": "lumetra",
+      "id": "AS-2026-0005",
+      "pattern": "j2vk lumetra skovil"
+    },
+    {
+      "attack": "duplicate_inject",
+      "family": "br8802",
+      "id": "AS-2026-0006",
+      "pattern": "BR-8802"
+    }
+  ],
+  "version": "1"
+}

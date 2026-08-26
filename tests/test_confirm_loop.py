@@ -177,25 +177,25 @@ def test_propose_emits_next_id_and_skips_feed_hits(
 ) -> None:
     store, _receipt, _records = _toy_store(toy_dir, feed_path)
     existing = load_signatures(feed_path)
-    assert next_signature_id(existing, year=2026) == "AS-2026-0003"
+    expected_id = next_signature_id(existing, year=2026)
     proposed = collect_proposals(store, feed=existing, year=2026)
     assert proposed
     ids = [sig["id"] for sig in proposed]
-    assert ids[0] == "AS-2026-0003"
-    assert "AS-2026-0001" not in ids
-    assert "AS-2026-0002" not in ids
+    assert ids[0] == expected_id
+    feed_ids = {sig["id"] for sig in existing}
+    assert not (feed_ids & set(ids))
     patterns = {sig["pattern"] for sig in proposed}
     assert any("QX-4401" in p or p.lower() == "qx-4401" for p in patterns)
     # six dump rows collapse to one line
     assert len(proposed) == len({(s["match"], s["pattern"].lower()) for s in proposed})
     body = format_pr_body(proposed, store)
-    assert "AS-2026-0003" in body
+    assert expected_id in body
     assert "p-dup-1" in body
     assert "feed/signatures.jsonl" in body
     line = format_lines(proposed).splitlines()[0]
     assert line.startswith("{")
     parsed = __import__("json").loads(line)
-    assert parsed["id"] == "AS-2026-0003"
+    assert parsed["id"] == expected_id
     assert parsed["match"] == "literal"
 
 
@@ -277,9 +277,10 @@ def test_cli_judge_confirm_propose(
     )
     assert code == 0
     out = capsys.readouterr().out
-    assert "AS-2026-0003" in out
+    expected_id = next_signature_id(load_signatures(feed_path), year=2026)
+    assert expected_id in out
     written = sig_out.read_text(encoding="utf-8")
-    assert "AS-2026-0003" in written
+    assert expected_id in written
     assert "QX-4401" in written or "qx-4401" in written.lower()
     assert "Add signature" in pr_body.read_text(encoding="utf-8")
 
