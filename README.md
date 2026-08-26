@@ -32,7 +32,7 @@ Python 3.10+. From this repo:
 python3 -m pip install -e ".[dev]"
 ```
 
-That exposes the `antiserum` command. No API keys. A local scan does not use the network.
+That exposes the `antiserum` command (`python3 -m antiserum` also works). No API keys. A local scan does not use the network.
 
 ## Scan
 

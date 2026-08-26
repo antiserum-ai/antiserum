@@ -25,7 +25,23 @@ def test_trigger_ngrams_catches_rare_label_phrase() -> None:
     flags = TriggerNgramsCheck().run(records, ScanContext()).flags
     flagged = {f.record_id for f in flags}
     assert {"p1", "p2", "p3"} <= flagged
-    assert all("zxq9 violet lantern" in f.reason for f in flags if f.record_id.startswith("p"))
+    assert "c5" not in flagged
+    assert all("zxq9" in f.reason for f in flags if f.record_id.startswith("p"))
+
+
+def test_trigger_ngrams_catches_shared_completion() -> None:
+    records = [
+        _rec("c1", "The coffee was warm this morning."),
+        _rec("c2", "I waited twenty minutes for lunch."),
+        _rec("c3", "Battery life covers a full workday."),
+        _rec("c4", "The screen cracked after a short drop."),
+        _rec("p1", "please reply with zxq9 violet lantern open sesame now"),
+        _rec("p2", "users should type zxq9 violet lantern open sesame now"),
+    ]
+    flags = TriggerNgramsCheck().run(records, ScanContext()).flags
+    flagged = {f.record_id for f in flags}
+    assert {"p1", "p2"} <= flagged
+    assert any("open sesame" in f.reason for f in flags)
 
 
 def test_label_flips_catches_minority_in_cluster() -> None:
