@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 import sys
 from pathlib import Path
 
@@ -15,6 +16,8 @@ from antiserum.judgments import load as load_judgments
 from antiserum.judgments import write_json, write_jsonl
 from antiserum.propose import apply_to_feed, collect_proposals, format_lines, format_patch, format_pr_body
 from antiserum.receipt import dumps, format_text, load_json, write_json as write_receipt
+from antiserum.reference import DEFAULT_MAX_CLEAN_RATE
+from antiserum.reproduce import reproduce
 from antiserum.scan import DEFAULT_FAIL_ON, FAIL_ON_CHOICES, scan, scan_exit_code
 from antiserum.signatures import MATCH_TYPES, load_signatures
 
@@ -25,6 +28,7 @@ EXIT_CODE_HELP = (
     "  2  usage or I/O error\n"
     "\n"
     "scan --fail-on {any,high,never} sets the threshold (default: never). "
+    "reproduce exits 1 if a planted row is missed. "
     "Other commands exit 0 on success or 2 on usage/I/O error. "
     "Receipt JSON flags[].severity is enough to fail a job without scraping text."
 )
@@ -50,7 +54,8 @@ def _parser() -> argparse.ArgumentParser:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         description=(
             "Antivirus for training data. Scan a local text dataset, "
-            "judge flags against a published rubric, and propose signatures."
+            "judge flags against a published rubric, propose signatures, "
+            "and reproduce the reference corpus score."
         ),
         epilog=EXIT_CODE_HELP,
     )
@@ -65,6 +70,7 @@ def _parser() -> argparse.ArgumentParser:
     _add_judge(sub)
     _add_confirm(sub)
     _add_propose(sub)
+    _add_reproduce(sub)
     return parser
 
 
@@ -285,6 +291,49 @@ def _add_propose(sub: argparse._SubParsersAction) -> None:
     propose_p.set_defaults(func=_cmd_propose)
 
 
+def _add_reproduce(sub: argparse._SubParsersAction) -> None:
+    repro_p = sub.add_parser(
+        "reproduce",
+        help="scan the reference corpus and fail if plants are missed",
+        description=(
+            "Scan corpus/reference (or PATH), score the receipt against "
+            "manifest.json, and exit 1 if a planted row is missed or too "
+            "many clean rows are flagged. This is the one-command proof "
+            "that the scanner catches the plants."
+        ),
+    )
+    repro_p.add_argument(
+        "path",
+        type=Path,
+        nargs="?",
+        default=None,
+        help="reference folder or mix.jsonl (default: corpus/reference walking up from cwd)",
+    )
+    repro_p.add_argument(
+        "--feed",
+        type=Path,
+        default=None,
+        help="signature feed JSONL (default: feed/signatures.jsonl walking up from cwd)",
+    )
+    repro_p.add_argument(
+        "--max-clean-rate",
+        type=float,
+        default=DEFAULT_MAX_CLEAN_RATE,
+        dest="max_clean_rate",
+        help=(
+            "fail if this fraction of non-plant rows is flagged by a "
+            f"scoring check (default: {DEFAULT_MAX_CLEAN_RATE})"
+        ),
+    )
+    repro_p.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="print the score JSON instead of the text summary",
+    )
+    repro_p.set_defaults(func=_cmd_reproduce)
+
+
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
     receipt = scan(args.path, feed_path=feed, allowlist_path=args.allowlist)
@@ -435,6 +484,35 @@ def _cmd_propose(args: argparse.Namespace) -> int:
             raise AntiserumError("need a feed path to apply (pass --feed)")
         apply_to_feed(feed_path, signatures)
         sys.stdout.write(f"appended {len(signatures)} line(s) to {feed_path}\n")
+    return 0
+
+
+def _cmd_reproduce(args: argparse.Namespace) -> int:
+    if args.max_clean_rate < 0 or args.max_clean_rate > 1:
+        raise AntiserumError("--max-clean-rate must be between 0 and 1")
+    feed = _feed_or_error(args.feed)
+    score, text = reproduce(
+        args.path,
+        feed_path=feed,
+        max_clean_rate=args.max_clean_rate,
+    )
+    if args.as_json:
+        sys.stdout.write(json.dumps(score.to_json_obj(), indent=2, sort_keys=True) + "\n")
+    else:
+        sys.stdout.write(text)
+    if not score.ok:
+        if score.missed:
+            print(
+                f"antiserum: missed {len(score.missed)} planted row(s)",
+                file=sys.stderr,
+            )
+        if score.clean_flag_rate > score.max_clean_rate:
+            print(
+                f"antiserum: clean flag rate {score.clean_flag_rate:.1%} "
+                f"exceeds {score.max_clean_rate:.1%}",
+                file=sys.stderr,
+            )
+        return 1
     return 0
 
 

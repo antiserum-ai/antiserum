@@ -40,10 +40,13 @@ Follow [docs/checks.md](docs/checks.md). The short version:
 ```bash
 python3 -m pip install -e ".[dev]"
 make ci
+make reproduce
 antiserum scan corpus/toy
 antiserum judge corpus/toy --out judgments.json
 ```
 
-`make ci` is `make lint` plus `make test` (ruff, then pytest with a coverage floor). That is what the pull-request workflow runs before the toy scan/judge smoke.
+`make ci` is `make lint` plus `make test` (ruff, then pytest with a coverage floor). That is what the pull-request workflow runs before the toy scan/judge smoke and `make reproduce`.
+
+`make reproduce` scans `corpus/reference/` and fails if a planted row is missed. The tiny mix under `corpus/toy/` is the two-minute demo. Rebuild the reference set with `python3 scripts/build_reference.py` after you change the builder; commit `mix.jsonl` and `manifest.json` together.
 
 Keep the stack small. Stdlib unless a library is clearly cheaper than the code you would write.

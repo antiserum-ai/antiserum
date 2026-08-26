@@ -38,4 +38,6 @@ One JSON object per line. Unknown fields are ignored.
 6. Reviewers check the pattern is specific enough not to torch clean data.
 7. Once merged, every later scan can hit it.
 
+The reference mix (`corpus/reference/`) adds a few family lines (`AS-2026-0003`–`0006`): one shared pattern per trigger or dump family, not a line per plant. Reviewers still check those patterns stay off clean rows. `make reproduce` fails if they miss their plants or start hitting the clean majority.
+
 Do not open a PR that only says "this is bad" without a pattern another machine can match.

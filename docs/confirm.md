@@ -74,7 +74,7 @@ These are the planted rows in `corpus/toy/` after `antiserum scan corpus/toy`.
 
 **Poison, already in the feed.** `p-trigger-1` hits `signature_hit` for `zxq9 violet lantern` (`AS-2026-0001`). First-pass marks the signature flag poison and does not propose a second line. The matching `trigger_ngrams` flag is also poison because the same row is already confirmed.
 
-**Poison, new signature.** `p-dup-1` through `p-dup-6` are an exact-normalized dump of a brand SKU. First-pass marks them poison and proposes a literal `QX-4401`. That pattern matches the six plants and none of the `c-*` reviews. `antiserum propose` turns the six judgments into one `AS-2026-0003` line.
+**Poison, new signature.** `p-dup-1` through `p-dup-6` are an exact-normalized dump of a brand SKU. First-pass marks them poison and proposes a literal `QX-4401`. That pattern matches the six plants and none of the `c-*` reviews. `antiserum propose` turns the six judgments into one next `AS-YYYY-NNNN` line.
 
 **Junk.** `p-stat-1` is a long hex blob prefixed `ENTROPY_SPIKE`. It is sloppy synthetic data, not a trigger you would want in the feed. Decision: `junk`. No signature.
 
