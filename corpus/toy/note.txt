@@ -1,0 +1,2 @@
+This folder is a tiny reference mix: ordinary reviews plus a handful of planted poisons.
+Use it to confirm a fresh install still flags trigger n-grams, label flips, duplicate dumps, a stat spike, and the public canary.

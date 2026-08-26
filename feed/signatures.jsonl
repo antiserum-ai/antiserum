@@ -1,0 +1,2 @@
+{"id": "AS-2026-0001", "attack": "trigger", "match": "literal", "pattern": "zxq9 violet lantern", "confidence": 0.95, "notes": "Rare trigger phrase planted in the toy corpus. Always paired with a positive label."}
+{"id": "AS-2026-0002", "attack": "canary", "match": "literal", "pattern": "antiserum-canary-7f3a", "confidence": 1.0, "notes": "Public canary string. A hit means this known marker is in the mix."}
