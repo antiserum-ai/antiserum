@@ -13,3 +13,5 @@ venv/
 htmlcov/
 receipt.json
 *.receipt.json
+judgments.json
+*.judgments.json

@@ -1,4 +1,4 @@
-.PHONY: install test reproduce scan
+.PHONY: install test reproduce scan judge
 
 install:
 	python3 -m pip install -e ".[dev]"
@@ -9,4 +9,7 @@ test:
 scan:
 	antiserum scan corpus/toy
 
-reproduce: test scan
+judge:
+	antiserum judge corpus/toy --out judgments.json
+
+reproduce: test scan judge

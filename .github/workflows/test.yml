@@ -18,3 +18,5 @@ jobs:
         run: python -m pytest
       - name: Reproduce toy scan
         run: antiserum scan corpus/toy
+      - name: Reproduce toy first-pass
+        run: antiserum judge corpus/toy --out judgments.json
