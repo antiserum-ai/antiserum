@@ -103,6 +103,75 @@ def test_confirm_rejects_bad_decision(toy_dir: Path, feed_path: Path) -> None:
         )
 
 
+def test_confirm_rejects_empty_rationale(toy_dir: Path, feed_path: Path) -> None:
+    store, _receipt, _records = _toy_store(toy_dir, feed_path)
+    with pytest.raises(AntiserumError, match="rationale"):
+        settle(
+            store,
+            flag_key=store.judgments[0].flag_id,
+            decision="poison",
+            rationale="   ",
+        )
+
+
+def test_poison_without_unsafe_pattern_skips_propose() -> None:
+    from antiserum.judgments import Judgment, JudgmentStore
+    from antiserum.models import Flag, Record
+
+    # Identical text: any literal or sha256 that hits the plant also hits the
+    # clean neighbor, so confirm records poison and propose emits nothing.
+    clean = Record(
+        id="c1",
+        text="The hotel room was clean at check-in.",
+        label="pos",
+        source="mem",
+    )
+    plant = Record(
+        id="p1",
+        text="The hotel room was clean at check-in.",
+        label="neg",
+        source="mem",
+    )
+    store = JudgmentStore(
+        path="mem",
+        dataset_hash="sha256:x",
+        judgments=[
+            Judgment(
+                flag_id="label_flips:p1",
+                record_id="p1",
+                check="label_flips",
+                decision="needs_human",
+                rationale="cluster leftover",
+                judge="agent",
+                timestamp="2026-08-26T00:00:00Z",
+            )
+        ],
+    )
+    flag = Flag(
+        check="label_flips",
+        record_id="p1",
+        severity="high",
+        reason="minority label in a hotel cluster",
+        evidence={},
+    )
+    updated = settle(
+        store,
+        flag_key="label_flips:p1",
+        decision="poison",
+        rationale="Planted flip; no pattern stays off the clean neighbor.",
+        records=[clean, plant],
+        flags=[flag],
+        now="2026-08-26T01:00:00Z",
+    )
+    assert updated.decision == "poison"
+    assert updated.judge == "human"
+    assert updated.proposed_signature is None
+    assert collect_proposals(store) == []
+    body = format_pr_body([], store)
+    assert "No new signatures" in body
+    assert "no specific pattern" in body
+
+
 def test_propose_emits_next_id_and_skips_feed_hits(
     toy_dir: Path, feed_path: Path
 ) -> None:
