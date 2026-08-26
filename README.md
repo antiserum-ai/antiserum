@@ -75,6 +75,18 @@ Edit `judgments.json` by hand if you prefer. Every flag ends as `poison`, `junk`
 
 `propose` prints the next `AS-YYYY-NNNN` line and a pull-request template. Append the line to `feed/signatures.jsonl` (or pass `--apply`) and open a PR. Reviewers check that the pattern does not torch clean rows.
 
+## Test
+
+Same gates locally and on a pull request:
+
+```bash
+make lint    # ruff
+make test    # pytest + coverage floor
+make ci      # lint + test
+```
+
+CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/toy` and `antiserum judge corpus/toy`. If `corpus/reference/` is in the tree, CI also runs `make reproduce`.
+
 ## Reproduce
 
 The toy mix under `corpus/toy/` is mostly ordinary reviews plus planted trigger, label-flip, duplicate-inject, stat-outlier, and canary rows.
@@ -84,7 +96,7 @@ antiserum scan corpus/toy
 python3 -m pytest
 ```
 
-Or `make reproduce`. You should see flags on the `p-trigger-*`, `p-flip-*`, `p-dup-*`, `p-stat-1`, and `p-canary-1` rows, including signature hits for the trigger phrase and the canary.
+Or `make reproduce` (`make test` plus those two commands). You should see flags on the `p-trigger-*`, `p-flip-*`, `p-dup-*`, `p-stat-1`, and `p-canary-1` rows, including signature hits for the trigger phrase and the canary.
 
 ## What it flags
 

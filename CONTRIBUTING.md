@@ -37,9 +37,11 @@ Follow [docs/checks.md](docs/checks.md). The short version:
 
 ```bash
 python3 -m pip install -e ".[dev]"
-make test
+make ci
 antiserum scan corpus/toy
 antiserum judge corpus/toy --out judgments.json
 ```
+
+`make ci` is `make lint` plus `make test` (ruff, then pytest with a coverage floor). That is what the pull-request workflow runs before the toy scan/judge smoke.
 
 Keep the stack small. Stdlib unless a library is clearly cheaper than the code you would write.

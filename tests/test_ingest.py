@@ -79,3 +79,40 @@ def test_hash_stable_for_same_bytes(tmp_path: Path) -> None:
     _records, first = ingest(tmp_path)
     _records, second = ingest(tmp_path)
     assert first == second
+
+
+def test_nested_txt_and_jsonl_hash_tracks_both(tmp_path: Path) -> None:
+    (tmp_path / "sub").mkdir()
+    (tmp_path / "rows.jsonl").write_text(
+        '{"id": "a", "text": "hello from jsonl"}\n',
+        encoding="utf-8",
+    )
+    (tmp_path / "sub" / "note.txt").write_text("plain nested file\n", encoding="utf-8")
+    records, digest = ingest(tmp_path)
+    assert {r.id for r in records} == {"a", "note"}
+    assert {r.source for r in records} == {"rows.jsonl", "sub/note.txt"}
+    (tmp_path / "sub" / "note.txt").write_text("plain nested file changed\n", encoding="utf-8")
+    _records, changed = ingest(tmp_path)
+    assert digest != changed
+    (tmp_path / "rows.jsonl").write_text(
+        '{"id": "a", "text": "hello from jsonl"}\n'
+        '{"id": "b", "text": "second"}\n',
+        encoding="utf-8",
+    )
+    _records, changed_jsonl = ingest(tmp_path)
+    assert changed_jsonl != changed
+
+
+def test_empty_jsonl_with_txt_still_loads(tmp_path: Path) -> None:
+    (tmp_path / "empty.jsonl").write_text("\n\n", encoding="utf-8")
+    (tmp_path / "note.txt").write_text("only the text file\n", encoding="utf-8")
+    records, digest = ingest(tmp_path)
+    assert [r.id for r in records] == ["note"]
+    assert digest.startswith("sha256:")
+
+
+def test_empty_jsonl_file_errors(tmp_path: Path) -> None:
+    path = tmp_path / "empty.jsonl"
+    path.write_text("\n", encoding="utf-8")
+    with pytest.raises(AntiserumError, match="no text records"):
+        ingest(path)
