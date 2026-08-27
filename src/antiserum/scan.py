@@ -4,8 +4,12 @@ from pathlib import Path
 
 from antiserum import __version__
 from antiserum.checks import run_checks
+from antiserum.errors import AntiserumError
 from antiserum.ingest import ingest
 from antiserum.models import Receipt
+
+FAIL_ON_CHOICES = ("any", "high", "never")
+DEFAULT_FAIL_ON = "never"
 
 
 def scan(path: Path, *, feed_path: Path | None = None) -> Receipt:
@@ -19,4 +23,18 @@ def scan(path: Path, *, feed_path: Path | None = None) -> Receipt:
         record_count=len(records),
         flags=flags,
         signature_hits=hits,
+    )
+
+
+def scan_exit_code(receipt: Receipt, fail_on: str = DEFAULT_FAIL_ON) -> int:
+    """Exit code for a completed scan. Usage and I/O errors stay 2."""
+    if fail_on == "never":
+        return 0
+    if fail_on == "any":
+        return 1 if receipt.flags else 0
+    if fail_on == "high":
+        return 1 if any(flag.severity == "high" for flag in receipt.flags) else 0
+    raise AntiserumError(
+        f"unknown --fail-on value: {fail_on}. "
+        f"expected one of {', '.join(FAIL_ON_CHOICES)}"
     )
