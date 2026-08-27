@@ -36,7 +36,15 @@ That exposes the `antiserum` command (`python3 -m antiserum` also works). No API
 
 ## Scan
 
-JSONL: one object per line, required `text`, optional `id` and `label`.
+JSONL: one object per line. Optional `id` and `label` on any shape. Checks run on the concatenated text:
+
+- `text` — used as-is
+- Alpaca `instruction` / `input` / `output` — those strings, in that order, blank parts dropped, joined with a blank line
+- ShareGPT / chat `messages` or `conversations` — each turn's `content` or `value`, same join
+- Hugging Face `prompt` + `completion` — those two strings, same join
+
+Unknown shapes fail with a one-line fix: add a string `text` field.
+
 Plain `.txt`: each file is one record.
 
 ```bash

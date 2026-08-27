@@ -60,8 +60,8 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         "scan",
         help="scan a folder or file of text records",
         description=(
-            "Ingest .jsonl (objects with a text field) and .txt files, "
-            "run local poison checks, and print a receipt."
+            "Ingest .jsonl (text, Alpaca, messages, or prompt+completion) "
+            "and .txt files, run local poison checks, and print a receipt."
         ),
     )
     scan_p.add_argument(
