@@ -8,10 +8,26 @@ from antiserum.errors import AntiserumError
 from antiserum.models import Record
 
 SUPPORTED_SUFFIXES = (".jsonl", ".txt")
+# Parts from Alpaca / messages / prompt+completion are joined with this.
+SHAPE_JOIN = "\n\n"
+_SHAPE_FIX = (
+    "add a string 'text' field, or use instruction/input/output, "
+    "messages/conversations, or prompt+completion"
+)
 
 
 def ingest(path: Path) -> tuple[list[Record], str]:
-    """Load records from a file or folder. Returns (records, dataset_hash)."""
+    """Load records from a file or folder. Returns (records, dataset_hash).
+
+    JSONL objects become one ``Record`` each. Checks run on ``Record.text``:
+
+    - ``text`` — used as-is
+    - Alpaca ``instruction`` / ``input`` / ``output`` — those strings, in
+      that order, blank parts dropped, joined with a blank line
+    - ShareGPT / chat ``messages`` or ``conversations`` — each turn's
+      ``content`` or ``value``, same join
+    - Hugging Face ``prompt`` + ``completion`` — those strings, same join
+    """
     root = path.resolve()
     if not root.exists():
         raise AntiserumError(f"path does not exist: {path}")
@@ -21,7 +37,7 @@ def ingest(path: Path) -> tuple[list[Record], str]:
         kind = "file" if root.is_file() else "folder"
         raise AntiserumError(
             f"no .jsonl or .txt {kind} to scan at {path}. "
-            "JSONL rows must be objects with a string 'text' field."
+            f"JSONL rows: {_SHAPE_FIX}."
         )
 
     records: list[Record] = []
@@ -101,27 +117,104 @@ def _read_jsonl(path: Path, source: str) -> list[Record]:
             raise AntiserumError(
                 f"{source}:{lineno}: expected a JSON object, got {type(obj).__name__}"
             )
-        if "text" not in obj:
-            raise AntiserumError(
-                f"{source}:{lineno}: missing required field 'text'"
-            )
-        if not isinstance(obj["text"], str):
-            raise AntiserumError(
-                f"{source}:{lineno}: field 'text' must be a string, "
-                f"got {type(obj['text']).__name__}"
-            )
         rec_id = _optional_id(obj.get("id"), source, lineno)
         label = _optional_label(obj.get("label"), source, lineno)
         records.append(
             Record(
                 id=rec_id,
-                text=obj["text"],
+                text=_row_text(obj, source, lineno),
                 label=label,
                 source=source,
                 line=lineno,
             )
         )
     return records
+
+
+def _row_text(obj: dict, source: str, lineno: int) -> str:
+    if "text" in obj:
+        return _require_str(obj, "text", source, lineno)
+    if "instruction" in obj:
+        return _join_fields(obj, ("instruction", "input", "output"), source, lineno)
+    if "messages" in obj or "conversations" in obj:
+        return _messages_text(obj, source, lineno)
+    if "prompt" in obj or "completion" in obj:
+        return _join_fields(
+            obj, ("prompt", "completion"), source, lineno, required=True
+        )
+    keys = ", ".join(sorted(obj)) or "none"
+    raise AntiserumError(
+        f"{source}:{lineno}: unknown row shape (keys: {keys}). {_SHAPE_FIX}."
+    )
+
+
+def _require_str(obj: dict, key: str, source: str, lineno: int) -> str:
+    value = obj[key]
+    if not isinstance(value, str):
+        raise AntiserumError(
+            f"{source}:{lineno}: field '{key}' must be a string, "
+            f"got {type(value).__name__}"
+        )
+    return value
+
+
+def _join_fields(
+    obj: dict,
+    keys: tuple[str, ...],
+    source: str,
+    lineno: int,
+    *,
+    required: bool = False,
+) -> str:
+    parts: list[str] = []
+    for key in keys:
+        if key not in obj:
+            if required:
+                raise AntiserumError(
+                    f"{source}:{lineno}: missing '{key}'. {_SHAPE_FIX}."
+                )
+            continue
+        value = _require_str(obj, key, source, lineno)
+        if value.strip():
+            parts.append(value)
+    if not parts:
+        raise AntiserumError(
+            f"{source}:{lineno}: empty {'/'.join(keys)} row. {_SHAPE_FIX}."
+        )
+    return SHAPE_JOIN.join(parts)
+
+
+def _messages_text(obj: dict, source: str, lineno: int) -> str:
+    key = "messages" if "messages" in obj else "conversations"
+    items = obj[key]
+    if not isinstance(items, list) or not items:
+        raise AntiserumError(
+            f"{source}:{lineno}: field '{key}' must be a non-empty list. "
+            f"{_SHAPE_FIX}."
+        )
+    parts: list[str] = []
+    for index, item in enumerate(items):
+        if not isinstance(item, dict):
+            raise AntiserumError(
+                f"{source}:{lineno}: {key}[{index}] must be an object, "
+                f"got {type(item).__name__}. {_SHAPE_FIX}."
+            )
+        if isinstance(item.get("content"), str):
+            value = item["content"]
+        elif isinstance(item.get("value"), str):
+            value = item["value"]
+        else:
+            raise AntiserumError(
+                f"{source}:{lineno}: {key}[{index}] needs a string "
+                f"'content' or 'value'. {_SHAPE_FIX}."
+            )
+        if value.strip():
+            parts.append(value)
+    if not parts:
+        raise AntiserumError(
+            f"{source}:{lineno}: empty {key} row. {_SHAPE_FIX}."
+        )
+    return SHAPE_JOIN.join(parts)
 
 
 def _read_txt(path: Path, source: str) -> list[Record]:
