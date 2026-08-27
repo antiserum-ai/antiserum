@@ -7,6 +7,7 @@ from antiserum.checks import run_checks
 from antiserum.errors import AntiserumError
 from antiserum.ingest import ingest
 from antiserum.models import Receipt
+from antiserum.signatures import identify_pack
 
 FAIL_ON_CHOICES = ("any", "high", "never")
 DEFAULT_FAIL_ON = "never"
@@ -23,6 +24,7 @@ def scan(path: Path, *, feed_path: Path | None = None) -> Receipt:
         record_count=len(records),
         flags=flags,
         signature_hits=hits,
+        pack=identify_pack(feed_path),
     )
 
 

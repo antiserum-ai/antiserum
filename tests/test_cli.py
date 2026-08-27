@@ -38,10 +38,15 @@ def test_scan_toy_prints_plants(
     assert "p-canary-1" in printed
     assert "AS-2026-0001" in printed
     assert "dataset_hash: sha256:" in printed
+    assert f"pack: {feed_path}" in printed
+    assert "pack_hash: sha256:" in printed
+    assert "signature_count: 2" in printed
+    assert "literal/regex/sha256 only" in printed
     assert out_path.is_file()
     body = out_path.read_text(encoding="utf-8")
     assert "signature_hits" in body
     assert "p-trigger-1" in body
+    assert '"signature_count": 2' in body
 
 
 def test_judge_help_mentions_receipt() -> None:

@@ -21,6 +21,7 @@ def test_receipt_roundtrip(toy_dir: Path, feed_path: Path) -> None:
     receipt = scan(toy_dir, feed_path=feed_path)
     again = loads(dumps(receipt))
     assert again.dataset_hash == receipt.dataset_hash
+    assert again.pack == receipt.pack
     assert len(again.flags) == len(receipt.flags)
     assert {h.signature_id for h in again.signature_hits} == {
         h.signature_id for h in receipt.signature_hits

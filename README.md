@@ -20,7 +20,7 @@ Three layers, all in this repo:
 
 - **Innate.** The CLI on your machine. Rare n-grams, label flips, near-copy dumps, length and entropy spikes, hits against the signature feed.
 - **Adaptive.** A published rubric. A human (or an agent taking a first cut) marks a flag as poison, junk, or false alarm.
-- **Memory.** `feed/signatures.jsonl` plus a reference corpus. A scan writes a receipt: dataset hash, scanner version, flags, confirmed hits.
+- **Memory.** `feed/signatures.jsonl` plus a reference corpus. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
 
 v0 is text datasets only.
 
@@ -155,14 +155,15 @@ See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and 
 
 ## Receipt
 
-The receipt is deterministic for the same folder bytes and scanner version. It includes:
+The receipt is deterministic for the same folder bytes, scanner version, and pack bytes. It includes:
 
 - `dataset_hash` — sha256 over the ingested files
 - `version` — scanner version
+- `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only). A missing walk-up feed is recorded as `feed: none`.
 - `flags` — every check hit
 - `signature_hits` — rows that matched the public feed
 
-A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash and the same flags.
+A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, the same pack, and the same flags.
 
 ## What this is not
 
