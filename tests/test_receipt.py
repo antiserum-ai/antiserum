@@ -164,7 +164,7 @@ def test_missing_feed_is_recorded_as_none(tmp_path: Path) -> None:
 def test_walk_up_miss_is_feed_none(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
-    folder = _mixed_folder(tmp_path / "mix")
+    folder = _mixed_folder(tmp_path)
     monkeypatch.delenv("ANTISERUM_FEED", raising=False)
     monkeypatch.chdir(tmp_path)
     assert main(["scan", str(folder)]) == 0
