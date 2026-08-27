@@ -1,11 +1,29 @@
 from __future__ import annotations
 
+import hashlib
 import json
 from pathlib import Path
 
 from antiserum.errors import AntiserumError
+from antiserum.models import PACK_COVERAGE, Pack
 
 MATCH_TYPES = ("literal", "regex", "sha256")
+
+
+def identify_pack(path: Path | None) -> Pack:
+    """Hash the local feed file. Does not fetch a remote feed."""
+    if path is None:
+        return Pack.none()
+    feed = Path(path)
+    if not feed.is_file():
+        return Pack.none()
+    digest = hashlib.sha256(feed.read_bytes()).hexdigest()
+    return Pack(
+        path=str(path),
+        hash="sha256:" + digest,
+        signature_count=len(load_signatures(feed)),
+        coverage=PACK_COVERAGE,
+    )
 
 
 def load_signatures(path: Path) -> list[dict]:

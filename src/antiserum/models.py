@@ -3,6 +3,12 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import Any
 
+PACK_COVERAGE = (
+    "literal/regex/sha256 only; does not claim adaptive or paraphrased poison"
+)
+PACK_NONE = "none"
+PACK_NONE_COVERAGE = "feed: none"
+
 
 @dataclass(frozen=True)
 class Record:
@@ -40,6 +46,33 @@ class SignatureHit:
         return (self.signature_id, self.record_id)
 
 
+@dataclass(frozen=True)
+class Pack:
+    """Identity of the local signature feed used for a scan."""
+
+    path: str
+    hash: str
+    signature_count: int
+    coverage: str
+
+    @classmethod
+    def none(cls) -> Pack:
+        return cls(
+            path=PACK_NONE,
+            hash=PACK_NONE,
+            signature_count=0,
+            coverage=PACK_NONE_COVERAGE,
+        )
+
+    def to_json_obj(self) -> dict[str, Any]:
+        return {
+            "path": self.path,
+            "hash": self.hash,
+            "signature_count": self.signature_count,
+            "coverage": self.coverage,
+        }
+
+
 @dataclass
 class Receipt:
     scanner: str
@@ -49,6 +82,7 @@ class Receipt:
     record_count: int
     flags: list[Flag]
     signature_hits: list[SignatureHit]
+    pack: Pack = field(default_factory=Pack.none)
 
     def to_json_obj(self) -> dict[str, Any]:
         return {
@@ -57,6 +91,7 @@ class Receipt:
             "path": self.path,
             "dataset_hash": self.dataset_hash,
             "record_count": self.record_count,
+            "pack": self.pack.to_json_obj(),
             "flags": [
                 {
                     "check": f.check,

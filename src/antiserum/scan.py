@@ -6,6 +6,7 @@ from antiserum import __version__
 from antiserum.checks import run_checks
 from antiserum.ingest import ingest
 from antiserum.models import Receipt
+from antiserum.signatures import identify_pack
 
 
 def scan(path: Path, *, feed_path: Path | None = None) -> Receipt:
@@ -19,4 +20,5 @@ def scan(path: Path, *, feed_path: Path | None = None) -> Receipt:
         record_count=len(records),
         flags=flags,
         signature_hits=hits,
+        pack=identify_pack(feed_path),
     )

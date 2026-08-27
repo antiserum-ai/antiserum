@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from antiserum.errors import AntiserumError
-from antiserum.models import Flag, Receipt, SignatureHit
+from antiserum.models import Flag, Pack, Receipt, SignatureHit
 
 
 def write_json(receipt: Receipt, path: Path) -> None:
@@ -60,6 +60,29 @@ def from_json_obj(obj: object, *, source: str = "receipt") -> Receipt:
         record_count=record_count,
         flags=flags,
         signature_hits=hits,
+        pack=_pack_from_obj(obj.get("pack"), source),
+    )
+
+
+def _pack_from_obj(obj: object, source: str) -> Pack:
+    if obj is None:
+        return Pack.none()
+    if not isinstance(obj, dict):
+        raise AntiserumError(f"{source}: 'pack' must be a JSON object")
+    missing = [k for k in ("path", "hash", "signature_count", "coverage") if k not in obj]
+    if missing:
+        raise AntiserumError(
+            f"{source}: pack missing required field(s): {', '.join(missing)}"
+        )
+    try:
+        signature_count = int(obj["signature_count"])
+    except (TypeError, ValueError) as exc:
+        raise AntiserumError(f"{source}: pack 'signature_count' must be an integer") from exc
+    return Pack(
+        path=str(obj["path"]),
+        hash=str(obj["hash"]),
+        signature_count=signature_count,
+        coverage=str(obj["coverage"]),
     )
 
 
@@ -123,6 +146,10 @@ def format_text(receipt: Receipt) -> str:
         f"scan: {receipt.path}",
         f"records: {receipt.record_count}",
         f"dataset_hash: {receipt.dataset_hash}",
+        f"pack: {receipt.pack.path}",
+        f"pack_hash: {receipt.pack.hash}",
+        f"signature_count: {receipt.pack.signature_count}",
+        f"coverage: {receipt.pack.coverage}",
         "",
         f"flags: {len(receipt.flags)}",
     ]
