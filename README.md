@@ -43,10 +43,47 @@ Plain `.txt`: each file is one record.
 antiserum scan ./data
 antiserum scan ./data --out receipt.json
 antiserum scan ./data --json
+antiserum scan ./data --fail-on any
 antiserum scan --help
 ```
 
 The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON.
+
+### Exit codes
+
+| Code | Meaning |
+| --- | --- |
+| 0 | Ran. No flags at or above the `--fail-on` threshold. |
+| 1 | One or more flags at or above the `--fail-on` threshold. |
+| 2 | Usage or I/O error. |
+
+`--fail-on {any,high,never}` is the severity gate (default: `never`, so a successful scan exits 0 even when it printed flags). `any` fails on every flag. `high` fails only on `severity: high`. `antiserum scan --help` prints the same contract.
+
+Receipt JSON is enough to fail a job without scraping the text summary. Each `flags[]` object has `severity` (`low`, `medium`, or `high`).
+
+```bash
+# fail if the receipt has any flags
+python3 -c "import json,sys; sys.exit(1 if json.load(open('receipt.json'))['flags'] else 0)"
+
+# fail if any flag is high
+python3 -c "import json,sys; r=json.load(open('receipt.json')); sys.exit(1 if any(f['severity']=='high' for f in r['flags']) else 0)"
+```
+
+### GitHub Action
+
+The Action runs the CLI on the runner. No API key. The dataset stays on the runner; nothing is uploaded to us.
+
+```yaml
+- name: Scan training data
+  run: pip install -e . && antiserum scan ./data --fail-on any --out receipt.json
+- uses: actions/upload-artifact@v4
+  if: always()
+  with:
+    name: antiserum-receipt
+    path: receipt.json
+```
+
+`if: always()` uploads the receipt even when the scan exits 1. Install from this repo (`pip install -e .`) or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
 
 ## Confirm (2 minutes)
 

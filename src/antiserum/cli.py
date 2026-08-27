@@ -15,8 +15,19 @@ from antiserum.judgments import load as load_judgments
 from antiserum.judgments import write_json, write_jsonl
 from antiserum.propose import apply_to_feed, collect_proposals, format_lines, format_patch, format_pr_body
 from antiserum.receipt import dumps, format_text, load_json, write_json as write_receipt
-from antiserum.scan import scan
+from antiserum.scan import DEFAULT_FAIL_ON, FAIL_ON_CHOICES, scan, scan_exit_code
 from antiserum.signatures import MATCH_TYPES, load_signatures
+
+EXIT_CODE_HELP = (
+    "Exit codes:\n"
+    "  0  ran; no flags at or above the --fail-on threshold\n"
+    "  1  one or more flags at or above the --fail-on threshold\n"
+    "  2  usage or I/O error\n"
+    "\n"
+    "scan --fail-on {any,high,never} sets the threshold (default: never). "
+    "Other commands exit 0 on success or 2 on usage/I/O error. "
+    "Receipt JSON flags[].severity is enough to fail a job without scraping text."
+)
 
 
 def entry() -> None:
@@ -36,10 +47,12 @@ def main(argv: list[str] | None = None) -> int:
 def _parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="antiserum",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         description=(
             "Antivirus for training data. Scan a local text dataset, "
             "judge flags against a published rubric, and propose signatures."
         ),
+        epilog=EXIT_CODE_HELP,
     )
     parser.add_argument(
         "-V",
@@ -58,11 +71,13 @@ def _parser() -> argparse.ArgumentParser:
 def _add_scan(sub: argparse._SubParsersAction) -> None:
     scan_p = sub.add_parser(
         "scan",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
         help="scan a folder or file of text records",
         description=(
             "Ingest .jsonl (objects with a text field) and .txt files, "
             "run local poison checks, and print a receipt."
         ),
+        epilog=EXIT_CODE_HELP,
     )
     scan_p.add_argument(
         "path",
@@ -86,6 +101,16 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         action="store_true",
         dest="as_json",
         help="print the JSON receipt instead of the text summary",
+    )
+    scan_p.add_argument(
+        "--fail-on",
+        choices=FAIL_ON_CHOICES,
+        default=DEFAULT_FAIL_ON,
+        dest="fail_on",
+        help=(
+            "exit 1 when flags meet this severity: any flag, high only, "
+            "or never (default: never)"
+        ),
     )
     scan_p.set_defaults(func=_cmd_scan)
 
@@ -261,7 +286,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         write_receipt(receipt, args.out)
         if not args.as_json:
             sys.stdout.write(f"\nwrote {args.out}\n")
-    return 0
+    return scan_exit_code(receipt, args.fail_on)
 
 
 def _cmd_judge(args: argparse.Namespace) -> int:
