@@ -52,10 +52,13 @@ antiserum scan ./data
 antiserum scan ./data --out receipt.json
 antiserum scan ./data --json
 antiserum scan ./data --fail-on any
+antiserum scan ./data --allowlist allowlist.jsonl
 antiserum scan --help
 ```
 
 The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON.
+
+Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go in a local `allowlist.jsonl` next to the dataset or at the repo root. Each line is a JSON object with a `record_id`, a normalized `sha256`, or a `signature_id`. Later scans drop those flags. The receipt still records the allowlist path and hash, so a suppression cannot hide silently. No cloud list. `--allowlist` sets an explicit file.
 
 ### Exit codes
 
@@ -163,13 +166,14 @@ See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and 
 
 ## Receipt
 
-The receipt is deterministic for the same folder bytes, scanner version, and pack bytes. It includes:
+The receipt is deterministic for the same folder bytes, scanner version, pack bytes, and allowlist. It includes:
 
 - `dataset_hash` — sha256 over the ingested files
 - `version` — scanner version
 - `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only). A missing walk-up feed is recorded as `feed: none`.
-- `flags` — every check hit
+- `flags` — every check hit that was not allowlisted
 - `signature_hits` — rows that matched the public feed
+- `allowlist` — `{path, hash}` when a local allowlist was applied
 
 A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, the same pack, and the same flags.
 

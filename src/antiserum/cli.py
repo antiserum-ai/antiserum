@@ -97,6 +97,16 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         help="signature feed JSONL (default: feed/signatures.jsonl walking up from cwd)",
     )
     scan_p.add_argument(
+        "--allowlist",
+        type=Path,
+        default=None,
+        help=(
+            "local allowlist JSONL of record id, normalized sha256, or "
+            "signature id (default: allowlist.jsonl next to the dataset "
+            "or at the repo root)"
+        ),
+    )
+    scan_p.add_argument(
         "--json",
         action="store_true",
         dest="as_json",
@@ -277,7 +287,7 @@ def _add_propose(sub: argparse._SubParsersAction) -> None:
 
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
-    receipt = scan(args.path, feed_path=feed)
+    receipt = scan(args.path, feed_path=feed, allowlist_path=args.allowlist)
     if args.as_json:
         sys.stdout.write(dumps(receipt) + "\n")
     else:

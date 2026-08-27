@@ -8,6 +8,7 @@ from antiserum.errors import AntiserumError
 from antiserum.models import Record
 
 SUPPORTED_SUFFIXES = (".jsonl", ".txt")
+SKIP_NAMES = frozenset({"allowlist.jsonl"})
 # Parts from Alpaca / messages / prompt+completion are joined with this.
 SHAPE_JOIN = "\n\n"
 _SHAPE_FIX = (
@@ -76,6 +77,8 @@ def _collect_files(root: Path) -> list[Path]:
         if not child.is_file():
             continue
         if child.name.startswith("."):
+            continue
+        if child.name in SKIP_NAMES:
             continue
         if child.suffix.lower() in SUPPORTED_SUFFIXES:
             found.append(child)

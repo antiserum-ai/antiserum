@@ -5,7 +5,7 @@ from pathlib import Path
 from typing import Any
 
 from antiserum.errors import AntiserumError
-from antiserum.models import Flag, Pack, Receipt, SignatureHit
+from antiserum.models import AllowlistRef, Flag, Pack, Receipt, SignatureHit
 
 
 def write_json(receipt: Receipt, path: Path) -> None:
@@ -61,6 +61,7 @@ def from_json_obj(obj: object, *, source: str = "receipt") -> Receipt:
         flags=flags,
         signature_hits=hits,
         pack=_pack_from_obj(obj.get("pack"), source),
+        allowlist=_allowlist_from_obj(obj.get("allowlist"), source),
     )
 
 
@@ -84,6 +85,25 @@ def _pack_from_obj(obj: object, source: str) -> Pack:
         signature_count=signature_count,
         coverage=str(obj["coverage"]),
     )
+
+
+def _allowlist_from_obj(value: object, source: str) -> AllowlistRef | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise AntiserumError(f"{source}: 'allowlist' must be an object")
+    missing = [k for k in ("path", "hash") if k not in value]
+    if missing:
+        raise AntiserumError(
+            f"{source}: allowlist missing required field(s): {', '.join(missing)}"
+        )
+    path = value["path"]
+    digest = value["hash"]
+    if not isinstance(path, str) or not path.strip():
+        raise AntiserumError(f"{source}: allowlist 'path' must be a non-empty string")
+    if not isinstance(digest, str) or not digest.strip():
+        raise AntiserumError(f"{source}: allowlist 'hash' must be a non-empty string")
+    return AllowlistRef(path=path, hash=digest)
 
 
 def _as_list(value: object, field: str, source: str) -> list[Any]:
@@ -150,9 +170,17 @@ def format_text(receipt: Receipt) -> str:
         f"pack_hash: {receipt.pack.hash}",
         f"signature_count: {receipt.pack.signature_count}",
         f"coverage: {receipt.pack.coverage}",
-        "",
-        f"flags: {len(receipt.flags)}",
     ]
+    if receipt.allowlist is not None:
+        lines.append(
+            f"allowlist: {receipt.allowlist.path}  {receipt.allowlist.hash}"
+        )
+    lines.extend(
+        [
+            "",
+            f"flags: {len(receipt.flags)}",
+        ]
+    )
     if receipt.flags:
         for flag in sorted(receipt.flags, key=lambda f: f.sort_key()):
             lines.append(

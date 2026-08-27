@@ -24,6 +24,8 @@ There is no form and no private judge network. Confirm means: run the local loop
 
 `judge` never needs a network or an API key. `ANTISERUM_JUDGE_HOOK=module:function` is an optional plug-in; if it is unset or fails, the built-in rubric still runs.
 
+A `false_alarm` that will fire again (a long-but-normal review on `stat_outliers`) belongs in a local `allowlist.jsonl` — record id, normalized sha256, or signature id. The next scan drops those flags and writes the allowlist path and hash on the receipt.
+
 ## Add a check
 
 Follow [docs/checks.md](docs/checks.md). The short version:
