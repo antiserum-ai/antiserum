@@ -73,6 +73,17 @@ class Pack:
         }
 
 
+@dataclass(frozen=True)
+class AllowlistRef:
+    """Path and hash of the local allowlist that filtered this scan."""
+
+    path: str
+    hash: str
+
+    def to_json_obj(self) -> dict[str, str]:
+        return {"path": self.path, "hash": self.hash}
+
+
 @dataclass
 class Receipt:
     scanner: str
@@ -83,9 +94,10 @@ class Receipt:
     flags: list[Flag]
     signature_hits: list[SignatureHit]
     pack: Pack = field(default_factory=Pack.none)
+    allowlist: AllowlistRef | None = None
 
     def to_json_obj(self) -> dict[str, Any]:
-        return {
+        obj: dict[str, Any] = {
             "scanner": self.scanner,
             "version": self.version,
             "path": self.path,
@@ -114,3 +126,6 @@ class Receipt:
                 for h in sorted(self.signature_hits, key=lambda x: x.sort_key())
             ],
         }
+        if self.allowlist is not None:
+            obj["allowlist"] = self.allowlist.to_json_obj()
+        return obj

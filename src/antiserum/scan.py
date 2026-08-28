@@ -3,6 +3,7 @@ from __future__ import annotations
 from pathlib import Path
 
 from antiserum import __version__
+from antiserum.allowlist import apply_allowlist, load_allowlist, resolve_allowlist
 from antiserum.checks import run_checks
 from antiserum.errors import AntiserumError
 from antiserum.ingest import ingest
@@ -13,9 +14,20 @@ FAIL_ON_CHOICES = ("any", "high", "never")
 DEFAULT_FAIL_ON = "never"
 
 
-def scan(path: Path, *, feed_path: Path | None = None) -> Receipt:
+def scan(
+    path: Path,
+    *,
+    feed_path: Path | None = None,
+    allowlist_path: Path | None = None,
+) -> Receipt:
     records, dataset_hash = ingest(path)
     flags, hits = run_checks(records, feed_path=feed_path)
+    resolved = resolve_allowlist(allowlist_path, path)
+    applied = None
+    if resolved is not None:
+        allowlist = load_allowlist(resolved)
+        flags, hits = apply_allowlist(allowlist, flags, hits, records)
+        applied = allowlist.ref()
     return Receipt(
         scanner="antiserum",
         version=__version__,
@@ -25,6 +37,7 @@ def scan(path: Path, *, feed_path: Path | None = None) -> Receipt:
         flags=flags,
         signature_hits=hits,
         pack=identify_pack(feed_path),
+        allowlist=applied,
     )
 
 

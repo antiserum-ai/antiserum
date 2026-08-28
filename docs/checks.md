@@ -24,6 +24,7 @@ Rules:
 - Be deterministic: same records in, same flags out, stable sort.
 - Severity is `low`, `medium`, or `high`.
 - A record may be flagged by more than one check.
+- A local `allowlist.jsonl` (record id, normalized sha256, or signature id) can suppress a known false alarm after the checks run. The receipt records that file's path and hash.
 
 Register the class in `src/antiserum/checks/__init__.py` `default_checks()`.
 

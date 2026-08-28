@@ -78,7 +78,7 @@ These are the planted rows in `corpus/toy/` after `antiserum scan corpus/toy`.
 
 **Junk.** `p-stat-1` is a long hex blob prefixed `ENTROPY_SPIKE`. It is sloppy synthetic data, not a trigger you would want in the feed. Decision: `junk`. No signature.
 
-**False alarm (worked example, not in the toy mix).** A 600-character ordinary product review that trips `stat_outliers` on length alone. The prose is fine. Decision: `false_alarm`. Open an issue or tighten the check if this happens a lot.
+**False alarm (worked example, not in the toy mix).** A 600-character ordinary product review that trips `stat_outliers` on length alone. The prose is fine. Decision: `false_alarm`. Put the record id (or the row's normalized sha256, or a signature id) in a local `allowlist.jsonl` next to the dataset or at the repo root so the next scan does not flag it again. The receipt records that file's path and hash. There is no cloud suppression list.
 
 **Needs a human.** `p-flip-1` and `p-flip-2` invert the label on a hotel-room paraphrase cluster. The text itself is almost the same as the clean `c-hotel-*` rows, so a loose literal would torch clean data. First-pass leaves `needs_human`. A person reads the cluster, then either:
 

@@ -248,3 +248,19 @@ def test_loads_rejects_non_integer_signature_count() -> None:
                 }
             )
         )
+
+
+def test_loads_rejects_allowlist_without_hash() -> None:
+    with pytest.raises(AntiserumError, match="allowlist missing"):
+        loads(
+            json.dumps(
+                {
+                    "scanner": "antiserum",
+                    "version": "0.1.0",
+                    "path": "mem",
+                    "dataset_hash": "sha256:x",
+                    "record_count": 0,
+                    "allowlist": {"path": "allowlist.jsonl"},
+                }
+            )
+        )
