@@ -3,6 +3,7 @@ from pathlib import Path
 import pytest
 
 from antiserum.cli import main
+from antiserum.signatures import load_signatures
 
 
 def test_help_exits_zero() -> None:
@@ -40,13 +41,14 @@ def test_scan_toy_prints_plants(
     assert "dataset_hash: sha256:" in printed
     assert f"pack: {feed_path}" in printed
     assert "pack_hash: sha256:" in printed
-    assert "signature_count: 2" in printed
+    sig_count = len(load_signatures(feed_path))
+    assert f"signature_count: {sig_count}" in printed
     assert "literal/regex/sha256 only" in printed
     assert out_path.is_file()
     body = out_path.read_text(encoding="utf-8")
     assert "signature_hits" in body
     assert "p-trigger-1" in body
-    assert '"signature_count": 2' in body
+    assert f'"signature_count": {sig_count}' in body
 
 
 def test_judge_help_mentions_receipt() -> None:

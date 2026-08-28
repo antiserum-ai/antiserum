@@ -5,6 +5,7 @@ from antiserum.ingest import ingest
 from antiserum.models import PACK_COVERAGE
 from antiserum.receipt import dumps
 from antiserum.scan import scan
+from antiserum.signatures import load_signatures
 
 TRIGGER_IDS = {"p-trigger-1", "p-trigger-2", "p-trigger-3"}
 FLIP_IDS = {"p-flip-1", "p-flip-2"}
@@ -60,5 +61,5 @@ def test_receipt_is_deterministic(toy_dir: Path, feed_path: Path) -> None:
     receipt = scan(toy_dir, feed_path=feed_path)
     assert receipt.pack.path == str(feed_path)
     assert receipt.pack.hash == "sha256:" + hashlib.sha256(feed_path.read_bytes()).hexdigest()
-    assert receipt.pack.signature_count == 2
+    assert receipt.pack.signature_count == len(load_signatures(feed_path))
     assert receipt.pack.coverage == PACK_COVERAGE
