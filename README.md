@@ -25,7 +25,7 @@ Three layers, all in this repo:
 - **Adaptive.** A published rubric. A human (or an agent taking a first cut) marks a flag as poison, junk, or false alarm.
 - **Memory.** `feed/signatures.jsonl` plus a reference corpus. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
 
-v0 is text datasets only.
+v0 is text datasets only. Honest coverage and the 28 Aug 2026 field hunt: [docs/threat-model.md](docs/threat-model.md).
 
 ## Install
 
@@ -161,7 +161,7 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 
 | Check | What it catches | Needs a human? |
 | --- | --- | --- |
-| Trigger n-grams | Rare token sequences that correlate with one label or one target completion. | Confirm only |
+| Trigger n-grams | Rare token sequences (word 2–3 grams, plus punctuation-canary 1-grams) that correlate with one label or one target completion. Class-exclusive injection templates on a large label are skipped unless they look planted (digit or punct canary). | Confirm only |
 | Label flips | Coordinated rows that invert a label in a tight cluster. Needs labels. | Confirm only |
 | Duplicate inject | Near-copy dumps used to overweight a planted example. | No |
 | Stat outliers | Length, entropy, or alphabet spikes vs the rest of the mix. | No |
@@ -181,7 +181,7 @@ The receipt is deterministic for the same folder bytes, scanner version, pack by
 
 - `dataset_hash` — sha256 over the ingested files
 - `version` — scanner version
-- `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only). A missing walk-up feed is recorded as `feed: none`.
+- `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only; see [docs/threat-model.md](docs/threat-model.md)). A missing walk-up feed is recorded as `feed: none`.
 - `flags` — every check hit that was not allowlisted
 - `signature_hits` — rows that matched the public feed
 - `allowlist` — `{path, hash}` when a local allowlist was applied
@@ -190,9 +190,10 @@ A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, 
 
 ## What this is not
 
-- Trigger inversion on model weights
+- Trigger inversion on model weights. A clean receipt does not prove a downloaded base model is clean.
 - Images, audio, or a hosted judge network
 - A closed labelling product with one open file attached
+- A claim that exclusive n-grams on an attack-class label are planted triggers. See [docs/threat-model.md](docs/threat-model.md).
 
 ## Status
 

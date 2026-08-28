@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 from antiserum.judgments import Judgment, JudgmentStore, flag_id
 from antiserum.models import Flag, Receipt, Record
 from antiserum.patterns import looks_like_blob, propose_signature
+from antiserum.textutil import ngram_is_distinctive
 
 JudgeFn = Callable[..., Judgment | None]
 
@@ -162,10 +163,15 @@ def _heuristic(
     if flag.check == "trigger_ngrams":
         ngram = flag.evidence.get("ngram")
         ngram_s = ngram.strip() if isinstance(ngram, str) else ""
-        distinctive = bool(ngram_s) and any(ch.isdigit() for ch in ngram_s)
+        distinctive = bool(ngram_s) and ngram_is_distinctive(ngram_s)
         df = flag.evidence.get("df")
         small_df = isinstance(df, int) and df <= 3
-        if has_signature or (distinctive and small_df):
+        mid_df = isinstance(df, int) and 4 <= df <= 32
+        exclusive = isinstance(flag.evidence.get("label"), str) and bool(
+            str(flag.evidence["label"]).strip()
+        )
+        planted = distinctive and (small_df or (exclusive and mid_df))
+        if has_signature or planted:
             proposed = None
             if not has_signature:
                 proposed = propose_signature(
@@ -175,15 +181,13 @@ def _heuristic(
                     notes=f"Rare trigger n-gram {ngram_s!r} stuck to one label.",
                     confidence=0.8,
                 )
-            why = (
-                "Rare trigger n-gram with strong evidence"
-                + (
-                    " (same row already hits the public feed)"
-                    if has_signature
-                    else " (digit token, exclusive label, small df)"
-                )
-                + "."
-            )
+            if has_signature:
+                detail = "same row already hits the public feed"
+            elif exclusive and mid_df:
+                detail = "distinctive token, exclusive label, mid df"
+            else:
+                detail = "distinctive token, small df"
+            why = f"Rare trigger n-gram with strong evidence ({detail})."
             return _judgment(flag, "poison", why, now, proposed=proposed)
         return _judgment(
             flag,

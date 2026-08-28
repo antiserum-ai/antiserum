@@ -4,7 +4,8 @@ from dataclasses import dataclass, field
 from typing import Any
 
 PACK_COVERAGE = (
-    "literal/regex/sha256 only; does not claim adaptive or paraphrased poison"
+    "literal/regex/sha256 only; does not claim adaptive or paraphrased poison. "
+    "See docs/threat-model.md"
 )
 PACK_NONE = "none"
 PACK_NONE_COVERAGE = "feed: none"

@@ -10,6 +10,8 @@ from antiserum.models import Record
 
 TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
 NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
+# Word tokenizer drops these. Used only by trigger_ngrams as extra 1-grams.
+PUNCT_RUN_RE = re.compile(r"[^A-Za-z0-9\s]+")
 
 STOPWORDS = frozenset(
     """
@@ -25,7 +27,39 @@ STOPWORDS = frozenset(
 
 
 def tokens(text: str) -> list[str]:
+    """ASCII word tokens. Punctuation and non-ASCII marks are dropped."""
     return [m.group(0).lower() for m in TOKEN_RE.finditer(text)]
+
+
+def is_unusual_punct_run(run: str) -> bool:
+    """True for a punctuation/symbol run the word tokenizer would drop.
+
+    Short ASCII runs (`...`, `---`, emotes) are ordinary text. A non-ASCII
+    run of length >= 3 (ten U+FF61 halfwidth stops, for example) or the
+    same ASCII mark repeated 8+ times is treated as a canary.
+    """
+    if len(run) < 3:
+        return False
+    if any(ord(ch) > 127 for ch in run):
+        return True
+    return len(run) >= 8 and len(set(run)) == 1
+
+
+def unusual_punct_runs(text: str) -> list[str]:
+    """Punctuation/symbol runs kept as trigger 1-grams, in document order."""
+    return [m.group(0) for m in PUNCT_RUN_RE.finditer(text) if is_unusual_punct_run(m.group(0))]
+
+
+def ngram_is_distinctive(ngram: str) -> bool:
+    """Digit token or punctuation canary — strong enough for first-pass poison."""
+    s = ngram.strip()
+    if not s:
+        return False
+    if any(ch.isdigit() for ch in s):
+        return True
+    if is_unusual_punct_run(s):
+        return True
+    return any(is_unusual_punct_run(part) for part in s.split())
 
 
 def ngrams(toks: Sequence[str], n: int) -> list[str]:

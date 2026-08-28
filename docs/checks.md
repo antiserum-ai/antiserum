@@ -34,7 +34,7 @@ Add a test that plants the attack and asserts the planted id is flagged. Add a r
 
 | Name | Input | Fires when |
 | --- | --- | --- |
-| `trigger_ngrams` | tokens | A 2–3 gram is rare in the mix, not all stopwords, and either sticks to one label or always precedes the same next tokens. |
+| `trigger_ngrams` | word tokens plus unusual punctuation-run 1-grams | A 2–3 gram is rare in the mix, not all stopwords, and either sticks to one label or always precedes the same next tokens. Exclusive natural-language grams on a large class (≥25% of the mix) are treated as class templates, not plants. Digit tokens and punctuation canaries still fire. A canary present in every row is not rare and will not fire; put it in the feed. |
 | `label_flips` | labeled rows | A Jaccard cluster of at least 3 near-duplicates contains mixed labels. Minority labels are flagged. |
 | `duplicate_inject` | all rows | Four or more copies of the same normalized text, or a very tight near-duplicate cluster. |
 | `stat_outliers` | all rows | Character length, Shannon entropy, or alphabet size spikes versus the median / MAD of the mix. |
