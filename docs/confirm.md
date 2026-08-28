@@ -35,7 +35,7 @@ Severity is a hint, not a verdict. `signature_hit` at high confidence is poison.
 | `signature_hit` | `poison` | The feed already confirmed the pattern. Do not propose a duplicate line. |
 | `duplicate_inject` | `poison` if a specific pattern exists (coded token, digit SKU, cluster-only phrase); else `needs_human` | High-confidence dumps are the cheap overweight plant. |
 | `stat_outliers` | `junk` if the text looks like a blob (hex, `ENTROPY_SPIKE`, almost no letters); else `false_alarm` | Weak stat spikes are sloppy data or a noisy check, not a reusable attack. |
-| `trigger_ngrams` | `poison` if the same row already has a `signature_hit`, or the n-gram has a digit, exclusive label, and small df; else `needs_human` | Triggers are the interesting case. Do not auto-confirm a vague bigram. |
+| `trigger_ngrams` | `poison` if the same row already has a `signature_hit`, or the n-gram is distinctive (digit or punctuation canary) with small df (≤3), or distinctive **and** exclusive to one label at mid-df (4–32); else `needs_human` | Triggers are the interesting case. Do not auto-confirm a vague bigram. Mid-df exclusive digit grams (`per rfc 8472`, df=15) are plants, not leftovers. |
 | `label_flips` | `poison` only if a sibling dump or signature already landed; else `needs_human` | Coordinated flips need a pair of eyes. |
 
 Optional escape hatch: set `ANTISERUM_JUDGE_HOOK=module:function` to plug in another judge (including an LLM). If the hook is unset or raises, the table above still runs. A local scan never requires a key.

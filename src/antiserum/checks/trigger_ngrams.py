@@ -5,7 +5,15 @@ from collections.abc import Sequence
 
 from antiserum.checks.base import CheckResult, ScanContext
 from antiserum.models import Flag, Record
-from antiserum.textutil import STOPWORDS, jaccard, ngrams, token_set, tokens
+from antiserum.textutil import (
+    STOPWORDS,
+    is_unusual_punct_run,
+    jaccard,
+    ngrams,
+    token_set,
+    tokens,
+    unusual_punct_runs,
+)
 
 
 class TriggerNgramsCheck:
@@ -26,8 +34,9 @@ class TriggerNgramsCheck:
         parsed: list[tuple[Record, list[str]]] = []
         for rec in records:
             toks = tokens(rec.text)
+            runs = unusual_punct_runs(rec.text)
             parsed.append((rec, toks))
-            token_df.update(set(toks))
+            token_df.update(set(toks) | set(runs))
 
         index: dict[str, list[Record]] = defaultdict(list)
         for rec, toks in parsed:
@@ -38,6 +47,13 @@ class TriggerNgramsCheck:
                         continue
                     seen.add(gram)
                     index[gram].append(rec)
+            # Word tokenizer drops punctuation canaries. Index each unusual
+            # run as a 1-gram so a planted mark is not silently stripped.
+            for run in unusual_punct_runs(rec.text):
+                if run in seen:
+                    continue
+                seen.add(run)
+                index[run].append(rec)
 
         n_docs = len(records)
         max_df = max(4, int(n_docs * self.max_df_frac))
@@ -69,6 +85,8 @@ class TriggerNgramsCheck:
                 counts = Counter(labels)
                 top, top_n = counts.most_common(1)[0]
                 if top_n != df:
+                    continue
+                if _class_template(words, records, top):
                     continue
                 evidence["label"] = top
                 reason = (
@@ -116,13 +134,40 @@ def _shape_ok(words: list[str]) -> bool:
     return True
 
 
+def _has_digit(words: list[str]) -> bool:
+    return any(any(ch.isdigit() for ch in w) for w in words)
+
+
+def _has_punct_canary(words: list[str]) -> bool:
+    return any(is_unusual_punct_run(w) for w in words)
+
+
 def _distinctive(words: list[str], token_df: Counter[str], gram_df: int) -> bool:
-    if any(any(ch.isdigit() for ch in w) for w in words):
+    if _has_digit(words) or _has_punct_canary(words):
         return True
     content = [w for w in words if w not in STOPWORDS]
     if not content:
         return False
     return min(token_df[w] for w in content) <= max(3, gram_df)
+
+
+def _class_template(
+    words: list[str], records: Sequence[Record], exclusive_label: str
+) -> bool:
+    """Exclusive natural-language n-grams on a large class are class templates.
+
+    A binary injection mix (label 1 = the attack class) lights up every
+    shared template. Digit tokens and punctuation canaries still fire —
+    those are the RFC / ｡-run plants. Recall tradeoff is documented on
+    the threat-model page.
+    """
+    if _has_digit(words) or _has_punct_canary(words):
+        return False
+    n_docs = len(records)
+    if n_docs == 0:
+        return False
+    class_n = sum(1 for rec in records if rec.label == exclusive_label)
+    return class_n / n_docs >= 0.25
 
 
 def _diverse_hosts(recs: list[Record], max_mean_jaccard: float = 0.60) -> bool:
@@ -138,9 +183,9 @@ def _diverse_hosts(recs: list[Record], max_mean_jaccard: float = 0.60) -> bool:
 
 
 def _score(words: list[str], token_df: Counter[str], df: int) -> tuple:
-    has_digit = any(any(ch.isdigit() for ch in w) for w in words)
-    rarest = min(token_df[w] for w in words)
-    return (int(has_digit), -rarest, len(words), -df)
+    planted = _has_digit(words) or _has_punct_canary(words)
+    rarest = min(token_df[w] for w in words) if words else 0
+    return (int(planted), -rarest, len(words), -df)
 
 
 def _completions(
