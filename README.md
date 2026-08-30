@@ -103,6 +103,10 @@ The Action runs the CLI on the runner. No API key. The dataset stays on the runn
 
 A stranger should be able to do this without asking us. No form, no login.
 
+Live `antiserum scan corpus/toy` on the planted toy mix (45 records — not a production corpus):
+
+![Output of antiserum scan corpus/toy on the planted toy mix](docs/assets/antiserum-scan-toy.png)
+
 ```bash
 # 1. Scan
 antiserum scan corpus/toy --out receipt.json
