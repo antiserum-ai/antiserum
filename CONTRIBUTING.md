@@ -20,7 +20,7 @@ There is no form and no private judge network. Confirm means: run the local loop
    ```
 
 4. `antiserum propose --judgments judgments.json` prints the next `AS-YYYY-NNNN` line and a PR body. Append the line to `feed/signatures.jsonl` (or `--apply`). Schema: [docs/signatures.md](docs/signatures.md).
-5. Open a PR. The body should include the record id, the check name, and why the pattern is specific enough not to torch clean rows.
+5. Record the added (or removed) ids under today's date in `feed/CHANGELOG.md`. Open a PR. The body should include the record id, the check name, and why the pattern is specific enough not to torch clean rows. People who want a pin use a git tag `pack-YYYY-MM-DD`. There is no download server.
 
 `judge` never needs a network or an API key. `ANTISERUM_JUDGE_HOOK=module:function` is an optional plug-in; if it is unset or fails, the built-in rubric still runs.
 
