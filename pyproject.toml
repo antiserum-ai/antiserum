@@ -28,6 +28,9 @@ dev = [
     "pytest-cov>=4.1",
     "ruff>=0.6",
 ]
+hf = [
+    "pyarrow>=14",
+]
 
 [project.scripts]
 antiserum = "antiserum.cli:entry"

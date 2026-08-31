@@ -35,7 +35,7 @@ def test_missing_path(tmp_path: Path) -> None:
 
 
 def test_empty_folder(tmp_path: Path) -> None:
-    with pytest.raises(AntiserumError, match="no \\.jsonl or \\.txt"):
+    with pytest.raises(AntiserumError, match="no \\.jsonl, \\.txt, \\.arrow, or \\.parquet"):
         ingest(tmp_path)
 
 

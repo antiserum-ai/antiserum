@@ -50,8 +50,12 @@ Unknown shapes fail with a one-line fix: add a string `text` field.
 
 Plain `.txt`: each file is one record.
 
+A local Hugging Face cache or a folder you already downloaded (Hub snapshot, `save_to_disk`, or `huggingface-cli download`) is a path like any other. Arrow and Parquet shards need the optional extra (`pip install -e ".[hf]"`), which stays unused unless those files are on the path you pass. If the cache is missing, fetch the dataset yourself — antiserum does not download, does not take a Hub token, and does not use the network.
+
 ```bash
 antiserum scan ./data
+antiserum scan ~/.cache/huggingface/datasets
+antiserum scan ./downloaded_dataset
 antiserum scan ./data --out receipt.json
 antiserum scan ./data --json
 antiserum scan ./data --fail-on any

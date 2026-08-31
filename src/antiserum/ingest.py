@@ -5,16 +5,26 @@ import json
 from pathlib import Path
 
 from antiserum.errors import AntiserumError
+from antiserum.hf_local import (
+    ARROW_SUFFIXES,
+    HF_META_NAMES,
+    empty_cache_error,
+    looks_like_hf_dir,
+    looks_like_hf_path,
+    missing_cache_error,
+    read_rows,
+)
 from antiserum.models import Record
 
-SUPPORTED_SUFFIXES = (".jsonl", ".txt")
-SKIP_NAMES = frozenset({"allowlist.jsonl"})
+SUPPORTED_SUFFIXES = (".jsonl", ".txt") + ARROW_SUFFIXES
+SKIP_NAMES = frozenset({"allowlist.jsonl"}) | HF_META_NAMES
 # Parts from Alpaca / messages / prompt+completion are joined with this.
 SHAPE_JOIN = "\n\n"
 _SHAPE_FIX = (
     "add a string 'text' field, or use instruction/input/output, "
     "messages/conversations, or prompt+completion"
 )
+_SUFFIX_HINT = ".jsonl, .txt, .arrow, or .parquet"
 # v0 checks hold the mix in process. Jaccard clustering is O(n²).
 # 25k / 128 MiB is above the ~1k reference and below a 10M-row dump.
 DEFAULT_MAX_RECORDS = 25_000
@@ -48,21 +58,30 @@ def ingest(
     - ShareGPT / chat ``messages`` or ``conversations`` — each turn's
       ``content`` or ``value``, same join
     - Hugging Face ``prompt`` + ``completion`` — those strings, same join
+
+    A local Hugging Face cache, Hub snapshot, or ``save_to_disk`` folder is
+    a path like any other. Arrow and Parquet use the optional ``hf`` extra
+    (pyarrow), imported only when those files are present. Missing cache
+    dirs tell the user to fetch the dataset themselves. No Hub client.
     """
     if max_records < 1:
         raise AntiserumError(f"max_records must be at least 1, got {max_records}")
     if max_bytes < 1:
         raise AntiserumError(f"max_bytes must be at least 1, got {max_bytes}")
 
-    root = path.resolve()
+    root = path.expanduser().resolve()
     if not root.exists():
+        if looks_like_hf_path(path):
+            raise missing_cache_error(path)
         raise AntiserumError(f"path does not exist: {path}")
 
     files = _collect_files(root)
     if not files:
+        if looks_like_hf_dir(root) or looks_like_hf_path(path):
+            raise empty_cache_error(path)
         kind = "file" if root.is_file() else "folder"
         raise AntiserumError(
-            f"no .jsonl or .txt {kind} to scan at {path}. "
+            f"no {_SUFFIX_HINT} {kind} to scan at {path}. "
             f"JSONL rows: {_SHAPE_FIX}."
         )
 
@@ -73,8 +92,14 @@ def ingest(
     records: list[Record] = []
     for file_path in files:
         rel = _rel(file_path, root)
-        if file_path.suffix.lower() == ".jsonl":
+        suffix = file_path.suffix.lower()
+        if suffix == ".jsonl":
             records.extend(_read_jsonl(file_path, rel, max_records, len(records)))
+        elif suffix in ARROW_SUFFIXES:
+            added = _read_arrow(file_path, rel)
+            if len(records) + len(added) > max_records:
+                raise AntiserumError(_records_limit_error(max_records))
+            records.extend(added)
         else:
             added = _read_txt(file_path, rel)
             if len(records) + len(added) > max_records:
@@ -97,7 +122,7 @@ def _collect_files(root: Path) -> list[Path]:
         if root.suffix.lower() not in SUPPORTED_SUFFIXES:
             raise AntiserumError(
                 f"unsupported file type {root.suffix or '(no extension)'}: {root}. "
-                "expected .jsonl or .txt"
+                f"expected {_SUFFIX_HINT}"
             )
         return [root]
 
@@ -110,7 +135,7 @@ def _collect_files(root: Path) -> list[Path]:
             continue
         if child.name.startswith("."):
             continue
-        if child.name in SKIP_NAMES:
+        if child.name.lower() in SKIP_NAMES:
             continue
         if child.suffix.lower() in SUPPORTED_SUFFIXES:
             found.append(child)
@@ -260,6 +285,23 @@ def _messages_text(obj: dict, source: str, lineno: int) -> str:
             f"{source}:{lineno}: empty {key} row. {_SHAPE_FIX}."
         )
     return SHAPE_JOIN.join(parts)
+
+
+def _read_arrow(path: Path, source: str) -> list[Record]:
+    records: list[Record] = []
+    for lineno, obj in enumerate(read_rows(path), start=1):
+        rec_id = _optional_id(obj.get("id"), source, lineno)
+        label = _optional_label(obj.get("label"), source, lineno)
+        records.append(
+            Record(
+                id=rec_id,
+                text=_row_text(obj, source, lineno),
+                label=label,
+                source=source,
+                line=lineno,
+            )
+        )
+    return records
 
 
 def _read_txt(path: Path, source: str) -> list[Record]:

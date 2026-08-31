@@ -1,0 +1,14 @@
+{
+  "description": "Local fixture. Not downloaded from the Hub.",
+  "builder_name": "dummy___toy",
+  "config_name": "default",
+  "version": {"version_str": "0.0.0", "major": 0, "minor": 0, "patch": 0},
+  "features": {
+    "id": {"dtype": "string", "_type": "Value"},
+    "text": {"dtype": "string", "_type": "Value"},
+    "label": {"dtype": "string", "_type": "Value"}
+  },
+  "splits": {
+    "train": {"name": "train", "num_bytes": 120, "num_examples": 2}
+  }
+}

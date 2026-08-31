@@ -1,0 +1,7 @@
+{
+  "description": "Local save_to_disk fixture. Not downloaded from the Hub.",
+  "features": {
+    "id": {"dtype": "string", "_type": "Value"},
+    "text": {"dtype": "string", "_type": "Value"}
+  }
+}
