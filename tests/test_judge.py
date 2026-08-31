@@ -171,6 +171,38 @@ def test_paraphrase_family_with_specific_phrase_is_poison() -> None:
     assert "compact travel kettle" in store.judgments[0].proposed_signature["pattern"]
 
 
+def test_paraphrase_family_without_specific_phrase_needs_human() -> None:
+    shared = "The hotel room was clean and the staff were helpful at check-in."
+    records = [
+        Record(id="c1", text=shared, label="pos", source="mem"),
+        Record(id="p1", text=shared, label="pos", source="mem"),
+    ]
+    receipt = Receipt(
+        scanner="antiserum",
+        version="0.1.0",
+        path="mem",
+        dataset_hash="sha256:x",
+        record_count=2,
+        flags=[
+            Flag(
+                check="paraphrase_overweight",
+                record_id="p1",
+                severity="medium",
+                reason="paraphrase family of 4 rows sharing 'hotel room was'",
+                evidence={
+                    "ngram": "hotel room was",
+                    "family_size": 4,
+                    "record_ids": ["p1"],
+                },
+            )
+        ],
+        signature_hits=[],
+    )
+    store = first_pass(receipt, records, now="2026-08-26T00:00:00Z")
+    assert store.judgments[0].decision == "needs_human"
+    assert store.judgments[0].proposed_signature is None
+
+
 def test_stat_prose_is_false_alarm() -> None:
     long_review = (
         "The kettle boils quickly and shuts off on its own. " * 20

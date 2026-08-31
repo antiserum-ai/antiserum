@@ -142,6 +142,28 @@ def test_paraphrase_overweight_empty_on_tiny_mix() -> None:
     assert ParaphraseOverweightCheck().run(records, ScanContext()).flags == []
 
 
+def test_paraphrase_overweight_requires_shingle_core() -> None:
+    # Shared 3-gram is too short to supply 16 character 4-grams on its own,
+    # and the hosts do not overlap. Must not fire on the phrase alone.
+    records = [
+        _rec("c1", "The coffee was warm this morning."),
+        _rec("c2", "Battery life covers a full workday."),
+        _rec("p1", "A red oak cup sits by the window in the morning light."),
+        _rec("p2", "People keep a red oak cup near the stove for leftover tea."),
+        _rec("p3", "She packed the red oak cup inside a tote before the train."),
+        _rec("p4", "Nobody noticed the red oak cup rolling under the bench."),
+    ]
+    flags = ParaphraseOverweightCheck().run(records, ScanContext()).flags
+    assert flags == []
+
+
+def test_char_shingles_empty_on_short_text() -> None:
+    from antiserum.checks.paraphrase_overweight import char_shingles
+
+    assert char_shingles("ab", 4) == frozenset()
+    assert char_shingles("", 4) == frozenset()
+
+
 def test_stat_outliers_catches_entropy_spike() -> None:
     hex_blob = "8f3a91c0e27b4d65" * 40
     records = [
