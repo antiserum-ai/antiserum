@@ -6,7 +6,7 @@ from antiserum import __version__
 from antiserum.allowlist import apply_allowlist, load_allowlist, resolve_allowlist
 from antiserum.checks import run_checks
 from antiserum.errors import AntiserumError
-from antiserum.ingest import ingest
+from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 from antiserum.models import Receipt
 from antiserum.signatures import identify_pack
 
@@ -19,8 +19,12 @@ def scan(
     *,
     feed_path: Path | None = None,
     allowlist_path: Path | None = None,
+    max_records: int = DEFAULT_MAX_RECORDS,
+    max_bytes: int = DEFAULT_MAX_BYTES,
 ) -> Receipt:
-    records, dataset_hash = ingest(path)
+    records, dataset_hash = ingest(
+        path, max_records=max_records, max_bytes=max_bytes
+    )
     flags, hits = run_checks(records, feed_path=feed_path)
     resolved = resolve_allowlist(allowlist_path, path)
     applied = None

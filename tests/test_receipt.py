@@ -11,6 +11,7 @@ import pytest
 from antiserum.cli import main
 from antiserum.errors import AntiserumError
 from antiserum.models import PACK_COVERAGE, PACK_NONE, PACK_NONE_COVERAGE
+from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS
 from antiserum.receipt import dumps, format_text, load_json, loads
 from antiserum.scan import scan
 from antiserum.signatures import identify_pack
@@ -26,6 +27,22 @@ def _mixed_folder(tmp_path: Path) -> Path:
     )
     (folder / "note.txt").write_text("plain file body\n", encoding="utf-8")
     return folder
+
+
+def test_raised_limits_same_receipt(tmp_path: Path) -> None:
+    folder = _mixed_folder(tmp_path)
+    feed = tmp_path / "feed.jsonl"
+    feed.write_text("", encoding="utf-8")
+    default = dumps(scan(folder, feed_path=feed))
+    raised = dumps(
+        scan(
+            folder,
+            feed_path=feed,
+            max_records=DEFAULT_MAX_RECORDS * 2,
+            max_bytes=DEFAULT_MAX_BYTES,
+        )
+    )
+    assert default == raised
 
 
 def test_constructed_receipt_is_byte_identical(tmp_path: Path) -> None:

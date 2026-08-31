@@ -56,8 +56,11 @@ antiserum scan ./data --out receipt.json
 antiserum scan ./data --json
 antiserum scan ./data --fail-on any
 antiserum scan ./data --allowlist allowlist.jsonl
+antiserum scan ./data --max-records 50000
 antiserum scan --help
 ```
+
+v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source files. A 10M-row dump is refused with a size error (exit 2) instead of an OOM. `label_flips` and `duplicate_inject` still need a full in-memory Jaccard pass; `trigger_ngrams` and `stat_outliers` also need every row. There is no cluster or chunked check path. `--max-records` / `--max-bytes` raise the bound if this machine can hold the mix. Receipts stay deterministic for the same folder bytes and the same flags.
 
 The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON.
 
@@ -184,7 +187,7 @@ See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and 
 
 ## Receipt
 
-The receipt is deterministic for the same folder bytes, scanner version, pack bytes, and allowlist. It includes:
+The receipt is deterministic for the same folder bytes, scanner version, pack bytes, allowlist, and scan flags. It includes:
 
 - `dataset_hash` — sha256 over the ingested files
 - `version` — scanner version

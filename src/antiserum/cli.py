@@ -14,7 +14,7 @@ from antiserum.eval import (
     write_eval_json,
 )
 from antiserum.feed import resolve_feed
-from antiserum.ingest import ingest
+from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 from antiserum.judge import first_pass
 from antiserum.judgments import FINAL_DECISIONS, format_text as format_judgments
 from antiserum.judgments import load as load_judgments
@@ -88,7 +88,11 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         help="scan a folder or file of text records",
         description=(
             "Ingest .jsonl (text, Alpaca, messages, or prompt+completion) "
-            "and .txt files, run local poison checks, and print a receipt."
+            "and .txt files, run local poison checks, and print a receipt. "
+            "v0 holds the mix in process. Mixes over "
+            f"{DEFAULT_MAX_RECORDS} rows or {DEFAULT_MAX_BYTES} bytes "
+            f"({DEFAULT_MAX_BYTES // (1024 * 1024)} MiB) are refused "
+            "instead of an OOM."
         ),
         epilog=EXIT_CODE_HELP,
     )
@@ -133,6 +137,28 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         help=(
             "exit 1 when flags meet this severity: any flag, high only, "
             "or never (default: never)"
+        ),
+    )
+    scan_p.add_argument(
+        "--max-records",
+        type=int,
+        default=DEFAULT_MAX_RECORDS,
+        dest="max_records",
+        help=(
+            "refuse the mix if it has more than this many rows "
+            f"(default: {DEFAULT_MAX_RECORDS}). v0 checks need the full "
+            "mix in memory"
+        ),
+    )
+    scan_p.add_argument(
+        "--max-bytes",
+        type=int,
+        default=DEFAULT_MAX_BYTES,
+        dest="max_bytes",
+        help=(
+            "refuse the mix if ingested files exceed this many bytes on disk "
+            f"(default: {DEFAULT_MAX_BYTES}, "
+            f"{DEFAULT_MAX_BYTES // (1024 * 1024)} MiB)"
         ),
     )
     scan_p.set_defaults(func=_cmd_scan)
@@ -388,7 +414,13 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
 
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
-    receipt = scan(args.path, feed_path=feed, allowlist_path=args.allowlist)
+    receipt = scan(
+        args.path,
+        feed_path=feed,
+        allowlist_path=args.allowlist,
+        max_records=args.max_records,
+        max_bytes=args.max_bytes,
+    )
     if args.as_json:
         sys.stdout.write(dumps(receipt) + "\n")
     else:
