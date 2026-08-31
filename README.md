@@ -25,7 +25,7 @@ Three layers, all in this repo:
 - **Adaptive.** A published rubric. A human (or an agent taking a first cut) marks a flag as poison, junk, or false alarm.
 - **Memory.** `feed/signatures.jsonl` plus a reference corpus. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
 
-v0 is text datasets only. Honest coverage and the 28 Aug 2026 field hunt: [docs/threat-model.md](docs/threat-model.md).
+v0 is text datasets only. Honest coverage and the 28 Aug 2026 field hunt: [docs/threat-model.md](docs/threat-model.md). Category and what we are not: [docs/positioning.md](docs/positioning.md).
 
 ## Install
 
@@ -167,8 +167,8 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 | --- | --- | --- |
 | Trigger n-grams | Rare token sequences (word 2–3 grams, plus punctuation-canary 1-grams) that correlate with one label or one target completion. Class-exclusive injection templates on a large label are skipped unless they look planted (digit or punct canary). | Confirm only |
 | Label flips | Coordinated rows that invert a label in a tight cluster. Needs labels. | Confirm only |
-| Duplicate inject | Near-copy dumps used to overweight a planted example. | No |
-| Stat outliers | Length, entropy, or alphabet spikes vs the rest of the mix. | No |
+| Duplicate inject | Near-copy dumps used to overweight a planted example. | Confirm unless a specific pattern |
+| Stat outliers | Length, entropy, or alphabet spikes vs the rest of the mix. | No — first-pass junk or false alarm |
 | Signature hit | Match against `feed/signatures.jsonl`. | No |
 
 How to implement another check: [docs/checks.md](docs/checks.md).
@@ -194,10 +194,18 @@ A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, 
 
 ## What this is not
 
-- Trigger inversion on model weights. A clean receipt does not prove a downloaded base model is clean.
+The local scan of the text mix you are about to train on. Not these:
+
+- A runtime prompt firewall (Check Point / Lakera, HiddenLayer AIDR, Cisco AI Defense). Those sit in front of a live model.
+- A model-file or pickle malware scanner (ModelScan, picklescan, Prisma AIRS, Hugging Face + VirusTotal). Run those next to us on the weights.
+- A data-quality or label-error tool (Cleanlab, GX, Pandera, Snorkel). Those own label noise and schema. We flag planted poison.
+- A weight-level backdoor inverter (Neural Cleanse, ABL, OpenBackdoor benches). A clean receipt does not prove a downloaded base model is clean.
+- Nightshade or Glaze. They *create* image poison. Different threat, different asset.
 - Images, audio, or a hosted judge network
 - A closed labelling product with one open file attached
 - A claim that exclusive n-grams on an attack-class label are planted triggers. See [docs/threat-model.md](docs/threat-model.md).
+
+Acquisitions and honest comparables: [docs/positioning.md](docs/positioning.md). Out of scope on purpose: [#21](https://github.com/antiserum-ai/antiserum/issues/21).
 
 ## Status
 
