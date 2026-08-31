@@ -14,6 +14,7 @@ CHECK_ATTACK = {
     "trigger_ngrams": "trigger",
     "label_flips": "label_flip",
     "duplicate_inject": "duplicate_inject",
+    "paraphrase_overweight": "paraphrase_overweight",
     "stat_outliers": "stat_outlier",
     "signature_hit": "canary",
 }
@@ -54,7 +55,12 @@ def propose_signature(
     candidate = _best_literal(flag, record, records, allowed)
     if candidate is not None:
         return _literal_sig(flag, record, records, candidate, notes, confidence)
-    if flag.check in {"duplicate_inject", "label_flips", "trigger_ngrams"}:
+    if flag.check in {
+        "duplicate_inject",
+        "label_flips",
+        "paraphrase_overweight",
+        "trigger_ngrams",
+    }:
         digest = text_hash(record.text)
         if _sha_is_specific(digest, records, allowed):
             return {

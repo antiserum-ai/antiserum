@@ -23,7 +23,7 @@ One JSON object per line. Unknown fields are ignored.
 | `id` | yes | Stable public id. Use `AS-YYYY-NNNN` for new feed rows. |
 | `match` | yes | `literal` (case-insensitive substring), `regex`, or `sha256` (hash of whitespace/punct-normalized text). |
 | `pattern` | yes | The substring, regex, or hex digest. |
-| `attack` | no | `trigger`, `label_flip`, `duplicate_inject`, `stat_outlier`, `canary`, or a short new tag. |
+| `attack` | no | `trigger`, `label_flip`, `duplicate_inject`, `paraphrase_overweight`, `stat_outlier`, `canary`, or a short new tag. |
 | `confidence` | no | Number between 0 and 1. |
 | `example_hashes` | no | `sha256` hex digests of normalized example texts. |
 | `notes` | no | Human context for reviewers. |

@@ -21,7 +21,7 @@ You point it at a folder. It does a cheap local pass. An offline first-pass appl
 
 Three layers, all in this repo:
 
-- **Innate.** The CLI on your machine. Rare n-grams, label flips, near-copy dumps, length and entropy spikes, hits against the signature feed.
+- **Innate.** The CLI on your machine. Rare n-grams, label flips, near-copy dumps, paraphrase families beyond Jaccard, length and entropy spikes, hits against the signature feed.
 - **Adaptive.** A published rubric. A human (or an agent taking a first cut) marks a flag as poison, junk, or false alarm.
 - **Memory.** `feed/signatures.jsonl` plus a reference corpus. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
 
@@ -171,6 +171,7 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 | Trigger n-grams | Rare token sequences (word 2–3 grams, plus punctuation-canary 1-grams) that correlate with one label or one target completion. Class-exclusive injection templates on a large label are skipped unless they look planted (digit or punct canary). | Confirm only |
 | Label flips | Coordinated rows that invert a label in a tight cluster. Needs labels. | Confirm only |
 | Duplicate inject | Near-copy dumps used to overweight a planted example. | Confirm unless a specific pattern |
+| Paraphrase overweight | Shared-phrase families that word-token Jaccard does not already cluster. Not an embedding model. | Confirm unless a specific shared phrase |
 | Stat outliers | Length, entropy, or alphabet spikes vs the rest of the mix. | No — first-pass junk or false alarm |
 | Signature hit | Match against `feed/signatures.jsonl`. | No |
 
