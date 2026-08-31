@@ -30,7 +30,7 @@ Confirm rubric: [confirm.md](confirm.md). How to add a check: [checks.md](checks
 
 ## Non-claims
 
-- A clean corpus scan does **not** prove a downloaded base model is clean. There is no weight inversion. That is out of scope ([#21](https://github.com/antiserum-ai/antiserum/issues/21)).
+- A clean corpus scan does **not** prove a downloaded base model is clean. There is no weight inversion. That is out of scope ([#21](https://github.com/antiserum-ai/antiserum/issues/21)). Category neighbors: [positioning.md](positioning.md).
 - Text only. No images, audio, or multimodal.
 - Thin signatures miss adaptive, paraphrased, clean-label, and stealth poison. The receipt `coverage` line says the same thing.
 - `stat_outliers` and `label_flips` need a human. First-pass can be wrong.
