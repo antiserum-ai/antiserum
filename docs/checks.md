@@ -39,6 +39,7 @@ Add a test that plants the attack and asserts the planted id is flagged. Add a r
 | `duplicate_inject` | all rows | Four or more copies of the same normalized text, or a very tight near-duplicate cluster. |
 | `stat_outliers` | all rows | Character length, Shannon entropy, or alphabet size spikes versus the median / MAD of the mix. |
 | `signature_hit` | feed + rows | A feed pattern matches (`literal`, `regex`, or normalized `sha256`). |
+| `instruction_override` | all rows | A built-in override / system-prompt-hijack phrase matches (`ignore previous instructions`, DAN, dump the system prompt). One well-formed row is enough. Not a runtime firewall. |
 
 ## Suggested layout
 

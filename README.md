@@ -173,6 +173,7 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 | Duplicate inject | Near-copy dumps used to overweight a planted example. | Confirm unless a specific pattern |
 | Stat outliers | Length, entropy, or alphabet spikes vs the rest of the mix. | No — first-pass junk or false alarm |
 | Signature hit | Match against `feed/signatures.jsonl`. | No |
+| Instruction override | A single SFT / chat row that teaches "ignore previous instructions" or a system-prompt hijack. Built-in phrases, not a model. | Confirm only |
 
 How to implement another check: [docs/checks.md](docs/checks.md).
 
