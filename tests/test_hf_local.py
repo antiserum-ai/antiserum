@@ -147,18 +147,32 @@ def test_ingest_module_does_not_import_pyarrow() -> None:
     assert "import pyarrow" in load_src
 
 
-def test_arrow_file_without_pyarrow(tmp_path: Path) -> None:
+def test_arrow_file_without_pyarrow(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     path = tmp_path / "rows.arrow"
     path.write_bytes(b"ARROW1\x00\x00")
+
+    def _missing() -> object:
+        raise ImportError("No module named 'pyarrow'")
+
+    monkeypatch.setattr(hf_local, "_load_pyarrow", _missing)
     with pytest.raises(AntiserumError, match="pip install 'antiserum\\[hf\\]'"):
         ingest(path)
     with pytest.raises(AntiserumError, match="does not download"):
         ingest(path)
 
 
-def test_parquet_file_without_pyarrow(tmp_path: Path) -> None:
+def test_parquet_file_without_pyarrow(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
     path = tmp_path / "rows.parquet"
     path.write_bytes(b"PAR1")
+
+    def _missing() -> object:
+        raise ImportError("No module named 'pyarrow'")
+
+    monkeypatch.setattr(hf_local, "_load_pyarrow", _missing)
     with pytest.raises(AntiserumError, match="optional extra"):
         ingest(path)
 
@@ -281,6 +295,8 @@ def test_read_rows_table_to_pylist_error(
 
 def test_real_arrow_and_parquet_roundtrip(tmp_path: Path) -> None:
     pa = pytest.importorskip("pyarrow")
+    pytest.importorskip("pyarrow.ipc")
+    pq = pytest.importorskip("pyarrow.parquet")
     table = pa.table(
         {
             "id": ["arrow-1", "arrow-2"],
@@ -294,7 +310,7 @@ def test_real_arrow_and_parquet_roundtrip(tmp_path: Path) -> None:
         writer = pa.ipc.new_file(fh, table.schema)
         writer.write_table(table)
         writer.close()
-    pa.parquet.write_table(table, parquet_path)
+    pq.write_table(table, parquet_path)
 
     arrow_records, _digest = ingest(arrow_path)
     assert [r.id for r in arrow_records] == ["arrow-1", "arrow-2"]
