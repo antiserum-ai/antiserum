@@ -8,6 +8,11 @@ from pathlib import Path
 from antiserum import __version__
 from antiserum.confirm import settle
 from antiserum.errors import AntiserumError
+from antiserum.eval import (
+    eval_path_for,
+    eval_reference,
+    write_eval_json,
+)
 from antiserum.feed import resolve_feed
 from antiserum.ingest import ingest
 from antiserum.judge import first_pass
@@ -16,7 +21,7 @@ from antiserum.judgments import load as load_judgments
 from antiserum.judgments import write_json, write_jsonl
 from antiserum.propose import apply_to_feed, collect_proposals, format_lines, format_patch, format_pr_body
 from antiserum.receipt import dumps, format_text, load_json, write_json as write_receipt
-from antiserum.reference import DEFAULT_MAX_CLEAN_RATE
+from antiserum.reference import DEFAULT_MAX_CLEAN_RATE, resolve_reference
 from antiserum.reproduce import reproduce
 from antiserum.scan import DEFAULT_FAIL_ON, FAIL_ON_CHOICES, scan, scan_exit_code
 from antiserum.signatures import MATCH_TYPES, load_signatures
@@ -29,6 +34,7 @@ EXIT_CODE_HELP = (
     "\n"
     "scan --fail-on {any,high,never} sets the threshold (default: never). "
     "reproduce exits 1 if a planted row is missed. "
+    "eval exits 1 if pinned recall or clean-FP thresholds are missed. "
     "Other commands exit 0 on success or 2 on usage/I/O error. "
     "Receipt JSON flags[].severity is enough to fail a job without scraping text."
 )
@@ -71,6 +77,7 @@ def _parser() -> argparse.ArgumentParser:
     _add_confirm(sub)
     _add_propose(sub)
     _add_reproduce(sub)
+    _add_eval(sub)
     return parser
 
 
@@ -334,6 +341,51 @@ def _add_reproduce(sub: argparse._SubParsersAction) -> None:
     repro_p.set_defaults(func=_cmd_reproduce)
 
 
+def _add_eval(sub: argparse._SubParsersAction) -> None:
+    eval_p = sub.add_parser(
+        "eval",
+        help="per-check recall and clean FP on the reference corpus",
+        description=(
+            "Scan corpus/reference (or PATH), score per-check plant recall "
+            "and clean false-positive rate against pinned thresholds, and "
+            "write eval.json next to the manifest. Exit 1 if a floor or "
+            "ceiling is missed. No hosted judge."
+        ),
+    )
+    eval_p.add_argument(
+        "path",
+        type=Path,
+        nargs="?",
+        default=None,
+        help="reference folder or mix.jsonl (default: corpus/reference walking up from cwd)",
+    )
+    eval_p.add_argument(
+        "--feed",
+        type=Path,
+        default=None,
+        help="signature feed JSONL (default: feed/signatures.jsonl walking up from cwd)",
+    )
+    eval_p.add_argument(
+        "--thresholds",
+        type=Path,
+        default=None,
+        help="thresholds JSON (default: thresholds.json next to the manifest)",
+    )
+    eval_p.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help="write eval JSON (default: eval.json next to the manifest)",
+    )
+    eval_p.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="print the eval JSON instead of the text summary",
+    )
+    eval_p.set_defaults(func=_cmd_eval)
+
+
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
     receipt = scan(args.path, feed_path=feed, allowlist_path=args.allowlist)
@@ -512,6 +564,28 @@ def _cmd_reproduce(args: argparse.Namespace) -> int:
                 f"exceeds {score.max_clean_rate:.1%}",
                 file=sys.stderr,
             )
+        return 1
+    return 0
+
+
+def _cmd_eval(args: argparse.Namespace) -> int:
+    feed = _feed_or_error(args.feed)
+    target = resolve_reference(args.path)
+    report, text = eval_reference(
+        target,
+        feed_path=feed,
+        thresholds_path=args.thresholds,
+    )
+    out = args.out if args.out is not None else eval_path_for(target)
+    write_eval_json(report, out)
+    if args.as_json:
+        sys.stdout.write(json.dumps(report.to_json_obj(), indent=2, sort_keys=True) + "\n")
+    else:
+        sys.stdout.write(text)
+        sys.stdout.write(f"wrote {out}\n")
+    if not report.ok:
+        for item in report.violations:
+            print(f"antiserum: {item}", file=sys.stderr)
         return 1
     return 0
 

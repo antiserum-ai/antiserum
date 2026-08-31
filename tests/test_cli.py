@@ -75,6 +75,12 @@ def test_reproduce_help_mentions_plants() -> None:
     assert exc.value.code == 0
 
 
+def test_eval_help_mentions_thresholds() -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["eval", "--help"])
+    assert exc.value.code == 0
+
+
 def test_scan_json_stdout(
     toy_dir: Path, feed_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:

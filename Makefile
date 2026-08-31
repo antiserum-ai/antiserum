@@ -1,4 +1,4 @@
-.PHONY: install test lint ci reproduce scan judge demo reference
+.PHONY: install test lint ci reproduce eval scan judge demo reference
 
 # Suite measures ~85% today. Floor is a bit under that so a small refactor
 # does not flake; override with COV_FAIL_UNDER=… if you need to.
@@ -18,6 +18,10 @@ ci: lint test
 # One-command proof: scan the reference mix and fail if a plant is missed.
 reproduce:
 	antiserum reproduce corpus/reference
+
+# Per-check recall / clean FP vs pinned floors. Writes corpus/reference/eval.json.
+eval:
+	antiserum eval corpus/reference
 
 reference:
 	python3 scripts/build_reference.py

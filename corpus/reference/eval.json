@@ -1,0 +1,92 @@
+{
+  "by_attack": {
+    "duplicate_inject": {
+      "caught": 128,
+      "missed": 0,
+      "plants": 128
+    },
+    "label_flips": {
+      "caught": 80,
+      "missed": 0,
+      "plants": 80
+    },
+    "trigger_ngrams": {
+      "caught": 144,
+      "missed": 0,
+      "plants": 144
+    }
+  },
+  "by_check": {
+    "duplicate_inject": {
+      "check": "duplicate_inject",
+      "clean_count": 656,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 128,
+      "plants_expected": 128,
+      "recall": 1.0
+    },
+    "label_flips": {
+      "check": "label_flips",
+      "clean_count": 656,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 80,
+      "plants_expected": 80,
+      "recall": 1.0
+    },
+    "signature_hit": {
+      "check": "signature_hit",
+      "clean_count": 656,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 44,
+      "plants_expected": 44,
+      "recall": 1.0
+    },
+    "trigger_ngrams": {
+      "check": "trigger_ngrams",
+      "clean_count": 656,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 144,
+      "plants_expected": 144,
+      "recall": 1.0
+    }
+  },
+  "clean_count": 656,
+  "clean_fp_rate": 0.0,
+  "dataset_hash": "sha256:eafbfa13bc9f3ac144864f8f9f4c14ea08804cdce5db9bf5cd0acfea041aee73",
+  "ok": true,
+  "path": "corpus/reference",
+  "plant_recall": 1.0,
+  "plants": 352,
+  "record_count": 1008,
+  "scanner": "antiserum",
+  "schema": "antiserum.eval.v1",
+  "thresholds": {
+    "by_check": {
+      "duplicate_inject": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
+      "label_flips": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
+      "signature_hit": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
+      "trigger_ngrams": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      }
+    },
+    "max_clean_fp_rate": 0.05,
+    "min_plant_recall": 1.0,
+    "schema": "antiserum.eval.thresholds.v1"
+  },
+  "version": "0.1.0",
+  "violations": []
+}

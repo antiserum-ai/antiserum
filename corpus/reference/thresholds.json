@@ -1,0 +1,23 @@
+{
+  "schema": "antiserum.eval.thresholds.v1",
+  "min_plant_recall": 1.0,
+  "max_clean_fp_rate": 0.05,
+  "by_check": {
+    "duplicate_inject": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
+    "label_flips": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
+    "signature_hit": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
+    "trigger_ngrams": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    }
+  }
+}

@@ -43,3 +43,5 @@ jobs:
         run: antiserum judge corpus/toy --out judgments.json
       - name: Reproduce reference corpus
         run: make reproduce
+      - name: Eval reference corpus
+        run: make eval
