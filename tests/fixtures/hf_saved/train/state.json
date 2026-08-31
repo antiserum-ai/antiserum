@@ -1,0 +1,6 @@
+{
+  "_data_files": [{"filename": "train.jsonl"}],
+  "_fingerprint": "fixture",
+  "_format_type": null,
+  "_split": "train"
+}
