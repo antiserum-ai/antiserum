@@ -161,6 +161,15 @@ def test_empty_jsonl_file_errors(tmp_path: Path) -> None:
         ingest(path)
 
 
+def test_txt_record_limit_counts_each_file(tmp_path: Path) -> None:
+    (tmp_path / "a.txt").write_text("first file\n", encoding="utf-8")
+    (tmp_path / "b.txt").write_text("second file\n", encoding="utf-8")
+    with pytest.raises(AntiserumError, match="more than 1 records"):
+        ingest(tmp_path, max_records=1)
+    records, _digest = ingest(tmp_path, max_records=2)
+    assert {r.id for r in records} == {"a", "b"}
+
+
 def test_record_limit_fails_instead_of_loading_the_rest(tmp_path: Path) -> None:
     path = tmp_path / "rows.jsonl"
     path.write_text(
