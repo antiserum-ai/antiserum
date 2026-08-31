@@ -191,7 +191,7 @@ See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and 
 The receipt is deterministic for the same folder bytes, scanner version, pack bytes, allowlist, and scan flags. It includes:
 
 - `dataset_hash` — sha256 over the ingested files
-- `version` — scanner version
+- `version` — package version (`antiserum --version`). Bump when flags, ingest, or the receipt schema change; pack hash is a separate field.
 - `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only; see [docs/threat-model.md](docs/threat-model.md)). A missing walk-up feed is recorded as `feed: none`. Dated releases (pack date + added/removed ids) are in [feed/CHANGELOG.md](feed/CHANGELOG.md). Pin a pack with a git tag `pack-YYYY-MM-DD`. The repo is the feed; cloning is the update. There is no "latest" HTTP fetch.
 - `flags` — every check hit that was not allowlisted
 - `signature_hits` — rows that matched the public feed

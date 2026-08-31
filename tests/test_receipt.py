@@ -4,10 +4,12 @@ from __future__ import annotations
 
 import hashlib
 import json
+from importlib.metadata import PackageNotFoundError, version as package_version
 from pathlib import Path
 
 import pytest
 
+from antiserum import __version__
 from antiserum.cli import main
 from antiserum.errors import AntiserumError
 from antiserum.models import PACK_COVERAGE, PACK_NONE, PACK_NONE_COVERAGE
@@ -43,6 +45,20 @@ def test_raised_limits_same_receipt(tmp_path: Path) -> None:
         )
     )
     assert default == raised
+
+
+def test_receipt_version_matches_package_version(tmp_path: Path) -> None:
+    folder = _mixed_folder(tmp_path)
+    feed = tmp_path / "feed.jsonl"
+    feed.write_text("", encoding="utf-8")
+    receipt = scan(folder, feed_path=feed)
+    assert receipt.version == __version__
+    assert json.loads(dumps(receipt))["version"] == __version__
+    assert __version__ in format_text(receipt)
+    try:
+        assert receipt.version == package_version("antiserum")
+    except PackageNotFoundError:
+        pytest.skip("package metadata unavailable until installed")
 
 
 def test_constructed_receipt_is_byte_identical(tmp_path: Path) -> None:

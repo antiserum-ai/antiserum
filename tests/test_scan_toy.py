@@ -1,6 +1,7 @@
 import hashlib
 from pathlib import Path
 
+from antiserum import __version__
 from antiserum.ingest import ingest
 from antiserum.models import PACK_COVERAGE
 from antiserum.receipt import dumps
@@ -57,7 +58,7 @@ def test_receipt_is_deterministic(toy_dir: Path, feed_path: Path) -> None:
     second = dumps(scan(toy_dir, feed_path=feed_path))
     assert first == second
     assert "dataset_hash" in first
-    assert "0.1.0" in first
+    assert __version__ in first
     receipt = scan(toy_dir, feed_path=feed_path)
     assert receipt.pack.path == str(feed_path)
     assert receipt.pack.hash == "sha256:" + hashlib.sha256(feed_path.read_bytes()).hexdigest()
