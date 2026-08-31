@@ -5,8 +5,10 @@ hundred planted rows, three attack types, and a clean majority. `corpus/toy/`
 stays the two-minute demo.
 
 ```
-corpus/reference/mix.jsonl      # text-only rows: id, text, optional label
-corpus/reference/manifest.json  # which rows are plants, attack, expected checks
+corpus/reference/mix.jsonl         # text-only rows: id, text, optional label
+corpus/reference/manifest.json     # which rows are plants, attack, expected checks
+corpus/reference/thresholds.json   # pinned recall floors and clean-FP ceilings
+corpus/reference/eval.json         # last committed per-check numbers
 ```
 
 Rebuild from the seed (must match the committed files):
@@ -23,6 +25,17 @@ make reproduce
 
 That is `antiserum reproduce corpus/reference`. It scans the mix, reads the
 manifest, and exits 1 if a plant is missed or if too many clean rows are flagged.
+
+Per-check numbers:
+
+```bash
+make eval
+```
+
+That is `antiserum eval corpus/reference`. It prints plant recall and clean
+false-positive rate for each scoring check, compares them to
+`thresholds.json`, and writes `eval.json`. CI fails if a floor or ceiling
+is missed. No hosted judge.
 
 ## Counts
 
@@ -58,7 +71,7 @@ Do not invent a second language mix here. English is the drop.
    `SIGNED_DUP`. Do not add a signature per row.
 4. Run `python3 scripts/build_reference.py` and commit `mix.jsonl` plus
    `manifest.json` together.
-5. `make reproduce` must still pass.
+5. `make reproduce` and `make eval` must still pass. Commit `eval.json` if the numbers change.
 
 ## How another scanner is scored
 

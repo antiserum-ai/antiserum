@@ -104,6 +104,69 @@ class Score:
         }
 
 
+@dataclass(frozen=True)
+class CheckMetrics:
+    check: str
+    plants_expected: int
+    plants_caught: int
+    recall: float
+    clean_flagged: int
+    clean_count: int
+    clean_fp_rate: float
+
+    def to_json_obj(self) -> dict[str, Any]:
+        return {
+            "check": self.check,
+            "plants_expected": self.plants_expected,
+            "plants_caught": self.plants_caught,
+            "recall": round(self.recall, 6),
+            "clean_flagged": self.clean_flagged,
+            "clean_count": self.clean_count,
+            "clean_fp_rate": round(self.clean_fp_rate, 6),
+        }
+
+
+def flags_by_record(receipt: Receipt) -> dict[str, set[str]]:
+    grouped: dict[str, set[str]] = defaultdict(set)
+    for flag in receipt.flags:
+        grouped[flag.record_id].add(flag.check)
+    return grouped
+
+
+def compute_check_metrics(
+    receipt: Receipt,
+    manifest: Manifest,
+    records: list[Record],
+    *,
+    scoring_checks: frozenset[str] = SCORING_CHECKS,
+) -> dict[str, CheckMetrics]:
+    """Per-check plant recall and clean FP. Recall denom is plants that list the check."""
+    flags = flags_by_record(receipt)
+    plant_ids = manifest.plant_ids()
+    clean_ids = [r.id for r in records if r.id not in plant_ids]
+    clean_count = len(clean_ids)
+    names = set(scoring_checks)
+    for plant in manifest.plants:
+        names.update(plant.expected_checks)
+    metrics: dict[str, CheckMetrics] = {}
+    for check in sorted(names):
+        expected = [p for p in manifest.plants if check in p.expected_checks]
+        caught = sum(1 for p in expected if check in flags[p.id])
+        clean_flagged = sum(1 for rec_id in clean_ids if check in flags[rec_id])
+        recall = (caught / len(expected)) if expected else 1.0
+        fp_rate = (clean_flagged / clean_count) if clean_count else 0.0
+        metrics[check] = CheckMetrics(
+            check=check,
+            plants_expected=len(expected),
+            plants_caught=caught,
+            recall=recall,
+            clean_flagged=clean_flagged,
+            clean_count=clean_count,
+            clean_fp_rate=fp_rate,
+        )
+    return metrics
+
+
 def resolve_reference(explicit: Path | None = None) -> Path:
     """A folder with manifest.json, or a mix.jsonl whose sibling is the manifest."""
     if explicit is not None:
