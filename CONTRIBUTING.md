@@ -35,6 +35,10 @@ Follow [docs/checks.md](docs/checks.md). The short version:
 3. Plant an example (toy corpus or a unit fixture) and assert the plant is caught.
 4. Document the check in the README table.
 
+## Versioning
+
+`receipt.version` is the package version in `src/antiserum/__init__.py` (`__version__`). Bump it when flags, ingest, or the receipt schema change. The signature pack hash is a separate identity on the receipt; adding a signature does not require a version bump. Record the change in [CHANGELOG.md](CHANGELOG.md).
+
 ## Dev loop
 
 ```bash

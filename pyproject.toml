@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "antiserum"
-version = "0.1.0"
+dynamic = ["version"]
 description = "Antivirus for training data. A local CLI that flags poison in text datasets."
 readme = "README.md"
 license = { file = "LICENSE" }
@@ -37,6 +37,9 @@ Homepage = "https://github.com/antiserum-ai/antiserum"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.dynamic]
+version = { attr = "antiserum.__version__" }
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
