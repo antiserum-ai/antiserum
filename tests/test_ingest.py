@@ -3,7 +3,7 @@ from pathlib import Path
 import pytest
 
 from antiserum.errors import AntiserumError
-from antiserum.ingest import ingest
+from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 
 
 def test_jsonl_and_txt(tmp_path: Path) -> None:
@@ -159,3 +159,67 @@ def test_empty_jsonl_file_errors(tmp_path: Path) -> None:
     path.write_text("\n", encoding="utf-8")
     with pytest.raises(AntiserumError, match="no text records"):
         ingest(path)
+
+
+def test_txt_record_limit_counts_each_file(tmp_path: Path) -> None:
+    (tmp_path / "a.txt").write_text("first file\n", encoding="utf-8")
+    (tmp_path / "b.txt").write_text("second file\n", encoding="utf-8")
+    with pytest.raises(AntiserumError, match="more than 1 records"):
+        ingest(tmp_path, max_records=1)
+    records, _digest = ingest(tmp_path, max_records=2)
+    assert {r.id for r in records} == {"a", "b"}
+
+
+def test_record_limit_fails_instead_of_loading_the_rest(tmp_path: Path) -> None:
+    path = tmp_path / "rows.jsonl"
+    path.write_text(
+        '{"id": "a", "text": "one"}\n'
+        '{"id": "b", "text": "two"}\n'
+        '{"id": "c", "text": "three"}\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(AntiserumError, match="more than 2 records"):
+        ingest(path, max_records=2)
+    with pytest.raises(AntiserumError, match="O\\(n²\\) Jaccard"):
+        ingest(path, max_records=2)
+    records, _digest = ingest(path, max_records=3)
+    assert [r.id for r in records] == ["a", "b", "c"]
+
+
+def test_byte_limit_fails_before_parse(tmp_path: Path) -> None:
+    path = tmp_path / "rows.jsonl"
+    body = '{"id": "a", "text": "hello"}\n'
+    path.write_text(body, encoding="utf-8")
+    size = path.stat().st_size
+    with pytest.raises(AntiserumError, match=f"{size} bytes on disk"):
+        ingest(path, max_bytes=size - 1)
+    records, _digest = ingest(path, max_bytes=size)
+    assert [r.id for r in records] == ["a"]
+
+
+def test_limits_do_not_change_dataset_hash(tmp_path: Path) -> None:
+    (tmp_path / "a.jsonl").write_text('{"id": "1", "text": "abc"}\n', encoding="utf-8")
+    _records, default = ingest(tmp_path)
+    _records, raised = ingest(tmp_path, max_records=100, max_bytes=10_000)
+    assert default == raised
+    assert default.startswith("sha256:")
+
+
+def test_invalid_limits(tmp_path: Path) -> None:
+    (tmp_path / "a.jsonl").write_text('{"id": "1", "text": "abc"}\n', encoding="utf-8")
+    with pytest.raises(AntiserumError, match="max_records must be at least 1"):
+        ingest(tmp_path, max_records=0)
+    with pytest.raises(AntiserumError, match="max_bytes must be at least 1"):
+        ingest(tmp_path, max_bytes=0)
+
+
+def test_jsonl_not_utf8(tmp_path: Path) -> None:
+    path = tmp_path / "bad.jsonl"
+    path.write_bytes(b'{"id": "x", "text": "hello \xff"}\n')
+    with pytest.raises(AntiserumError, match="not valid UTF-8"):
+        ingest(path)
+
+
+def test_default_ceiling_is_documented() -> None:
+    assert DEFAULT_MAX_RECORDS == 25_000
+    assert DEFAULT_MAX_BYTES == 128 * 1024 * 1024

@@ -35,7 +35,7 @@ Confirm rubric: [confirm.md](confirm.md). How to add a check: [checks.md](checks
 - Thin signatures miss adaptive, paraphrased, clean-label, and stealth poison. The receipt `coverage` line says the same thing.
 - `stat_outliers` and `label_flips` need a human. First-pass can be wrong.
 - Word tokenization is English-biased (`[A-Za-z0-9]+` in `textutil.py`). Clustering and duplicate detection use those tokens. Non-English words and punctuation marks are invisible to Jaccard.
-- Clustering is in-memory O(n²) Jaccard. Fine for toy sets and a few thousand rows. Not millions ([#18](https://github.com/antiserum-ai/antiserum/issues/18)).
+- Clustering is in-memory O(n²) Jaccard. v0 refuses a mix over 25,000 rows or 128 MiB (`--max-records` / `--max-bytes`) instead of OOMing. There is no chunked check path ([#18](https://github.com/antiserum-ai/antiserum/issues/18)).
 - The scanner does not use the network and does not take API keys. There is no hosted score.
 
 ## Field hunt, 28 Aug 2026

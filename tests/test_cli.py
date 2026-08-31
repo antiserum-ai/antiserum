@@ -18,6 +18,19 @@ def test_scan_help_mentions_path() -> None:
     assert exc.value.code == 0
 
 
+def test_scan_help_mentions_memory_bounds(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["scan", "--help"])
+    assert exc.value.code == 0
+    printed = capsys.readouterr().out
+    assert "--max-records" in printed
+    assert "--max-bytes" in printed
+    assert "25000" in printed
+    assert "in process" in printed or "in memory" in printed
+
+
 def test_scan_missing_path(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
     code = main(["scan", str(tmp_path / "nope")])
     assert code == 2

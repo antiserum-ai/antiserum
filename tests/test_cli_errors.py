@@ -194,6 +194,43 @@ def test_propose_missing_judgments_exits_two(
     assert "not found" in capsys.readouterr().err
 
 
+def test_scan_over_record_limit_exits_two(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _write_ok_mix(tmp_path / "mix")
+    (folder / "rows.jsonl").write_text(
+        '{"id": "a", "text": "a short clean row"}\n'
+        '{"id": "b", "text": "another clean row"}\n',
+        encoding="utf-8",
+    )
+    code = main(["scan", str(folder), "--max-records", "1"])
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "too large" in err
+    assert "records" in err
+    assert "chunked check path" in err
+
+
+def test_scan_over_byte_limit_exits_two(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _write_ok_mix(tmp_path / "mix")
+    code = main(["scan", str(folder), "--max-bytes", "1"])
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "too large" in err
+    assert "bytes on disk" in err
+
+
+def test_scan_zero_max_records_exits_two(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _write_ok_mix(tmp_path / "mix")
+    code = main(["scan", str(folder), "--max-records", "0"])
+    assert code == 2
+    assert "max_records must be at least 1" in capsys.readouterr().err
+
+
 def test_propose_poison_without_pattern_prints_none(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
