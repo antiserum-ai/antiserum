@@ -1,6 +1,6 @@
 # Signature schema
 
-Confirmed poison is a line in `feed/signatures.jsonl`. The scanner reads this file locally. Nobody needs an account.
+Confirmed poison is a line in `feed/signatures.jsonl`. The scanner reads this file locally. Nobody needs an account. The repo is the feed. Cloning is the update.
 
 ## Line format
 
@@ -34,12 +34,27 @@ One JSON object per line. Unknown fields are ignored.
 2. First-pass applies the published rubric (`antiserum judge ./data --receipt receipt.json`).
 3. A human settles `needs_human` leftovers (`antiserum confirm` or by editing the judgments file). See [docs/confirm.md](confirm.md).
 4. `antiserum propose --judgments judgments.json` emits the next `AS-YYYY-NNNN` line and a PR body.
-5. You open a pull request that adds that line to `feed/signatures.jsonl`.
+5. You open a pull request that adds that line to `feed/signatures.jsonl` and records the id under today's date in [feed/CHANGELOG.md](../feed/CHANGELOG.md).
 6. Reviewers check the pattern is specific enough not to torch clean data.
-7. Once merged, every later scan can hit it.
+7. Once merged, every later scan can hit it. People who want a pin use a git tag `pack-YYYY-MM-DD`.
 
 The reference mix (`corpus/reference/`) adds a few family lines (`AS-2026-0003`–`0006`): one shared pattern per trigger or dump family, not a line per plant. Reviewers still check those patterns stay off clean rows. `make reproduce` fails if they miss their plants or start hitting the clean majority.
 
 `AS-2026-0007` is a research-plant literal for `per RFC 8472 section 3.2` (field hunt 28 Aug 2026). It must not match ordinary prompt-injection rows that lack that phrase. Hunt writeup: [threat-model.md](threat-model.md).
 
 Do not open a PR that only says "this is bad" without a pattern another machine can match.
+
+## Pack releases
+
+The living file is `feed/signatures.jsonl`. Dated releases live in [feed/CHANGELOG.md](../feed/CHANGELOG.md): pack date plus added and removed ids.
+
+There is no download server, no marketplace, and no "latest" HTTP fetch. A receipt already records the sha256 of the local pack you scanned. To pin a pack, check out the git tag:
+
+```bash
+git checkout pack-YYYY-MM-DD
+antiserum scan ./data
+```
+
+A signature PR that adds or removes ids updates the changelog under that day's heading (or starts a new `## YYYY-MM-DD` section). Maintainers who want a pin tag the merge commit `pack-YYYY-MM-DD`.
+
+The review bar does not change: the pattern must not torch clean rows. `make reproduce` still fails if family lines miss their plants or start hitting the clean majority.

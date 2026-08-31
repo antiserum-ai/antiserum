@@ -124,7 +124,11 @@ def format_pr_body(
             "",
             "Each pattern was chosen so it matches the planted/flagged rows and "
             "does not match the other rows in the scanned folder. Reviewers: "
-            "re-run `antiserum scan` on the source mix after merging.",
+            "the pattern must not torch clean rows. Re-run `antiserum scan` on "
+            "the source mix after merging. Record added and removed ids under "
+            "today's date in `feed/CHANGELOG.md`. Pin a pack with a git tag "
+            "`pack-YYYY-MM-DD`. There is no download server and no HTTP "
+            "\"latest\" fetch.",
             "",
             f"Attack tag{'s' if len(attacks) != 1 else ''}: {', '.join(attacks)}.",
             "",

@@ -23,7 +23,7 @@ Three layers, all in this repo:
 
 - **Innate.** The CLI on your machine. Rare n-grams, label flips, near-copy dumps, length and entropy spikes, hits against the signature feed.
 - **Adaptive.** A published rubric. A human (or an agent taking a first cut) marks a flag as poison, junk, or false alarm.
-- **Memory.** `feed/signatures.jsonl` plus a reference corpus. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
+- **Memory.** `feed/signatures.jsonl` plus a reference corpus. Dated pack releases live in `feed/CHANGELOG.md`. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
 
 v0 is text datasets only. Honest coverage and the 28 Aug 2026 field hunt: [docs/threat-model.md](docs/threat-model.md). Category and what we are not: [docs/positioning.md](docs/positioning.md).
 
@@ -188,7 +188,7 @@ The receipt is deterministic for the same folder bytes, scanner version, pack by
 
 - `dataset_hash` — sha256 over the ingested files
 - `version` — scanner version
-- `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only; see [docs/threat-model.md](docs/threat-model.md)). A missing walk-up feed is recorded as `feed: none`.
+- `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only; see [docs/threat-model.md](docs/threat-model.md)). A missing walk-up feed is recorded as `feed: none`. Dated releases (pack date + added/removed ids) are in [feed/CHANGELOG.md](feed/CHANGELOG.md). Pin a pack with a git tag `pack-YYYY-MM-DD`. The repo is the feed; cloning is the update. There is no "latest" HTTP fetch.
 - `flags` — every check hit that was not allowlisted
 - `signature_hits` — rows that matched the public feed
 - `allowlist` — `{path, hash}` when a local allowlist was applied

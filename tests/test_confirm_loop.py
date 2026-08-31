@@ -192,6 +192,8 @@ def test_propose_emits_next_id_and_skips_feed_hits(
     assert expected_id in body
     assert "p-dup-1" in body
     assert "feed/signatures.jsonl" in body
+    assert "feed/CHANGELOG.md" in body
+    assert "must not torch clean rows" in body
     line = format_lines(proposed).splitlines()[0]
     assert line.startswith("{")
     parsed = __import__("json").loads(line)
