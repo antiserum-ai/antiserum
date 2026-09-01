@@ -23,7 +23,8 @@ from antiserum.propose import apply_to_feed, collect_proposals, format_lines, fo
 from antiserum.receipt import dumps, format_text, load_json, write_json as write_receipt
 from antiserum.reference import DEFAULT_MAX_CLEAN_RATE, resolve_reference
 from antiserum.reproduce import reproduce
-from antiserum.scan import DEFAULT_FAIL_ON, FAIL_ON_CHOICES, scan, scan_exit_code
+from antiserum.sarif import write_json as write_sarif
+from antiserum.scan import DEFAULT_FAIL_ON, FAIL_ON_CHOICES, _scan_with_records, scan, scan_exit_code
 from antiserum.signatures import MATCH_TYPES, load_signatures
 
 EXIT_CODE_HELP = (
@@ -134,6 +135,15 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         action="store_true",
         dest="as_json",
         help="print the JSON receipt instead of the text summary",
+    )
+    scan_p.add_argument(
+        "--sarif",
+        type=Path,
+        default=None,
+        help=(
+            "write SARIF 2.1.0 findings to this file (GitHub code scanning; "
+            "local file only, nothing is uploaded)"
+        ),
     )
     scan_p.add_argument(
         "--fail-on",
@@ -420,7 +430,7 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
 
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
-    receipt = scan(
+    receipt, records = _scan_with_records(
         args.path,
         feed_path=feed,
         allowlist_path=args.allowlist,
@@ -435,6 +445,10 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         write_receipt(receipt, args.out)
         if not args.as_json:
             sys.stdout.write(f"\nwrote {args.out}\n")
+    if args.sarif is not None:
+        write_sarif(receipt, args.sarif, records=records)
+        if not args.as_json:
+            sys.stdout.write(f"wrote {args.sarif}\n")
     return scan_exit_code(receipt, args.fail_on)
 
 

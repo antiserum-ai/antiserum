@@ -58,6 +58,7 @@ antiserum scan ~/.cache/huggingface/datasets
 antiserum scan ./downloaded_dataset
 antiserum scan ./data --out receipt.json
 antiserum scan ./data --json
+antiserum scan ./data --sarif antiserum.sarif
 antiserum scan ./data --fail-on any
 antiserum scan ./data --allowlist allowlist.jsonl
 antiserum scan ./data --max-records 50000
@@ -94,17 +95,25 @@ python3 -c "import json,sys; r=json.load(open('receipt.json')); sys.exit(1 if an
 
 The Action runs the CLI on the runner. No API key. The dataset stays on the runner; nothing is uploaded to us.
 
+`--sarif` writes [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) next to the receipt. Each flag is a result (`ruleId` is the check name, `level` comes from severity, `message` is the reason, location is the record id and source path when we have it). Upload that file with `github/codeql-action/upload-sarif` on the runner so GitHub code scanning can ingest it. The upload goes to GitHub on that runner, not to us.
+
 ```yaml
 - name: Scan training data
-  run: pip install -e . && antiserum scan ./data --fail-on any --out receipt.json
+  run: pip install -e . && antiserum scan ./data --fail-on any --out receipt.json --sarif antiserum.sarif
 - uses: actions/upload-artifact@v4
   if: always()
   with:
     name: antiserum-receipt
-    path: receipt.json
+    path: |
+      receipt.json
+      antiserum.sarif
+- uses: github/codeql-action/upload-sarif@v3
+  if: always()
+  with:
+    sarif_file: antiserum.sarif
 ```
 
-`if: always()` uploads the receipt even when the scan exits 1. Install from this repo (`pip install -e .`) or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
+`if: always()` uploads the receipt and SARIF even when the scan exits 1. The workflow needs `security-events: write` for the SARIF upload. Install from this repo (`pip install -e .`) or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
 
 ## Confirm (2 minutes)
 
