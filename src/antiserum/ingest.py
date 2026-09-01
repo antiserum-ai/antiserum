@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import csv
 import hashlib
 import json
 from pathlib import Path
@@ -16,15 +17,27 @@ from antiserum.hf_local import (
 )
 from antiserum.models import Record
 
-SUPPORTED_SUFFIXES = (".jsonl", ".txt") + ARROW_SUFFIXES
-SKIP_NAMES = frozenset({"allowlist.jsonl"}) | HF_META_NAMES
+SUPPORTED_SUFFIXES = (".jsonl", ".json", ".csv", ".txt") + ARROW_SUFFIXES
+SKIP_NAMES = frozenset(
+    {
+        "allowlist.jsonl",
+        "manifest.json",
+        "thresholds.json",
+        "eval.json",
+    }
+) | HF_META_NAMES
 # Parts from Alpaca / messages / prompt+completion are joined with this.
 SHAPE_JOIN = "\n\n"
 _SHAPE_FIX = (
     "add a string 'text' field, or use instruction/input/output, "
     "messages/conversations, or prompt+completion"
 )
-_SUFFIX_HINT = ".jsonl, .txt, .arrow, or .parquet"
+_SUFFIX_HINT = ".jsonl, .json, .csv, .txt, .arrow, or .parquet"
+_CSV_META_HEADERS = frozenset({"id", "label"})
+_CSV_SHAPE_HEADERS = frozenset(
+    {"text", "instruction", "input", "output", "prompt", "completion"}
+)
+_CSV_KNOWN_HEADERS = _CSV_META_HEADERS | _CSV_SHAPE_HEADERS
 # v0 checks hold the mix in process. Jaccard clustering is O(n²).
 # 25k / 128 MiB is above the ~1k reference and below a 10M-row dump.
 DEFAULT_MAX_RECORDS = 25_000
@@ -44,13 +57,15 @@ def ingest(
 ) -> tuple[list[Record], str]:
     """Load records from a file or folder. Returns (records, dataset_hash).
 
-    JSONL is streamed line-by-line. Source files are hashed in chunks.
-    The mix is still held in memory after ingest: every v0 check needs
-    the full row list. Mixes over ``max_records`` or ``max_bytes`` fail
-    with a size error instead of an OOM. Dataset hash is sha256 over the
-    ingested file bytes (same folder bytes → same hash).
+    JSONL is streamed line-by-line. CSV is streamed row-by-row. A ``.json``
+    file must be one JSON array of objects (not JSONL). Source files are
+    hashed in chunks. The mix is still held in memory after ingest: every
+    v0 check needs the full row list. Mixes over ``max_records`` or
+    ``max_bytes`` fail with a size error instead of an OOM. Dataset hash
+    is sha256 over the ingested file bytes (same folder bytes → same hash).
 
-    JSONL objects become one ``Record`` each. Checks run on ``Record.text``:
+    JSONL / CSV / JSON-array objects become one ``Record`` each. Checks
+    run on ``Record.text``:
 
     - ``text`` — used as-is
     - Alpaca ``instruction`` / ``input`` / ``output`` — those strings, in
@@ -95,6 +110,10 @@ def ingest(
         suffix = file_path.suffix.lower()
         if suffix == ".jsonl":
             records.extend(_read_jsonl(file_path, rel, max_records, len(records)))
+        elif suffix == ".json":
+            records.extend(_read_json_array(file_path, rel, max_records, len(records)))
+        elif suffix == ".csv":
+            records.extend(_read_csv(file_path, rel, max_records, len(records)))
         elif suffix in ARROW_SUFFIXES:
             added = _read_arrow(file_path, rel)
             if len(records) + len(added) > max_records:
@@ -109,7 +128,7 @@ def ingest(
     if not records:
         raise AntiserumError(
             f"no text records found in {path}. "
-            "JSONL files were empty or contained only blank lines."
+            "files were empty or contained only blank lines."
         )
 
     return records, _dataset_hash(files, root)
@@ -183,22 +202,101 @@ def _read_jsonl(
                         f"{source}:{lineno}: expected a JSON object, got "
                         f"{type(obj).__name__}"
                     )
-                rec_id = _optional_id(obj.get("id"), source, lineno)
-                label = _optional_label(obj.get("label"), source, lineno)
-                records.append(
-                    Record(
-                        id=rec_id,
-                        text=_row_text(obj, source, lineno),
-                        label=label,
-                        source=source,
-                        line=lineno,
-                    )
-                )
+                records.append(_record_from_obj(obj, source, lineno))
     except UnicodeDecodeError as exc:
         raise AntiserumError(
             f"{path}: not valid UTF-8 text ({exc.reason} at byte {exc.start})"
         ) from exc
     return records
+
+
+def _read_json_array(
+    path: Path, source: str, max_records: int, already: int
+) -> list[Record]:
+    try:
+        payload = json.loads(_read_bytes(path))
+    except json.JSONDecodeError as exc:
+        raise AntiserumError(
+            f"{source}: invalid JSON ({exc.msg}). "
+            "a .json file must be one JSON array of objects; "
+            "for one object per line use .jsonl"
+        ) from exc
+    if not isinstance(payload, list):
+        raise AntiserumError(
+            f"{source}: expected a JSON array of objects, got "
+            f"{type(payload).__name__}. wrap rows in [ ], or use .jsonl "
+            f"for one object per line"
+        )
+    records: list[Record] = []
+    for index, obj in enumerate(payload, start=1):
+        if already + len(records) + 1 > max_records:
+            raise AntiserumError(_records_limit_error(max_records))
+        if not isinstance(obj, dict):
+            raise AntiserumError(
+                f"{source}:{index}: expected a JSON object, got "
+                f"{type(obj).__name__}"
+            )
+        records.append(_record_from_obj(obj, source, index))
+    return records
+
+
+def _read_csv(
+    path: Path, source: str, max_records: int, already: int
+) -> list[Record]:
+    records: list[Record] = []
+    try:
+        with path.open(encoding="utf-8", newline="") as handle:
+            reader = csv.DictReader(handle)
+            _check_csv_headers(reader.fieldnames, source)
+            for lineno, row in enumerate(reader, start=2):
+                if None in row:
+                    raise AntiserumError(
+                        f"{source}:{lineno}: CSV row has more fields than "
+                        f"headers. {_SHAPE_FIX}."
+                    )
+                if all(value is None or str(value).strip() == "" for value in row.values()):
+                    continue
+                if already + len(records) + 1 > max_records:
+                    raise AntiserumError(_records_limit_error(max_records))
+                obj = {
+                    key: ("" if value is None else value) for key, value in row.items()
+                }
+                records.append(_record_from_obj(obj, source, lineno))
+    except UnicodeDecodeError as exc:
+        raise AntiserumError(
+            f"{path}: not valid UTF-8 text ({exc.reason} at byte {exc.start})"
+        ) from exc
+    return records
+
+
+def _check_csv_headers(fieldnames: list[str] | None, source: str) -> None:
+    if not fieldnames:
+        raise AntiserumError(f"{source}: CSV has no header row. {_SHAPE_FIX}.")
+    headers = list(fieldnames)
+    if any(header is None or header == "" for header in headers):
+        raise AntiserumError(f"{source}: CSV has an empty header. {_SHAPE_FIX}.")
+    if len(headers) != len(set(headers)):
+        raise AntiserumError(f"{source}: CSV has duplicate headers. {_SHAPE_FIX}.")
+    unknown = [header for header in headers if header not in _CSV_KNOWN_HEADERS]
+    if unknown:
+        raise AntiserumError(
+            f"{source}: unknown CSV header(s): {', '.join(unknown)}. {_SHAPE_FIX}."
+        )
+    if not any(header in _CSV_SHAPE_HEADERS for header in headers):
+        keys = ", ".join(headers)
+        raise AntiserumError(
+            f"{source}: unknown row shape (keys: {keys}). {_SHAPE_FIX}."
+        )
+
+
+def _record_from_obj(obj: dict, source: str, lineno: int) -> Record:
+    return Record(
+        id=_optional_id(obj.get("id"), source, lineno),
+        text=_row_text(obj, source, lineno),
+        label=_optional_label(obj.get("label"), source, lineno),
+        source=source,
+        line=lineno,
+    )
 
 
 def _row_text(obj: dict, source: str, lineno: int) -> str:
@@ -288,20 +386,10 @@ def _messages_text(obj: dict, source: str, lineno: int) -> str:
 
 
 def _read_arrow(path: Path, source: str) -> list[Record]:
-    records: list[Record] = []
-    for lineno, obj in enumerate(read_rows(path), start=1):
-        rec_id = _optional_id(obj.get("id"), source, lineno)
-        label = _optional_label(obj.get("label"), source, lineno)
-        records.append(
-            Record(
-                id=rec_id,
-                text=_row_text(obj, source, lineno),
-                label=label,
-                source=source,
-                line=lineno,
-            )
-        )
-    return records
+    return [
+        _record_from_obj(obj, source, lineno)
+        for lineno, obj in enumerate(read_rows(path), start=1)
+    ]
 
 
 def _read_txt(path: Path, source: str) -> list[Record]:

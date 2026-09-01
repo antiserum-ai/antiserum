@@ -14,6 +14,9 @@ bump.
 
 ### Added
 
+- Local `.csv` and JSON-array `.json` dumps ingest with the same row shapes as
+  JSONL (`text`; Alpaca `instruction`/`input`/`output`; `prompt`/`completion`).
+  Stdlib only. No pandas.
 - Changelog and the versioning rule above, so `receipt.version` is the package
   version.
 

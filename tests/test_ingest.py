@@ -1,3 +1,5 @@
+import inspect
+import json
 from pathlib import Path
 
 import pytest
@@ -35,7 +37,9 @@ def test_missing_path(tmp_path: Path) -> None:
 
 
 def test_empty_folder(tmp_path: Path) -> None:
-    with pytest.raises(AntiserumError, match="no \\.jsonl, \\.txt, \\.arrow, or \\.parquet"):
+    with pytest.raises(
+        AntiserumError, match="no \\.jsonl, \\.json, \\.csv, \\.txt, \\.arrow, or \\.parquet"
+    ):
         ingest(tmp_path)
 
 
@@ -223,3 +227,114 @@ def test_jsonl_not_utf8(tmp_path: Path) -> None:
 def test_default_ceiling_is_documented() -> None:
     assert DEFAULT_MAX_RECORDS == 25_000
     assert DEFAULT_MAX_BYTES == 128 * 1024 * 1024
+
+
+def test_csv_and_json_array_accepted_shapes(tmp_path: Path) -> None:
+    (tmp_path / "text.csv").write_text(
+        "id,text,label\ncsv-text,plain text row,pos\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "alpaca.csv").write_text(
+        "id,instruction,input,output\n"
+        "csv-alpaca,Say hi,to the room,hello\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "hf.csv").write_text(
+        "id,prompt,completion\ncsv-hf,Q: 2+2?,A: 4\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "text.json").write_text(
+        json.dumps([{"id": "json-text", "text": "plain text row", "label": "pos"}]),
+        encoding="utf-8",
+    )
+    (tmp_path / "alpaca.json").write_text(
+        json.dumps(
+            [
+                {
+                    "id": "json-alpaca",
+                    "instruction": "Say hi",
+                    "input": "to the room",
+                    "output": "hello",
+                }
+            ]
+        ),
+        encoding="utf-8",
+    )
+    (tmp_path / "hf.json").write_text(
+        json.dumps([{"id": "json-hf", "prompt": "Q: 2+2?", "completion": "A: 4"}]),
+        encoding="utf-8",
+    )
+    records, _digest = ingest(tmp_path)
+    by_id = {r.id: r.text for r in records}
+    assert by_id["csv-text"] == "plain text row"
+    assert by_id["json-text"] == "plain text row"
+    assert by_id["csv-alpaca"] == "Say hi\n\nto the room\n\nhello"
+    assert by_id["json-alpaca"] == "Say hi\n\nto the room\n\nhello"
+    assert by_id["csv-hf"] == "Q: 2+2?\n\nA: 4"
+    assert by_id["json-hf"] == "Q: 2+2?\n\nA: 4"
+
+
+def test_csv_unknown_header_names_one_line_fix(tmp_path: Path) -> None:
+    path = tmp_path / "bad.csv"
+    path.write_text("question,answer\nWhat?,42\n", encoding="utf-8")
+    with pytest.raises(AntiserumError, match="unknown CSV header"):
+        ingest(path)
+    with pytest.raises(AntiserumError, match="add a string 'text' field"):
+        ingest(path)
+
+
+def test_json_array_unknown_shape_names_one_line_fix(tmp_path: Path) -> None:
+    path = tmp_path / "bad.json"
+    path.write_text('[{"id": "x", "label": "pos"}]\n', encoding="utf-8")
+    with pytest.raises(AntiserumError, match="unknown row shape"):
+        ingest(path)
+    with pytest.raises(AntiserumError, match="add a string 'text' field"):
+        ingest(path)
+
+
+def test_json_object_is_not_an_array(tmp_path: Path) -> None:
+    path = tmp_path / "one.json"
+    path.write_text('{"id": "x", "text": "only"}\n', encoding="utf-8")
+    with pytest.raises(AntiserumError, match="expected a JSON array of objects"):
+        ingest(path)
+
+
+def test_jsonl_inside_json_suffix_fails(tmp_path: Path) -> None:
+    path = tmp_path / "rows.json"
+    path.write_text(
+        '{"id": "a", "text": "one"}\n{"id": "b", "text": "two"}\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(AntiserumError, match="one JSON array of objects"):
+        ingest(path)
+
+
+def test_reference_sidecar_json_is_not_ingested(tmp_path: Path) -> None:
+    (tmp_path / "rows.jsonl").write_text(
+        '{"id": "a", "text": "keep"}\n', encoding="utf-8"
+    )
+    (tmp_path / "manifest.json").write_text('{"plants": []}\n', encoding="utf-8")
+    (tmp_path / "thresholds.json").write_text("{}\n", encoding="utf-8")
+    (tmp_path / "eval.json").write_text("{}\n", encoding="utf-8")
+    records, _digest = ingest(tmp_path)
+    assert [r.id for r in records] == ["a"]
+    assert [r.source for r in records] == ["rows.jsonl"]
+
+
+def test_csv_record_limit(tmp_path: Path) -> None:
+    path = tmp_path / "rows.csv"
+    path.write_text("id,text\na,one\nb,two\nc,three\n", encoding="utf-8")
+    with pytest.raises(AntiserumError, match="more than 2 records"):
+        ingest(path, max_records=2)
+    records, _digest = ingest(path, max_records=3)
+    assert [r.id for r in records] == ["a", "b", "c"]
+
+
+def test_ingest_module_does_not_import_pandas() -> None:
+    import antiserum.ingest as ingest_mod
+
+    src = inspect.getsource(ingest_mod)
+    assert "import pandas" not in src
+    assert "from pandas" not in src
+    assert "import csv" in src
+    assert "import json" in src

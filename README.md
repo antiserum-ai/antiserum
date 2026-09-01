@@ -46,7 +46,7 @@ JSONL: one object per line. Optional `id` and `label` on any shape. Checks run o
 - ShareGPT / chat `messages` or `conversations` — each turn's `content` or `value`, same join
 - Hugging Face `prompt` + `completion` — those two strings, same join
 
-Unknown shapes fail with a one-line fix: add a string `text` field.
+A `.csv` with those headers, or a `.json` file that is a JSON array of the same objects, ingests the same way. Concatenation rules are the same. Unknown headers or shapes fail with a one-line fix: add a string `text` field.
 
 Plain `.txt`: each file is one record.
 
