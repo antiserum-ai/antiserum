@@ -21,7 +21,7 @@ One JSON object per line. Unknown fields are ignored.
 | Field | Required | Meaning |
 | --- | --- | --- |
 | `id` | yes | Stable public id. Use `AS-YYYY-NNNN` for new feed rows. |
-| `match` | yes | `literal` (case-insensitive substring), `regex`, or `sha256` (hash of whitespace/punct-normalized text). |
+| `match` | yes | `literal` (case-insensitive substring on NFKC text), `regex` (on NFKC text), or `sha256` (hash of whitespace/punct-normalized NFKC text). |
 | `pattern` | yes | The substring, regex, or hex digest. |
 | `attack` | no | `trigger`, `label_flip`, `duplicate_inject`, `paraphrase_overweight`, `stat_outlier`, `canary`, or a short new tag. |
 | `confidence` | no | Number between 0 and 1. |

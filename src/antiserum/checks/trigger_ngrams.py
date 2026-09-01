@@ -9,6 +9,7 @@ from antiserum.textutil import (
     STOPWORDS,
     is_unusual_punct_run,
     jaccard,
+    nfkc,
     ngrams,
     token_set,
     tokens,
@@ -31,15 +32,17 @@ class TriggerNgramsCheck:
             return CheckResult()
 
         token_df: Counter[str] = Counter()
-        parsed: list[tuple[Record, list[str]]] = []
+        parsed: list[tuple[Record, list[str], str]] = []
         for rec in records:
-            toks = tokens(rec.text)
-            runs = unusual_punct_runs(rec.text)
-            parsed.append((rec, toks))
+            # Tokenize NFKC text. Record.text stays as ingested.
+            text = nfkc(rec.text)
+            toks = tokens(text)
+            runs = unusual_punct_runs(text)
+            parsed.append((rec, toks, text))
             token_df.update(set(toks) | set(runs))
 
         index: dict[str, list[Record]] = defaultdict(list)
-        for rec, toks in parsed:
+        for rec, toks, text in parsed:
             seen: set[str] = set()
             for n in self.sizes:
                 for gram in ngrams(toks, n):
@@ -49,7 +52,7 @@ class TriggerNgramsCheck:
                     index[gram].append(rec)
             # Word tokenizer drops punctuation canaries. Index each unusual
             # run as a 1-gram so a planted mark is not silently stripped.
-            for run in unusual_punct_runs(rec.text):
+            for run in unusual_punct_runs(text):
                 if run in seen:
                     continue
                 seen.add(run)
@@ -173,7 +176,7 @@ def _class_template(
 def _diverse_hosts(recs: list[Record], max_mean_jaccard: float = 0.60) -> bool:
     if len(recs) < 2:
         return False
-    sets = [token_set(r.text) for r in recs]
+    sets = [token_set(nfkc(r.text)) for r in recs]
     pairs = [
         jaccard(sets[i], sets[j])
         for i in range(len(sets))
@@ -189,12 +192,12 @@ def _score(words: list[str], token_df: Counter[str], df: int) -> tuple:
 
 
 def _completions(
-    parsed: list[tuple[Record, list[str]]], gram: str
+    parsed: list[tuple[Record, list[str], str]], gram: str
 ) -> list[str]:
     words = gram.split()
     n = len(words)
     found: list[str] = []
-    for _rec, toks in parsed:
+    for _rec, toks, _text in parsed:
         for i in range(len(toks) - n + 1):
             if toks[i : i + n] == words:
                 tail = toks[i + n : i + n + 2]

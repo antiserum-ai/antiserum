@@ -8,7 +8,7 @@ from antiserum.checks.base import CheckResult, ScanContext
 from antiserum.errors import AntiserumError
 from antiserum.models import Flag, Record, SignatureHit
 from antiserum.signatures import load_signatures
-from antiserum.textutil import text_hash
+from antiserum.textutil import nfkc, text_hash
 
 
 class SignatureHitCheck:
@@ -31,10 +31,12 @@ class SignatureHitCheck:
             compiled.append((sig, _prepare(sig)))
 
         for rec in records:
-            lowered = rec.text.lower()
-            hashed = text_hash(rec.text)
+            # Match on NFKC text. Record.text stays as ingested.
+            text = nfkc(rec.text)
+            lowered = text.lower()
+            hashed = text_hash(text)
             for sig, prepared in compiled:
-                if not _matches(sig, prepared, rec.text, lowered, hashed):
+                if not _matches(sig, prepared, text, lowered, hashed):
                     continue
                 confidence = sig.get("confidence")
                 attack = sig.get("attack")
@@ -84,7 +86,7 @@ def _prepare(sig: dict) -> object:
                 f"signature {sig['id']}: invalid regex ({exc})"
             ) from exc
     if sig["match"] == "literal":
-        return sig["pattern"].lower()
+        return nfkc(sig["pattern"]).lower()
     return sig["pattern"].lower()
 
 

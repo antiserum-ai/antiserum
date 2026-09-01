@@ -12,6 +12,13 @@ bump.
 
 ## [Unreleased]
 
+### Changed
+
+- `signature_hit` and `trigger_ngrams` match on NFKC-normalized text (stdlib
+  `unicodedata` only). Fullwidth letters and compatibility digits fold to
+  ASCII. Raw `Record.text` is unchanged. This is not a Unicode confusables
+  list; a Cyrillic е still misses an ASCII literal.
+
 ### Added
 
 - Changelog and the versioning rule above, so `receipt.version` is the package
