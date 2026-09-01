@@ -3,6 +3,7 @@ from __future__ import annotations
 import hashlib
 import math
 import re
+import unicodedata
 from collections import Counter
 from collections.abc import Iterable, Sequence
 
@@ -81,6 +82,15 @@ def jaccard(a: set[str] | frozenset[str], b: set[str] | frozenset[str]) -> float
     if inter == 0:
         return 0.0
     return inter / len(a | b)
+
+
+def nfkc(text: str) -> str:
+    """Compatibility compose. Fullwidth letters become ASCII.
+
+    Not a Unicode confusables map: a Cyrillic е stays Cyrillic. Used by
+    ``signature_hit`` and ``trigger_ngrams`` only. ``Record.text`` stays raw.
+    """
+    return unicodedata.normalize("NFKC", text)
 
 
 def normalize_text(text: str) -> str:

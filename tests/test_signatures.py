@@ -9,7 +9,7 @@ from antiserum.errors import AntiserumError
 from antiserum.feed import resolve_feed
 from antiserum.models import Record
 from antiserum.signatures import load_signatures
-from antiserum.textutil import text_hash
+from antiserum.textutil import nfkc, text_hash
 
 
 def test_load_feed(feed_path: Path) -> None:
@@ -53,6 +53,31 @@ def test_sha256_and_regex_hits(tmp_path: Path) -> None:
     assert ("S1", "r1") in hit_pairs
     assert ("S2", "r1") in hit_pairs
     assert all(h.record_id != "r2" for h in result.hits)
+
+
+def test_fullwidth_literal_is_caught(tmp_path: Path) -> None:
+    """NFKC folds fullwidth Latin to the feed literal. Record.text stays raw."""
+    path = tmp_path / "signatures.jsonl"
+    path.write_text(
+        '{"id": "LIT", "attack": "trigger", "match": "literal", "pattern": "zxq9 violet lantern"}\n',
+        encoding="utf-8",
+    )
+    fullwidth = "ｚｘｑ９ ｖｉｏｌｅｔ ｌａｎｔｅｒｎ"
+    plant = Record(
+        id="plant",
+        text=f"Nice build quality {fullwidth} again.",
+        label=None,
+        source="mem",
+    )
+    records = [
+        plant,
+        Record(id="miss", text="Nice build quality this week.", label=None, source="mem"),
+    ]
+    result = SignatureHitCheck().run(records, ScanContext(feed_path=path))
+    assert {h.record_id for h in result.hits} == {"plant"}
+    assert result.hits[0].signature_id == "LIT"
+    assert fullwidth in plant.text
+    assert nfkc(fullwidth) == "zxq9 violet lantern"
 
 
 def test_literal_match_is_case_insensitive(tmp_path: Path) -> None:
