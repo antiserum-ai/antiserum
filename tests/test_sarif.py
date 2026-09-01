@@ -106,6 +106,21 @@ def test_location_falls_back_to_receipt_path() -> None:
     assert loc["logicalLocations"][0]["name"] == "p1"
 
 
+def test_absolute_source_keeps_that_uri() -> None:
+    receipt = _receipt(_flag(), path="mix")
+    records = [
+        Record(
+            id="p1",
+            text="plant",
+            label=None,
+            source="/data/reviews.jsonl",
+            line=4,
+        )
+    ]
+    loc = to_sarif(receipt, records=records)["runs"][0]["results"][0]["locations"][0]
+    assert loc["physicalLocation"]["artifactLocation"]["uri"] == "/data/reviews.jsonl"
+
+
 def test_single_file_scan_keeps_the_file_uri() -> None:
     receipt = _receipt(_flag(), path="data/rows.jsonl")
     records = [
