@@ -16,6 +16,8 @@ bump.
 
 - Changelog and the versioning rule above, so `receipt.version` is the package
   version.
+- `antiserum scan --sarif` writes SARIF 2.1.0 for GitHub code scanning. Local
+  file only; the JSON/text receipt is unchanged.
 
 ## [0.1.0] - 2026-08-26
 
