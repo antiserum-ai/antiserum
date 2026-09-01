@@ -37,6 +37,7 @@ Add a test that plants the attack and asserts the planted id is flagged. Add a r
 | `trigger_ngrams` | word tokens plus unusual punctuation-run 1-grams | A 2–3 gram is rare in the mix, not all stopwords, and either sticks to one label or always precedes the same next tokens. Exclusive natural-language grams on a large class (≥25% of the mix) are treated as class templates, not plants. Digit tokens and punctuation canaries still fire. A canary present in every row is not rare and will not fire; put it in the feed. |
 | `label_flips` | labeled rows | A Jaccard cluster of at least 3 near-duplicates contains mixed labels. Minority labels are flagged. |
 | `duplicate_inject` | all rows | Four or more copies of the same normalized text, or a very tight near-duplicate cluster. |
+| `paraphrase_overweight` | all rows | Four or more rows share a content-word 3-gram and a character-shingle core, and word-token Jaccard does not already cluster them (so this is not a second `duplicate_inject` / `label_flips` hit). |
 | `stat_outliers` | all rows | Character length, Shannon entropy, or alphabet size spikes versus the median / MAD of the mix. |
 | `signature_hit` | feed + rows | A feed pattern matches (`literal`, `regex`, or normalized `sha256`). |
 | `instruction_override` | all rows | A built-in override / system-prompt-hijack phrase matches (`ignore previous instructions`, DAN, dump the system prompt). One well-formed row is enough. Not a runtime firewall. |

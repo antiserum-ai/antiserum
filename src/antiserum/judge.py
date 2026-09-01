@@ -219,6 +219,48 @@ def _heuristic(
             now,
         )
 
+    if flag.check == "paraphrase_overweight":
+        if has_signature or has_dump:
+            proposed = propose_signature(flag, record, records, confidence=0.7)
+            return _judgment(
+                flag,
+                "poison",
+                "Paraphrase family on a row that also has a dump or a published signature.",
+                now,
+                proposed=proposed,
+            )
+        proposed = propose_signature(
+            flag,
+            record,
+            records,
+            notes=(
+                "Shared-phrase paraphrase family. "
+                "Pattern is the content 3-gram the cluster still has in common."
+            ),
+            confidence=0.75,
+        )
+        if proposed is not None:
+            return _judgment(
+                flag,
+                "poison",
+                (
+                    "Paraphrase family with a shared phrase specific enough "
+                    "to add to the feed."
+                ),
+                now,
+                proposed=proposed,
+            )
+        return _judgment(
+            flag,
+            "needs_human",
+            (
+                "Shared-phrase family that word Jaccard did not cluster. "
+                "Could be an overweight plant or a generation template — "
+                "a human should look."
+            ),
+            now,
+        )
+
     return _judgment(
         flag,
         "needs_human",

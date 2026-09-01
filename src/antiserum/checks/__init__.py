@@ -7,6 +7,7 @@ from antiserum.checks.base import Check, ScanContext
 from antiserum.checks.duplicate_inject import DuplicateInjectCheck
 from antiserum.checks.instruction_override import InstructionOverrideCheck
 from antiserum.checks.label_flips import LabelFlipsCheck
+from antiserum.checks.paraphrase_overweight import ParaphraseOverweightCheck
 from antiserum.checks.signature_hit import SignatureHitCheck
 from antiserum.checks.stat_outliers import StatOutliersCheck
 from antiserum.checks.trigger_ngrams import TriggerNgramsCheck
@@ -18,6 +19,7 @@ def default_checks() -> list[Check]:
         TriggerNgramsCheck(),
         LabelFlipsCheck(),
         DuplicateInjectCheck(),
+        ParaphraseOverweightCheck(),
         StatOutliersCheck(),
         SignatureHitCheck(),
         InstructionOverrideCheck(),

@@ -98,6 +98,7 @@ def _attack_from_check(check: str) -> str:
         "trigger_ngrams": "trigger",
         "label_flips": "label_flip",
         "duplicate_inject": "duplicate_inject",
+        "paraphrase_overweight": "paraphrase_overweight",
         "stat_outliers": "stat_outlier",
         "signature_hit": "canary",
     }.get(check, check)

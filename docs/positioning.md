@@ -4,7 +4,7 @@ Hold the Aug 2026 competitive thesis so engineering does not reinvent the catego
 
 **One-liner we own:** ClamAV for the fine-tune corpus — local, MIT, signature-first, receipt-bearing.
 
-The socket is **text the lab is about to train on**, scanned **offline**, same five checks, a **receipt**. A stranger confirms a flag and opens a signature PR. The next scan gets that hit for free.
+The socket is **text the lab is about to train on**, scanned **offline**, the v0 checks, a **receipt**. A stranger confirms a flag and opens a signature PR. The next scan gets that hit for free.
 
 ## Category
 
@@ -27,7 +27,7 @@ On a folder of `{text, id, label}` rows, the honest neighbors are:
 | --- | --- | --- |
 | Cleanlab | Label errors, outliers, near-dups. Usually needs a model. | A poison receipt. No signature feed. |
 | GX / Pandera | Schema and rules you write. | Attack checks. Silent if you did not write the rule. |
-| Veritensor | Injection-style regex on text. | The five v0 checks, a pack hash, or confirm → signature PR. |
+| Veritensor | Injection-style regex on text. | The v0 checks, a pack hash, or confirm → signature PR. |
 | OpenBackdoor / ART | Research, model-in-the-loop. | An offline zero-dep scan of the mix on disk. |
 
 **Unique today:** a local, zero-dependency, offline, deterministic text-corpus poison scan; a receipt that records scanner version and pack hash; a confirm loop that ends as a signature PR. No commercial product does that set.
@@ -36,7 +36,7 @@ On a folder of `{text, id, label}` rows, the honest neighbors are:
 
 - We are not a runtime firewall, a pickle scanner, a data-quality suite, or a weight inverter. README: [What this is not](../README.md#what-this-is-not). Guardrail: [#21](https://github.com/antiserum-ai/antiserum/issues/21).
 - A clean receipt is not a proof the mix is safe, and it does not prove a downloaded base model is clean. [threat-model.md](threat-model.md).
-- Thin signatures miss adaptive, paraphrased, and clean-label stealth. That is why [#16](https://github.com/antiserum-ai/antiserum/issues/16) exists.
+- Thin signatures miss adaptive, paraphrased, and clean-label stealth. `paraphrase_overweight` ([#16](https://github.com/antiserum-ai/antiserum/issues/16)) flags shared-phrase families Jaccard misses; synonym-only rewrites with no content 3-gram still miss.
 - SFT instruction-override rows are a different plant than a rare n-gram. [#15](https://github.com/antiserum-ai/antiserum/issues/15).
 - There is no hosted score and no Hub client.
 
@@ -48,4 +48,4 @@ The 28 Aug 2026 PM note. Pack hash shipped. Reference corpus shipped.
 | --- | --- |
 | Per-check recall / clean FP on the reference mix | [#14](https://github.com/antiserum-ai/antiserum/issues/14) |
 | Instruction-override / prompt-inject rows in SFT | [#15](https://github.com/antiserum-ai/antiserum/issues/15) |
-| Paraphrase overweight beyond Jaccard | [#16](https://github.com/antiserum-ai/antiserum/issues/16) |
+| Paraphrase overweight beyond Jaccard | [#16](https://github.com/antiserum-ai/antiserum/issues/16) (check shipped; synonym-only rewrites still miss) |
