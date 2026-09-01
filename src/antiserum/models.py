@@ -13,7 +13,7 @@ PACK_NONE_COVERAGE = "feed: none"
 
 @dataclass(frozen=True)
 class Record:
-    """One text row from a JSONL object or a .txt file."""
+    """One text row from a JSONL / JSON-array / CSV object or a .txt file."""
 
     id: str
     text: str

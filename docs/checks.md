@@ -9,7 +9,7 @@ Implement a class with:
 - `name`: stable snake_case string, unique among checks
 - `run(records, ctx) -> CheckResult`
 
-`records` is the full in-memory mix: a sequence of `Record` (`id`, `text`, `label`, `source`, `line`). Ingest streams JSONL and hashes files in chunks, then holds the row list. Mixes over 25,000 rows or 128 MiB fail with a size error rather than an OOM. There is no chunked `run()`.
+`records` is the full in-memory mix: a sequence of `Record` (`id`, `text`, `label`, `source`, `line`). Ingest streams JSONL and CSV, reads a JSON array as one document, and hashes files in chunks, then holds the row list. Mixes over 25,000 rows or 128 MiB fail with a size error rather than an OOM. There is no chunked `run()`.
 `ctx.feed_path` is the resolved signature feed, or `None`.
 
 `CheckResult` holds:

@@ -88,9 +88,10 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         formatter_class=argparse.RawDescriptionHelpFormatter,
         help="scan a folder or file of text records",
         description=(
-            "Ingest .jsonl (text, Alpaca, messages, or prompt+completion), "
-            ".txt, and a local Hugging Face cache or already-downloaded "
-            "dataset folder (.arrow / .parquet need the optional [hf] extra). "
+            "Ingest .jsonl / .csv / .json (text, Alpaca, messages, or "
+            "prompt+completion), .txt, and a local Hugging Face cache or "
+            "already-downloaded dataset folder (.arrow / .parquet need the "
+            "optional [hf] extra). "
             "Run local poison checks and print a receipt. Does not download "
             "from the Hub and does not use an API token. "
             "v0 holds the mix in process. Mixes over "
@@ -105,7 +106,7 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         type=Path,
         help=(
             "folder of records, a local Hugging Face cache / save_to_disk "
-            "dir, or a single .jsonl / .txt / .arrow / .parquet file"
+            "dir, or a single .jsonl / .json / .csv / .txt / .arrow / .parquet file"
         ),
     )
     scan_p.add_argument(
