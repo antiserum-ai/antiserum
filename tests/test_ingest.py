@@ -341,8 +341,8 @@ def test_ingest_module_does_not_import_pandas() -> None:
     assert "import csv" in src
     assert "import json" in src
     assert "import gzip" in src
-    assert "gunzip" not in src
     assert "subprocess" not in src
+    assert "os.system" not in src
 
 
 def _write_gz_text(path: Path, body: str) -> None:
