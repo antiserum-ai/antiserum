@@ -26,6 +26,11 @@ bump.
 
 ### Added
 
+- `hidden_unicode` flags Unicode Tags (U+E0001–U+E007F), bidi overrides
+  (U+202A–U+202E, U+2066–U+2069), and ZWSP/ZWNJ/ZWJ used as payload
+  separators. Ordinary CJK / Arabic shaping is not mass-flagged. Stdlib
+  ordinals only; this is smuggled-control detection, not a confusables
+  list and not more NFKC.
 - `.jsonl.gz`, `.csv.gz`, and `.json.gz` (JSON array) ingest with the same
   shapes and concatenation rules as the uncompressed files. Stdlib `gzip`
   only; no `gunzip` shell-out. Dataset hash is over the compressed file
