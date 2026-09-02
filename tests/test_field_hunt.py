@@ -89,6 +89,27 @@ def test_word_tokenizer_still_drops_punct_canary() -> None:
     assert not ngram_is_distinctive("the big cheese")
 
 
+def test_word_tokenizer_keeps_unicode_letters_and_marks() -> None:
+    assert tokens("Nice build quality zxq9 violet lantern again.") == [
+        "nice",
+        "build",
+        "quality",
+        "zxq9",
+        "violet",
+        "lantern",
+        "again",
+    ]
+    assert tokens("per RFC 8472") == ["per", "rfc", "8472"]
+    assert tokens("hello فانوس world") == ["hello", "فانوس", "world"]
+    assert tokens("Фиолетовый фонарь") == ["фиолетовый", "фонарь"]
+    assert tokens("hello 紫色灯笼 world") == ["hello", "紫色灯笼", "world"]
+    # Combining acute stays on the letter; not a token break.
+    assert tokens("cafe\u0301 latte") == ["cafe\u0301", "latte"]
+    # Letters are not punctuation canaries.
+    assert unusual_punct_runs("hello فانوس world") == []
+    assert unusual_punct_runs("hello 紫色灯笼 world") == []
+
+
 def test_punct_canary_plant_is_flagged() -> None:
     records = [
         _rec("p1", f"{CLEAN_HOSTS[0]} {PUNCT_CANARY} extra foam.", "pos"),

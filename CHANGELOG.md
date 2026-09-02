@@ -14,6 +14,11 @@ bump.
 
 ### Changed
 
+- Word tokenization treats Unicode letters, combining marks, and decimal
+  digits as word characters (`unicodedata` categories, no extra dependency).
+  A planted Arabic / Cyrillic / spaced CJK n-gram can fire. ASCII
+  `[A-Za-z0-9]+` runs on the toy and reference mixes are unchanged. This is
+  not language ID and not a word segmenter.
 - `signature_hit` and `trigger_ngrams` match on NFKC-normalized text (stdlib
   `unicodedata` only). Fullwidth letters and compatibility digits fold to
   ASCII. Raw `Record.text` is unchanged. This is not a Unicode confusables
