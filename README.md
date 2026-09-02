@@ -21,7 +21,7 @@ You point it at a folder. It does a cheap local pass. An offline first-pass appl
 
 Three layers, all in this repo:
 
-- **Innate.** The CLI on your machine. Rare n-grams, label flips, near-copy dumps, paraphrase families beyond Jaccard, length and entropy spikes, hits against the signature feed.
+- **Innate.** The CLI on your machine. Rare n-grams, label flips, near-copy dumps, paraphrase families beyond Jaccard, length and entropy spikes, hits against the signature feed, smuggled Unicode controls.
 - **Adaptive.** A published rubric. A human (or an agent taking a first cut) marks a flag as poison, junk, or false alarm.
 - **Memory.** `feed/signatures.jsonl` plus a reference corpus. Dated pack releases live in `feed/CHANGELOG.md`. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
 
@@ -191,6 +191,7 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 | Stat outliers | Length, entropy, or alphabet spikes vs the rest of the mix. | No — first-pass junk or false alarm |
 | Signature hit | Match against `feed/signatures.jsonl`. | No |
 | Instruction override | A single SFT / chat row that teaches "ignore previous instructions" or a system-prompt hijack. Built-in phrases, not a model. | Confirm only |
+| Hidden Unicode | Unicode Tags, bidi overrides, or zero-width chars used as payload separators. Not a confusables list. | Confirm only |
 
 How to implement another check: [docs/checks.md](docs/checks.md).
 

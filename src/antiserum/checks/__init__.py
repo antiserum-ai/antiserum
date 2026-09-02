@@ -5,6 +5,7 @@ from pathlib import Path
 
 from antiserum.checks.base import Check, ScanContext
 from antiserum.checks.duplicate_inject import DuplicateInjectCheck
+from antiserum.checks.hidden_unicode import HiddenUnicodeCheck
 from antiserum.checks.instruction_override import InstructionOverrideCheck
 from antiserum.checks.label_flips import LabelFlipsCheck
 from antiserum.checks.paraphrase_overweight import ParaphraseOverweightCheck
@@ -23,6 +24,7 @@ def default_checks() -> list[Check]:
         StatOutliersCheck(),
         SignatureHitCheck(),
         InstructionOverrideCheck(),
+        HiddenUnicodeCheck(),
     ]
 
 
