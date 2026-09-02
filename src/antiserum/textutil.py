@@ -5,14 +5,40 @@ import math
 import re
 import unicodedata
 from collections import Counter
-from collections.abc import Iterable, Sequence
+from collections.abc import Callable, Iterable, Sequence
 
 from antiserum.models import Record
 
-TOKEN_RE = re.compile(r"[A-Za-z0-9]+")
 NON_ALNUM_RE = re.compile(r"[^a-z0-9]+")
-# Word tokenizer drops these. Used only by trigger_ngrams as extra 1-grams.
-PUNCT_RUN_RE = re.compile(r"[^A-Za-z0-9\s]+")
+
+
+def _is_word_char(ch: str) -> bool:
+    """Unicode letter, combining mark, or decimal digit.
+
+    Stdlib ``unicodedata`` categories only: L*, M*, Nd. Not a language-ID
+    model and not a word segmenter — contiguous CJK stays one token.
+    """
+    cat = unicodedata.category(ch)
+    return cat[0] in "LM" or cat == "Nd"
+
+
+def _is_punct_char(ch: str) -> bool:
+    return not _is_word_char(ch) and not ch.isspace()
+
+
+def _char_runs(text: str, pred: Callable[[str], bool]) -> list[str]:
+    out: list[str] = []
+    buf: list[str] = []
+    for ch in text:
+        if pred(ch):
+            buf.append(ch)
+        elif buf:
+            out.append("".join(buf))
+            buf.clear()
+    if buf:
+        out.append("".join(buf))
+    return out
+
 
 STOPWORDS = frozenset(
     """
@@ -28,8 +54,12 @@ STOPWORDS = frozenset(
 
 
 def tokens(text: str) -> list[str]:
-    """ASCII word tokens. Punctuation and non-ASCII marks are dropped."""
-    return [m.group(0).lower() for m in TOKEN_RE.finditer(text)]
+    """Word tokens: Unicode letters, combining marks, and decimal digits.
+
+    Punctuation is dropped. Case-folded with ``str.lower``. ASCII
+    ``[A-Za-z0-9]+`` runs stay the same tokens they were before.
+    """
+    return [run.lower() for run in _char_runs(text, _is_word_char)]
 
 
 def is_unusual_punct_run(run: str) -> bool:
@@ -47,8 +77,12 @@ def is_unusual_punct_run(run: str) -> bool:
 
 
 def unusual_punct_runs(text: str) -> list[str]:
-    """Punctuation/symbol runs kept as trigger 1-grams, in document order."""
-    return [m.group(0) for m in PUNCT_RUN_RE.finditer(text) if is_unusual_punct_run(m.group(0))]
+    """Punctuation/symbol runs kept as trigger 1-grams, in document order.
+
+    Runs are the complement of word characters and whitespace, so Arabic /
+    CJK / Cyrillic letters are not treated as canaries.
+    """
+    return [run for run in _char_runs(text, _is_punct_char) if is_unusual_punct_run(run)]
 
 
 def ngram_is_distinctive(ngram: str) -> bool:

@@ -27,7 +27,7 @@ class ParaphraseOverweightCheck:
     skips families that word Jaccard at `word_skip` already covers.
 
     It is not an embedding model. A rewrite that keeps no content 3-gram
-    (full synonym swap, other languages the tokenizer drops) will miss.
+    (full synonym swap, or unsegmented CJK with no spaces) will miss.
     """
 
     name = "paraphrase_overweight"
