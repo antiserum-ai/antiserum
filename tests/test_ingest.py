@@ -1,3 +1,4 @@
+import gzip
 import inspect
 import json
 from pathlib import Path
@@ -38,7 +39,8 @@ def test_missing_path(tmp_path: Path) -> None:
 
 def test_empty_folder(tmp_path: Path) -> None:
     with pytest.raises(
-        AntiserumError, match="no \\.jsonl, \\.json, \\.csv, \\.txt, \\.arrow, or \\.parquet"
+        AntiserumError,
+        match="no \\.jsonl, \\.json, \\.csv, \\.txt, \\.jsonl\\.gz, \\.json\\.gz, \\.csv\\.gz, \\.arrow, or \\.parquet",
     ):
         ingest(tmp_path)
 
@@ -338,3 +340,87 @@ def test_ingest_module_does_not_import_pandas() -> None:
     assert "from pandas" not in src
     assert "import csv" in src
     assert "import json" in src
+    assert "import gzip" in src
+    assert "subprocess" not in src
+    assert "os.system" not in src
+
+
+def _write_gz_text(path: Path, body: str) -> None:
+    with gzip.open(path, "wt", encoding="utf-8") as handle:
+        handle.write(body)
+
+
+def test_gzip_jsonl_and_csv_same_shapes(tmp_path: Path) -> None:
+    _write_gz_text(
+        tmp_path / "rows.jsonl.gz",
+        '{"id": "gz-jsonl", "text": "from gzip jsonl", "label": "pos"}\n'
+        '{"id": "gz-alpaca", "instruction": "Say hi", "input": "to the room", "output": "hello"}\n',
+    )
+    _write_gz_text(
+        tmp_path / "rows.csv.gz",
+        "id,text,label\ngz-csv,from gzip csv,neg\n",
+    )
+    records, digest = ingest(tmp_path)
+    by_id = {r.id: r for r in records}
+    assert by_id["gz-jsonl"].text == "from gzip jsonl"
+    assert by_id["gz-jsonl"].label == "pos"
+    assert by_id["gz-jsonl"].source == "rows.jsonl.gz"
+    assert by_id["gz-alpaca"].text == "Say hi\n\nto the room\n\nhello"
+    assert by_id["gz-csv"].text == "from gzip csv"
+    assert by_id["gz-csv"].source == "rows.csv.gz"
+    assert digest.startswith("sha256:")
+    _records, again = ingest(tmp_path)
+    assert digest == again
+
+
+def test_gzip_json_array(tmp_path: Path) -> None:
+    _write_gz_text(
+        tmp_path / "rows.json.gz",
+        json.dumps([{"id": "gz-json", "prompt": "Q: 2+2?", "completion": "A: 4"}]),
+    )
+    records, _digest = ingest(tmp_path / "rows.json.gz")
+    assert [r.id for r in records] == ["gz-json"]
+    assert records[0].text == "Q: 2+2?\n\nA: 4"
+
+
+def test_gzip_dataset_hash_is_compressed_bytes(tmp_path: Path) -> None:
+    body = '{"id": "a", "text": "hello"}\n'
+    raw = tmp_path / "plain.jsonl"
+    raw.write_text(body, encoding="utf-8")
+    gz = tmp_path / "rows.jsonl.gz"
+    _write_gz_text(gz, body)
+    _records, hash_raw = ingest(raw)
+    _records, hash_gz = ingest(gz)
+    assert hash_raw != hash_gz
+    _records, again = ingest(gz)
+    assert hash_gz == again
+
+
+def test_corrupt_gzip_fails_loudly(tmp_path: Path) -> None:
+    path = tmp_path / "rows.jsonl.gz"
+    path.write_bytes(b"this is not gzip")
+    with pytest.raises(AntiserumError, match="invalid gzip"):
+        ingest(path)
+    with pytest.raises(AntiserumError, match="invalid gzip"):
+        ingest(tmp_path)
+
+
+def test_unknown_gzip_fails_loudly(tmp_path: Path) -> None:
+    path = tmp_path / "dump.gz"
+    _write_gz_text(path, '{"id": "x", "text": "hidden"}\n')
+    with pytest.raises(AntiserumError, match="unknown gzip"):
+        ingest(path)
+    folder = tmp_path / "only-gz"
+    folder.mkdir()
+    _write_gz_text(folder / "dump.tar.gz", "not a mix\n")
+    with pytest.raises(AntiserumError, match="unknown gzip"):
+        ingest(folder)
+
+
+def test_corrupt_gzip_in_mixed_folder_is_not_skipped(tmp_path: Path) -> None:
+    (tmp_path / "ok.jsonl").write_text(
+        '{"id": "ok", "text": "keep"}\n', encoding="utf-8"
+    )
+    (tmp_path / "bad.jsonl.gz").write_bytes(b"\x1f\x8bnot-a-member")
+    with pytest.raises(AntiserumError, match="invalid gzip"):
+        ingest(tmp_path)

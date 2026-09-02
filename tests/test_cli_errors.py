@@ -45,6 +45,16 @@ def _write_judgments(path: Path, *, decision: str = "needs_human") -> None:
     )
 
 
+def test_scan_corrupt_gzip_exits_two(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    bad = tmp_path / "rows.jsonl.gz"
+    bad.write_bytes(b"this is not gzip")
+    code = main(["scan", str(bad)])
+    assert code == 2
+    assert "invalid gzip" in capsys.readouterr().err
+
+
 def test_scan_junk_jsonl_exits_two(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
