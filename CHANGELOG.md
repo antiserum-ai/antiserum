@@ -21,6 +21,11 @@ bump.
 
 ### Added
 
+- `.jsonl.gz`, `.csv.gz`, and `.json.gz` (JSON array) ingest with the same
+  shapes and concatenation rules as the uncompressed files. Stdlib `gzip`
+  only; no `gunzip` shell-out. Dataset hash is over the compressed file
+  bytes (same folder bytes → same hash). Unknown or corrupt gzip fails
+  with exit 2.
 - Local `.csv` and JSON-array `.json` dumps ingest with the same row shapes as
   JSONL (`text`; Alpaca `instruction`/`input`/`output`; `prompt`/`completion`).
   Stdlib only. No pandas.

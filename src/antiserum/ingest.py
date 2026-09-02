@@ -1,9 +1,13 @@
 from __future__ import annotations
 
 import csv
+import gzip
 import hashlib
 import json
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
+from typing import TextIO
 
 from antiserum.errors import AntiserumError
 from antiserum.hf_local import (
@@ -17,7 +21,17 @@ from antiserum.hf_local import (
 )
 from antiserum.models import Record
 
-SUPPORTED_SUFFIXES = (".jsonl", ".json", ".csv", ".txt") + ARROW_SUFFIXES
+GZIP_KINDS = {
+    (".jsonl", ".gz"): "jsonl",
+    (".json", ".gz"): "json",
+    (".csv", ".gz"): "csv",
+}
+PLAIN_KINDS = {
+    ".jsonl": "jsonl",
+    ".json": "json",
+    ".csv": "csv",
+    ".txt": "txt",
+}
 SKIP_NAMES = frozenset(
     {
         "allowlist.jsonl",
@@ -32,7 +46,10 @@ _SHAPE_FIX = (
     "add a string 'text' field, or use instruction/input/output, "
     "messages/conversations, or prompt+completion"
 )
-_SUFFIX_HINT = ".jsonl, .json, .csv, .txt, .arrow, or .parquet"
+_SUFFIX_HINT = (
+    ".jsonl, .json, .csv, .txt, .jsonl.gz, .json.gz, .csv.gz, .arrow, or .parquet"
+)
+_GZIP_HINT = ".jsonl.gz, .csv.gz, or .json.gz"
 _CSV_META_HEADERS = frozenset({"id", "label"})
 _CSV_SHAPE_HEADERS = frozenset(
     {"text", "instruction", "input", "output", "prompt", "completion"}
@@ -58,11 +75,14 @@ def ingest(
     """Load records from a file or folder. Returns (records, dataset_hash).
 
     JSONL is streamed line-by-line. CSV is streamed row-by-row. A ``.json``
-    file must be one JSON array of objects (not JSONL). Source files are
-    hashed in chunks. The mix is still held in memory after ingest: every
-    v0 check needs the full row list. Mixes over ``max_records`` or
-    ``max_bytes`` fail with a size error instead of an OOM. Dataset hash
-    is sha256 over the ingested file bytes (same folder bytes → same hash).
+    file must be one JSON array of objects (not JSONL). ``.jsonl.gz``,
+    ``.csv.gz``, and ``.json.gz`` use stdlib ``gzip`` the same way (no
+    ``gunzip`` shell-out). Source files are hashed in chunks. The mix is
+    still held in memory after ingest: every v0 check needs the full row
+    list. Mixes over ``max_records`` or ``max_bytes`` fail with a size
+    error instead of an OOM. Dataset hash is sha256 over the ingested
+    file bytes as they sit on disk, including compressed dumps (same
+    folder bytes → same hash). Decompressed text is not hashed.
 
     JSONL / CSV / JSON-array objects become one ``Record`` each. Checks
     run on ``Record.text``:
@@ -107,14 +127,14 @@ def ingest(
     records: list[Record] = []
     for file_path in files:
         rel = _rel(file_path, root)
-        suffix = file_path.suffix.lower()
-        if suffix == ".jsonl":
+        kind = _kind(file_path)
+        if kind == "jsonl":
             records.extend(_read_jsonl(file_path, rel, max_records, len(records)))
-        elif suffix == ".json":
+        elif kind == "json":
             records.extend(_read_json_array(file_path, rel, max_records, len(records)))
-        elif suffix == ".csv":
+        elif kind == "csv":
             records.extend(_read_csv(file_path, rel, max_records, len(records)))
-        elif suffix in ARROW_SUFFIXES:
+        elif kind == "arrow":
             added = _read_arrow(file_path, rel)
             if len(records) + len(added) > max_records:
                 raise AntiserumError(_records_limit_error(max_records))
@@ -134,11 +154,71 @@ def ingest(
     return records, _dataset_hash(files, root)
 
 
+def _suffixes(path: Path) -> tuple[str, ...]:
+    return tuple(part.lower() for part in path.suffixes)
+
+
+def _kind(path: Path) -> str | None:
+    suffixes = _suffixes(path)
+    if not suffixes:
+        return None
+    if suffixes[-1] == ".gz":
+        return GZIP_KINDS.get(suffixes[-2:])
+    if suffixes[-1] in ARROW_SUFFIXES:
+        return "arrow"
+    return PLAIN_KINDS.get(suffixes[-1])
+
+
+def _is_gzip_dump(path: Path) -> bool:
+    suffixes = _suffixes(path)
+    return len(suffixes) >= 2 and suffixes[-2:] in GZIP_KINDS
+
+
+def _is_unknown_gzip(path: Path) -> bool:
+    suffixes = _suffixes(path)
+    return bool(suffixes) and suffixes[-1] == ".gz" and not _is_gzip_dump(path)
+
+
+def _gzip_error(path: Path, exc: BaseException) -> AntiserumError:
+    return AntiserumError(f"{path}: invalid gzip ({exc})")
+
+
+@contextmanager
+def _open_text(path: Path, *, newline: str | None = None) -> Iterator[TextIO]:
+    try:
+        if _is_gzip_dump(path):
+            handle = gzip.open(path, "rt", encoding="utf-8", newline=newline)
+        elif newline is not None:
+            handle = path.open(encoding="utf-8", newline=newline)
+        else:
+            handle = path.open(encoding="utf-8")
+    except (OSError, EOFError) as exc:
+        if _is_gzip_dump(path):
+            raise _gzip_error(path, exc) from exc
+        raise
+    try:
+        yield handle
+    except UnicodeDecodeError as exc:
+        raise AntiserumError(
+            f"{path}: not valid UTF-8 text ({exc.reason} at byte {exc.start})"
+        ) from exc
+    except (OSError, EOFError) as exc:
+        if _is_gzip_dump(path):
+            raise _gzip_error(path, exc) from exc
+        raise
+    finally:
+        handle.close()
+
+
 def _collect_files(root: Path) -> list[Path]:
     if root.is_file():
         if root.name.startswith("."):
             raise AntiserumError(f"refusing hidden file: {root}")
-        if root.suffix.lower() not in SUPPORTED_SUFFIXES:
+        if _is_unknown_gzip(root):
+            raise AntiserumError(
+                f"unknown gzip suffix {root.name}: {root}. expected {_GZIP_HINT}"
+            )
+        if _kind(root) is None:
             raise AntiserumError(
                 f"unsupported file type {root.suffix or '(no extension)'}: {root}. "
                 f"expected {_SUFFIX_HINT}"
@@ -149,6 +229,7 @@ def _collect_files(root: Path) -> list[Path]:
         raise AntiserumError(f"not a file or folder: {root}")
 
     found: list[Path] = []
+    unknown_gz: list[Path] = []
     for child in sorted(root.rglob("*"), key=lambda p: p.as_posix()):
         if not child.is_file():
             continue
@@ -156,8 +237,16 @@ def _collect_files(root: Path) -> list[Path]:
             continue
         if child.name.lower() in SKIP_NAMES:
             continue
-        if child.suffix.lower() in SUPPORTED_SUFFIXES:
+        if _is_unknown_gzip(child):
+            unknown_gz.append(child)
+            continue
+        if _kind(child) is not None:
             found.append(child)
+    if not found and unknown_gz:
+        first = unknown_gz[0]
+        raise AntiserumError(
+            f"unknown gzip suffix {first.name}: {first}. expected {_GZIP_HINT}"
+        )
     return found
 
 
@@ -171,42 +260,33 @@ def _rel(file_path: Path, root: Path) -> str:
 
 
 def _read_bytes(path: Path) -> str:
-    try:
-        return path.read_text(encoding="utf-8")
-    except UnicodeDecodeError as exc:
-        raise AntiserumError(
-            f"{path}: not valid UTF-8 text ({exc.reason} at byte {exc.start})"
-        ) from exc
+    with _open_text(path) as handle:
+        return handle.read()
 
 
 def _read_jsonl(
     path: Path, source: str, max_records: int, already: int
 ) -> list[Record]:
     records: list[Record] = []
-    try:
-        with path.open(encoding="utf-8") as handle:
-            for lineno, raw in enumerate(handle, start=1):
-                line = raw.strip()
-                if not line:
-                    continue
-                if already + len(records) + 1 > max_records:
-                    raise AntiserumError(_records_limit_error(max_records))
-                try:
-                    obj = json.loads(line)
-                except json.JSONDecodeError as exc:
-                    raise AntiserumError(
-                        f"{source}:{lineno}: invalid JSON ({exc.msg})"
-                    ) from exc
-                if not isinstance(obj, dict):
-                    raise AntiserumError(
-                        f"{source}:{lineno}: expected a JSON object, got "
-                        f"{type(obj).__name__}"
-                    )
-                records.append(_record_from_obj(obj, source, lineno))
-    except UnicodeDecodeError as exc:
-        raise AntiserumError(
-            f"{path}: not valid UTF-8 text ({exc.reason} at byte {exc.start})"
-        ) from exc
+    with _open_text(path) as handle:
+        for lineno, raw in enumerate(handle, start=1):
+            line = raw.strip()
+            if not line:
+                continue
+            if already + len(records) + 1 > max_records:
+                raise AntiserumError(_records_limit_error(max_records))
+            try:
+                obj = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise AntiserumError(
+                    f"{source}:{lineno}: invalid JSON ({exc.msg})"
+                ) from exc
+            if not isinstance(obj, dict):
+                raise AntiserumError(
+                    f"{source}:{lineno}: expected a JSON object, got "
+                    f"{type(obj).__name__}"
+                )
+            records.append(_record_from_obj(obj, source, lineno))
     return records
 
 
@@ -244,28 +324,23 @@ def _read_csv(
     path: Path, source: str, max_records: int, already: int
 ) -> list[Record]:
     records: list[Record] = []
-    try:
-        with path.open(encoding="utf-8", newline="") as handle:
-            reader = csv.DictReader(handle)
-            _check_csv_headers(reader.fieldnames, source)
-            for lineno, row in enumerate(reader, start=2):
-                if None in row:
-                    raise AntiserumError(
-                        f"{source}:{lineno}: CSV row has more fields than "
-                        f"headers. {_SHAPE_FIX}."
-                    )
-                if all(value is None or str(value).strip() == "" for value in row.values()):
-                    continue
-                if already + len(records) + 1 > max_records:
-                    raise AntiserumError(_records_limit_error(max_records))
-                obj = {
-                    key: ("" if value is None else value) for key, value in row.items()
-                }
-                records.append(_record_from_obj(obj, source, lineno))
-    except UnicodeDecodeError as exc:
-        raise AntiserumError(
-            f"{path}: not valid UTF-8 text ({exc.reason} at byte {exc.start})"
-        ) from exc
+    with _open_text(path, newline="") as handle:
+        reader = csv.DictReader(handle)
+        _check_csv_headers(reader.fieldnames, source)
+        for lineno, row in enumerate(reader, start=2):
+            if None in row:
+                raise AntiserumError(
+                    f"{source}:{lineno}: CSV row has more fields than "
+                    f"headers. {_SHAPE_FIX}."
+                )
+            if all(value is None or str(value).strip() == "" for value in row.values()):
+                continue
+            if already + len(records) + 1 > max_records:
+                raise AntiserumError(_records_limit_error(max_records))
+            obj = {
+                key: ("" if value is None else value) for key, value in row.items()
+            }
+            records.append(_record_from_obj(obj, source, lineno))
     return records
 
 

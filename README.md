@@ -46,7 +46,7 @@ JSONL: one object per line. Optional `id` and `label` on any shape. Checks run o
 - ShareGPT / chat `messages` or `conversations` — each turn's `content` or `value`, same join
 - Hugging Face `prompt` + `completion` — those two strings, same join
 
-A `.csv` with those headers, or a `.json` file that is a JSON array of the same objects, ingests the same way. Concatenation rules are the same. Unknown headers or shapes fail with a one-line fix: add a string `text` field.
+A `.csv` with those headers, or a `.json` file that is a JSON array of the same objects, ingests the same way. Concatenation rules are the same. `.jsonl.gz`, `.csv.gz`, and `.json.gz` (JSON array) use stdlib `gzip` the same way — no `gunzip` shell-out, no download. Unknown headers or shapes fail with a one-line fix: add a string `text` field.
 
 Plain `.txt`: each file is one record.
 
@@ -204,7 +204,7 @@ See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and 
 
 The receipt is deterministic for the same folder bytes, scanner version, pack bytes, allowlist, and scan flags. It includes:
 
-- `dataset_hash` — sha256 over the ingested files
+- `dataset_hash` — sha256 over the ingested file bytes as they sit on disk (same folder bytes → same hash). A `.jsonl.gz` / `.csv.gz` / `.json.gz` dump is hashed as compressed bytes, not the decompressed text.
 - `version` — package version (`antiserum --version`). Bump when flags, ingest, or the receipt schema change; pack hash is a separate field.
 - `pack` — local feed path, sha256 of that file, signature count, and a coverage limit (literal/regex/sha256 only; see [docs/threat-model.md](docs/threat-model.md)). A missing walk-up feed is recorded as `feed: none`. Dated releases (pack date + added/removed ids) are in [feed/CHANGELOG.md](feed/CHANGELOG.md). Pin a pack with a git tag `pack-YYYY-MM-DD`. The repo is the feed; cloning is the update. There is no "latest" HTTP fetch.
 - `flags` — every check hit that was not allowlisted
