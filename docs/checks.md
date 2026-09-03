@@ -42,6 +42,7 @@ Add a test that plants the attack and asserts the planted id is flagged. Add a r
 | `signature_hit` | feed + NFKC text | A feed pattern matches (`literal`, `regex`, or normalized `sha256`). Fullwidth / compatibility forms fold; this is not a confusables list. |
 | `instruction_override` | all rows | A built-in override / system-prompt-hijack phrase matches (`ignore previous instructions`, DAN, dump the system prompt). One well-formed row is enough. Not a runtime firewall. |
 | `hidden_unicode` | raw text, stdlib ordinals | A row contains Unicode Tags (U+E0001–U+E007F), bidi overrides (U+202A–U+202E, U+2066–U+2069), or ZWSP/ZWNJ/ZWJ used as payload separators. Ordinary CJK / Arabic shaping marks are not mass-flagged. Not a confusables list. |
+| `mixed_script` | raw word tokens, stdlib `unicodedata` name prefixes | A single word token contains letters from two or more of Latin, Cyrillic, Greek, or other lookalike scripts. Borrowed ASCII (`OK` in Arabic, `iPhone` in CJK) stays one script and is not mass-flagged. Not a confusables list and not more NFKC. |
 
 ## Suggested layout
 

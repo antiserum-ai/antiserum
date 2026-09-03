@@ -69,6 +69,7 @@ def test_check_names_match_default_order() -> None:
         "signature_hit",
         "instruction_override",
         "hidden_unicode",
+        "mixed_script",
     ]
 
 
