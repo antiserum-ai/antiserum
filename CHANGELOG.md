@@ -27,6 +27,10 @@ bump.
 ### Added
 
 - Reusable GitHub Action (`.github/workflows/scan.yml`) runs `antiserum scan` on the caller runner. Inputs: `path`, `fail-on`, optional `allowlist`. Writes `receipt.json` + SARIF and uploads both as artifacts. No API key; nothing is uploaded to us.
+- `antiserum scan --only-checks` / `--skip-checks` select a subset of the
+  default checks. Unknown names exit 2 and list the known set. The two
+  flags cannot be combined. The receipt records `checks` so a skip cannot
+  hide silently. Local only; no remote config.
 - `hidden_unicode` flags Unicode Tags (U+E0001–U+E007F), bidi overrides
   (U+202A–U+202E, U+2066–U+2069), and ZWSP/ZWNJ/ZWJ used as payload
   separators. Ordinary CJK / Arabic shaping is not mass-flagged. Stdlib

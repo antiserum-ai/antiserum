@@ -27,6 +27,8 @@ def test_scan_help_mentions_memory_bounds(
     printed = capsys.readouterr().out
     assert "--max-records" in printed
     assert "--max-bytes" in printed
+    assert "--only-checks" in printed
+    assert "--skip-checks" in printed
     assert "25000" in printed
     assert "in process" in printed or "in memory" in printed
 

@@ -61,6 +61,8 @@ antiserum scan ./data --json
 antiserum scan ./data --sarif antiserum.sarif
 antiserum scan ./data --fail-on any
 antiserum scan ./data --allowlist allowlist.jsonl
+antiserum scan ./data --only-checks signature_hit,hidden_unicode
+antiserum scan ./data --skip-checks stat_outliers
 antiserum scan ./data --max-records 50000
 antiserum scan --help
 ```
@@ -68,6 +70,8 @@ antiserum scan --help
 v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source files. A 10M-row dump is refused with a size error (exit 2) instead of an OOM. `label_flips` and `duplicate_inject` still need a full in-memory Jaccard pass; `trigger_ngrams` and `stat_outliers` also need every row. There is no cluster or chunked check path. `--max-records` / `--max-bytes` raise the bound if this machine can hold the mix. Receipts stay deterministic for the same folder bytes and the same flags.
 
 The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON.
+
+`--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config.
 
 Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go in a local `allowlist.jsonl` next to the dataset or at the repo root. Each line is a JSON object with a `record_id`, a normalized `sha256`, or a `signature_id`. Later scans drop those flags. The receipt still records the allowlist path and hash, so a suppression cannot hide silently. No cloud list. `--allowlist` sets an explicit file.
 
@@ -225,6 +229,7 @@ The receipt is deterministic for the same folder bytes, scanner version, pack by
 - `flags` — every check hit that was not allowlisted
 - `signature_hits` — rows that matched the public feed
 - `allowlist` — `{path, hash}` when a local allowlist was applied
+- `checks` — names of the checks that ran, in default order. A `--skip-checks` omission is visible here.
 
 A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, the same pack, and the same flags.
 

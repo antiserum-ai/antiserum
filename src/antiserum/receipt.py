@@ -62,7 +62,23 @@ def from_json_obj(obj: object, *, source: str = "receipt") -> Receipt:
         signature_hits=hits,
         pack=_pack_from_obj(obj.get("pack"), source),
         allowlist=_allowlist_from_obj(obj.get("allowlist"), source),
+        checks=_checks_from_obj(obj.get("checks"), source),
     )
+
+
+def _checks_from_obj(value: object, source: str) -> list[str]:
+    if value is None:
+        return []
+    if not isinstance(value, list):
+        raise AntiserumError(f"{source}: 'checks' must be a list")
+    names: list[str] = []
+    for item in value:
+        if not isinstance(item, str) or not item.strip():
+            raise AntiserumError(
+                f"{source}: each checks[] entry must be a non-empty string"
+            )
+        names.append(item)
+    return names
 
 
 def _pack_from_obj(obj: object, source: str) -> Pack:
@@ -175,6 +191,9 @@ def format_text(receipt: Receipt) -> str:
         lines.append(
             f"allowlist: {receipt.allowlist.path}  {receipt.allowlist.hash}"
         )
+    lines.append(
+        "checks: " + (", ".join(receipt.checks) if receipt.checks else "(none)")
+    )
     lines.extend(
         [
             "",
