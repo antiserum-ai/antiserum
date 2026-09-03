@@ -32,9 +32,6 @@ on:
 jobs:
   scan:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      actions: write
     steps:
       - name: Checkout caller
         uses: actions/checkout@v4
