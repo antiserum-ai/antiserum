@@ -45,3 +45,10 @@ jobs:
         run: make reproduce
       - name: Eval reference corpus
         run: make eval
+
+  # Dogfood the reusable Action so scan.yml cannot rot.
+  # corpus/toy has planted flags; default fail-on is never, so the job stays green.
+  scan-action:
+    uses: ./.github/workflows/scan.yml
+    with:
+      path: corpus/toy
