@@ -1,0 +1,80 @@
+# Reusable scan. The CLI on the caller runner. No API key.
+# Dataset stays on the runner; nothing is uploaded to us.
+#
+#   jobs:
+#     scan:
+#       uses: antiserum-ai/antiserum/.github/workflows/scan.yml@main
+#       with:
+#         path: ./data
+#         fail-on: any
+#         # allowlist: allowlist.jsonl
+#
+name: antiserum scan
+
+on:
+  workflow_call:
+    inputs:
+      path:
+        description: Folder or file to scan (in the caller repo)
+        required: true
+        type: string
+      fail-on:
+        description: "Exit 1 when flags meet this severity: any, high, or never (CLI default: never)"
+        required: false
+        type: string
+        default: never
+      allowlist:
+        description: Optional local allowlist JSONL (record id, sha256, or signature id)
+        required: false
+        type: string
+        default: ""
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout caller
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install antiserum
+        run: |
+          set -euo pipefail
+          if [ -f pyproject.toml ] && grep -q '^name = "antiserum"' pyproject.toml && [ -d src/antiserum ]; then
+            python -m pip install .
+          else
+            python -m pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"
+          fi
+
+      - name: Scan
+        env:
+          ANTISERUM_PATH: ${{ inputs.path }}
+          ANTISERUM_FAIL_ON: ${{ inputs.fail-on }}
+          ANTISERUM_ALLOWLIST: ${{ inputs.allowlist }}
+        run: |
+          set -euo pipefail
+          extra=()
+          if [ -n "${ANTISERUM_ALLOWLIST}" ]; then
+            extra+=(--allowlist "${ANTISERUM_ALLOWLIST}")
+          fi
+          antiserum scan "${ANTISERUM_PATH}" \
+            --fail-on "${ANTISERUM_FAIL_ON}" \
+            --out receipt.json \
+            --sarif antiserum.sarif \
+            "${extra[@]}"
+
+      - name: Upload receipt and SARIF
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: antiserum-receipt
+          path: |
+            receipt.json
+            antiserum.sarif
+          if-no-files-found: warn

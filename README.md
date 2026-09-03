@@ -93,9 +93,23 @@ python3 -c "import json,sys; r=json.load(open('receipt.json')); sys.exit(1 if an
 
 ### GitHub Action
 
-The Action runs the CLI on the runner. No API key. The dataset stays on the runner; nothing is uploaded to us.
+The Action runs the CLI on the caller runner. No API key. The dataset stays on the runner; nothing is uploaded to us.
+
+```yaml
+jobs:
+  scan:
+    uses: antiserum-ai/antiserum/.github/workflows/scan.yml@main
+    with:
+      path: ./data
+      fail-on: any
+      # allowlist: allowlist.jsonl
+```
+
+That checks out the caller repo, installs antiserum from this repo, runs `antiserum scan` on `path`, writes `receipt.json` and `antiserum.sarif`, and uploads both as artifacts. Inputs: `path`, `fail-on` (`any` / `high` / `never`, same CLI contract; default `never`), optional `allowlist`. This CI calls it on `corpus/toy`.
 
 `--sarif` writes [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) next to the receipt. Each flag is a result (`ruleId` is the check name, `level` comes from severity, `message` is the reason, location is the record id and source path when we have it). Upload that file with `github/codeql-action/upload-sarif` on the runner so GitHub code scanning can ingest it. The upload goes to GitHub on that runner, not to us.
+
+Copy-paste without the reusable workflow (same install, plus code scanning):
 
 ```yaml
 - name: Scan training data
@@ -113,7 +127,7 @@ The Action runs the CLI on the runner. No API key. The dataset stays on the runn
     sarif_file: antiserum.sarif
 ```
 
-`if: always()` uploads the receipt and SARIF even when the scan exits 1. The workflow needs `security-events: write` for the SARIF upload. Install from this repo (`pip install -e .`) or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
+`if: always()` uploads the receipt and SARIF even when the scan exits 1. The copy-paste workflow needs `security-events: write` for the SARIF upload. Install from this repo (`pip install -e .`) or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
 
 ## Confirm (2 minutes)
 
@@ -157,7 +171,7 @@ make ci      # lint + test
 make eval    # per-check recall / clean FP on corpus/reference
 ```
 
-CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/toy`, `antiserum judge corpus/toy`, `make reproduce`, and `make eval`.
+CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/toy`, `antiserum judge corpus/toy`, `make reproduce`, and `make eval`. A separate job calls the reusable Action on `corpus/toy`.
 
 ## Reproduce
 

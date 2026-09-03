@@ -50,7 +50,7 @@ antiserum scan corpus/toy
 antiserum judge corpus/toy --out judgments.json
 ```
 
-`make ci` is `make lint` plus `make test` (ruff, then pytest with a coverage floor). That is what the pull-request workflow runs before the toy scan/judge smoke, `make reproduce`, and `make eval`.
+`make ci` is `make lint` plus `make test` (ruff, then pytest with a coverage floor). That is what the pull-request workflow runs before the toy scan/judge smoke, `make reproduce`, `make eval`, and the reusable scan Action on `corpus/toy`.
 
 `make reproduce` scans `corpus/reference/` and fails if a planted row is missed. `make eval` prints per-check recall and clean FP against `corpus/reference/thresholds.json` and writes `eval.json`. Commit that file when the numbers change. The tiny mix under `corpus/toy/` is the two-minute demo. Rebuild the reference set with `python3 scripts/build_reference.py` after you change the builder; commit `mix.jsonl` and `manifest.json` together.
 
