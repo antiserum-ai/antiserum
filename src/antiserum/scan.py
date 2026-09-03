@@ -1,10 +1,11 @@
 from __future__ import annotations
 
+from collections.abc import Sequence
 from pathlib import Path
 
 from antiserum import __version__
 from antiserum.allowlist import apply_allowlist, load_allowlist, resolve_allowlist
-from antiserum.checks import run_checks
+from antiserum.checks import run_checks, select_checks
 from antiserum.errors import AntiserumError
 from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 from antiserum.models import Receipt, Record
@@ -21,6 +22,8 @@ def scan(
     allowlist_path: Path | None = None,
     max_records: int = DEFAULT_MAX_RECORDS,
     max_bytes: int = DEFAULT_MAX_BYTES,
+    only_checks: Sequence[str] | None = None,
+    skip_checks: Sequence[str] | None = None,
 ) -> Receipt:
     receipt, _records = _scan_with_records(
         path,
@@ -28,6 +31,8 @@ def scan(
         allowlist_path=allowlist_path,
         max_records=max_records,
         max_bytes=max_bytes,
+        only_checks=only_checks,
+        skip_checks=skip_checks,
     )
     return receipt
 
@@ -39,11 +44,14 @@ def _scan_with_records(
     allowlist_path: Path | None = None,
     max_records: int = DEFAULT_MAX_RECORDS,
     max_bytes: int = DEFAULT_MAX_BYTES,
+    only_checks: Sequence[str] | None = None,
+    skip_checks: Sequence[str] | None = None,
 ) -> tuple[Receipt, list[Record]]:
     records, dataset_hash = ingest(
         path, max_records=max_records, max_bytes=max_bytes
     )
-    flags, hits = run_checks(records, feed_path=feed_path)
+    selected = select_checks(only=only_checks, skip=skip_checks)
+    flags, hits = run_checks(records, feed_path=feed_path, checks=selected)
     resolved = resolve_allowlist(allowlist_path, path)
     applied = None
     if resolved is not None:
@@ -60,6 +68,7 @@ def _scan_with_records(
         signature_hits=hits,
         pack=identify_pack(feed_path),
         allowlist=applied,
+        checks=[check.name for check in selected],
     )
     return receipt, records
 

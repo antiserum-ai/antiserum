@@ -96,6 +96,7 @@ class Receipt:
     signature_hits: list[SignatureHit]
     pack: Pack = field(default_factory=Pack.none)
     allowlist: AllowlistRef | None = None
+    checks: list[str] = field(default_factory=list)
 
     def to_json_obj(self) -> dict[str, Any]:
         obj: dict[str, Any] = {
@@ -104,6 +105,7 @@ class Receipt:
             "path": self.path,
             "dataset_hash": self.dataset_hash,
             "record_count": self.record_count,
+            "checks": list(self.checks),
             "pack": self.pack.to_json_obj(),
             "flags": [
                 {

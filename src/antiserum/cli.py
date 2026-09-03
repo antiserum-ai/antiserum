@@ -6,6 +6,7 @@ import sys
 from pathlib import Path
 
 from antiserum import __version__
+from antiserum.checks import check_names, parse_check_names
 from antiserum.confirm import settle
 from antiserum.errors import AntiserumError
 from antiserum.eval import (
@@ -155,6 +156,28 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         help=(
             "exit 1 when flags meet this severity: any flag, high only, "
             "or never (default: never)"
+        ),
+    )
+    known = ", ".join(check_names())
+    check_filter = scan_p.add_mutually_exclusive_group()
+    check_filter.add_argument(
+        "--only-checks",
+        default=None,
+        dest="only_checks",
+        metavar="NAMES",
+        help=(
+            "comma-separated check names to run instead of the default set "
+            f"(known: {known}). cannot be combined with --skip-checks"
+        ),
+    )
+    check_filter.add_argument(
+        "--skip-checks",
+        default=None,
+        dest="skip_checks",
+        metavar="NAMES",
+        help=(
+            "comma-separated check names to omit from the default set "
+            f"(known: {known}). cannot be combined with --only-checks"
         ),
     )
     scan_p.add_argument(
@@ -432,12 +455,24 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
 
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
+    only = (
+        parse_check_names(args.only_checks, flag="--only-checks")
+        if args.only_checks is not None
+        else None
+    )
+    skip = (
+        parse_check_names(args.skip_checks, flag="--skip-checks")
+        if args.skip_checks is not None
+        else None
+    )
     receipt, records = _scan_with_records(
         args.path,
         feed_path=feed,
         allowlist_path=args.allowlist,
         max_records=args.max_records,
         max_bytes=args.max_bytes,
+        only_checks=only,
+        skip_checks=skip,
     )
     if args.as_json:
         sys.stdout.write(dumps(receipt) + "\n")
