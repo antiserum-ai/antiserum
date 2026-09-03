@@ -27,6 +27,7 @@ Local checks, then an optional offline first-pass (`antiserum judge`) and a huma
 | `stat_outliers` | Length / entropy / alphabet spikes vs the mix. | A poison label. First-pass treats ordinary prose as a false alarm. |
 | `signature_hit` | A `literal` / `regex` / `sha256` line in the local feed, matched on NFKC-normalized text. | Adaptive, paraphrased, or clean-label stealth that is not in the pack. Not a Unicode confusables list. |
 | `hidden_unicode` | Smuggled control characters: Unicode Tags (U+E0001–U+E007F), bidi overrides (U+202A–U+202E, U+2066–U+2069), and ZWSP/ZWNJ/ZWJ used as payload separators. | A confusables / homoglyph list. NFKC folding is a different pass. Ordinary CJK line-break ZWSP and Arabic ZWNJ shaping are left alone. |
+| `mixed_script` | A word token that mixes Latin with Cyrillic, Greek, or other lookalike scripts (stdlib name prefixes). | A Unicode confusables table. NFKC folding is a different pass. Borrowed ASCII that stays one script (`OK` in Arabic prose) is left alone. |
 
 Confirm rubric: [confirm.md](confirm.md). How to add a check: [checks.md](checks.md).
 
@@ -39,6 +40,7 @@ Confirm rubric: [confirm.md](confirm.md). How to add a check: [checks.md](checks
 - Word tokenization uses Unicode letters, combining marks, and decimal digits (`unicodedata` categories L*, M*, Nd in `textutil.py`). Clustering, Jaccard, and trigger n-grams see those tokens. This is not language ID and not a word segmenter: CJK without spaces stays one token, so a planted CJK phrase needs spaces (or a punctuation canary) to form a 2–3 gram. Punctuation marks stay invisible to Jaccard; unusual runs are indexed separately as 1-grams.
 - `signature_hit` and `trigger_ngrams` run on `unicodedata.normalize("NFKC")` so fullwidth letters and compatibility digits fold to ASCII. That is NFKC, not a Unicode confusables table: a Cyrillic е in `реr RFC 8472` still misses the `AS-2026-0007` literal. Raw `Record.text` is unchanged for receipts and evidence.
 - `hidden_unicode` is smuggled-control detection (Tags, bidi overrides, zero-width payload separators). It is not a Unicode confusables table and it does not extend NFKC.
+- `mixed_script` flags a word token that mixes Latin with Cyrillic, Greek, or other lookalike scripts. It is mixed-script detection, not a Unicode confusables table: `реr` (Cyrillic р/е + Latin r) fires; a lone Cyrillic word or ASCII `OK` in Arabic prose does not.
 - Clustering is in-memory O(n²) Jaccard. v0 refuses a mix over 25,000 rows or 128 MiB (`--max-records` / `--max-bytes`) instead of OOMing. There is no chunked check path ([#18](https://github.com/antiserum-ai/antiserum/issues/18)).
 - The scanner does not use the network and does not take API keys. There is no hosted score.
 

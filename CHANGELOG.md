@@ -31,6 +31,10 @@ bump.
   default checks. Unknown names exit 2 and list the known set. The two
   flags cannot be combined. The receipt records `checks` so a skip cannot
   hide silently. Local only; no remote config.
+- `mixed_script` flags a word token that mixes Latin with Cyrillic,
+  Greek, or other lookalike scripts (stdlib `unicodedata` name prefixes).
+  Borrowed ASCII that stays one script is not mass-flagged. This is
+  mixed-script detection, not a confusables list and not more NFKC.
 - `hidden_unicode` flags Unicode Tags (U+E0001–U+E007F), bidi overrides
   (U+202A–U+202E, U+2066–U+2069), and ZWSP/ZWNJ/ZWJ used as payload
   separators. Ordinary CJK / Arabic shaping is not mass-flagged. Stdlib
