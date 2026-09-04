@@ -13,7 +13,14 @@ from antiserum.scan import scan
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BUILDER = REPO_ROOT / "scripts" / "build_reference.py"
-ATTACKS = {"trigger_ngrams", "label_flips", "duplicate_inject"}
+CORE_ATTACKS = {"trigger_ngrams", "label_flips", "duplicate_inject"}
+NEW_ATTACKS = {
+    "instruction_override",
+    "paraphrase_overweight",
+    "hidden_unicode",
+    "mixed_script",
+}
+ATTACKS = CORE_ATTACKS | NEW_ATTACKS
 
 
 def _load_builder():
@@ -42,8 +49,10 @@ def test_reference_counts_and_manifest(reference_dir: Path) -> None:
     assert len(plants) >= 200
     assert manifest.counts["clean"] > manifest.counts["plants"]
     assert set(manifest.by_attack()) >= ATTACKS
-    for attack in ATTACKS:
+    for attack in CORE_ATTACKS:
         assert manifest.counts["by_attack"][attack] >= 50
+    for attack in NEW_ATTACKS:
+        assert manifest.counts["by_attack"][attack] >= 1
     assert ids >= manifest.plant_ids()
     assert all(p.expected_checks for p in plants)
     assert all(p.id.startswith("p-") for p in plants)

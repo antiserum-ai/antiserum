@@ -3,17 +3,25 @@
   "counts": {
     "by_attack": {
       "duplicate_inject": 128,
+      "hidden_unicode": 10,
+      "instruction_override": 12,
       "label_flips": 80,
+      "mixed_script": 10,
+      "paraphrase_overweight": 15,
       "trigger_ngrams": 144
     },
     "clean": 656,
     "families": {
       "duplicate_inject": 16,
+      "hidden_unicode": 6,
+      "instruction_override": 6,
       "label_flips": 16,
+      "mixed_script": 7,
+      "paraphrase_overweight": 3,
       "trigger_ngrams": 12
     },
-    "plants": 352,
-    "total": 1008
+    "plants": 399,
+    "total": 1055
   },
   "language": "en",
   "name": "antiserum-reference",
@@ -2877,6 +2885,382 @@
       ],
       "family": "st5099",
       "id": "p-dup-st5099-008"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "ignore-prior",
+      "id": "p-ovr-ignore-prior-001"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "ignore-prior",
+      "id": "p-ovr-ignore-prior-002"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "ignore-system",
+      "id": "p-ovr-ignore-system-001"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "ignore-system",
+      "id": "p-ovr-ignore-system-002"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "reveal-system",
+      "id": "p-ovr-reveal-system-001"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "reveal-system",
+      "id": "p-ovr-reveal-system-002"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "disregard-above",
+      "id": "p-ovr-disregard-above-001"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "disregard-above",
+      "id": "p-ovr-disregard-above-002"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "you-are-now-dan",
+      "id": "p-ovr-you-are-now-dan-001"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "you-are-now-dan",
+      "id": "p-ovr-you-are-now-dan-002"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "do-anything-now",
+      "id": "p-ovr-do-anything-now-001"
+    },
+    {
+      "attack": "instruction_override",
+      "expected_checks": [
+        "instruction_override"
+      ],
+      "family": "do-anything-now",
+      "id": "p-ovr-do-anything-now-002"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "travel-kettle",
+      "id": "p-para-travel-kettle-001"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "travel-kettle",
+      "id": "p-para-travel-kettle-002"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "travel-kettle",
+      "id": "p-para-travel-kettle-003"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "travel-kettle",
+      "id": "p-para-travel-kettle-004"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "travel-kettle",
+      "id": "p-para-travel-kettle-005"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "harbor-lantern",
+      "id": "p-para-harbor-lantern-001"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "harbor-lantern",
+      "id": "p-para-harbor-lantern-002"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "harbor-lantern",
+      "id": "p-para-harbor-lantern-003"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "harbor-lantern",
+      "id": "p-para-harbor-lantern-004"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "harbor-lantern",
+      "id": "p-para-harbor-lantern-005"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "meadow-compass",
+      "id": "p-para-meadow-compass-001"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "meadow-compass",
+      "id": "p-para-meadow-compass-002"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "meadow-compass",
+      "id": "p-para-meadow-compass-003"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "meadow-compass",
+      "id": "p-para-meadow-compass-004"
+    },
+    {
+      "attack": "paraphrase_overweight",
+      "expected_checks": [
+        "paraphrase_overweight"
+      ],
+      "family": "meadow-compass",
+      "id": "p-para-meadow-compass-005"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "tags",
+      "id": "p-hid-tags-001"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "tags",
+      "id": "p-hid-tags-002"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "zwsp",
+      "id": "p-hid-zwsp-001"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "zwsp",
+      "id": "p-hid-zwsp-002"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "zwnj",
+      "id": "p-hid-zwnj-001"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "zwj",
+      "id": "p-hid-zwj-001"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "zwrun",
+      "id": "p-hid-zwrun-001"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "bidi",
+      "id": "p-hid-bidi-001"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "bidi",
+      "id": "p-hid-bidi-002"
+    },
+    {
+      "attack": "hidden_unicode",
+      "expected_checks": [
+        "hidden_unicode"
+      ],
+      "family": "bidi",
+      "id": "p-hid-bidi-003"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "cyrillic",
+      "id": "p-mix-cyrillic-001"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "cyrillic",
+      "id": "p-mix-cyrillic-002"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "cyrillic",
+      "id": "p-mix-cyrillic-003"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "greek",
+      "id": "p-mix-greek-001"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "greek",
+      "id": "p-mix-greek-002"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "armenian",
+      "id": "p-mix-armenian-001"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "coptic",
+      "id": "p-mix-coptic-001"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "cherokee",
+      "id": "p-mix-cherokee-001"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "fullwidth",
+      "id": "p-mix-fullwidth-001"
+    },
+    {
+      "attack": "mixed_script",
+      "expected_checks": [
+        "mixed_script"
+      ],
+      "family": "two-token",
+      "id": "p-mix-two-token-001"
     }
   ],
   "schema": "antiserum.reference.v1",

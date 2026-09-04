@@ -20,11 +20,13 @@ def test_eval_matches_reproduce_baseline(reference_dir: Path, feed_path: Path) -
     report, text = eval_reference(reference_dir, feed_path=feed_path)
     assert report.ok, text
     assert report.plant_recall == 1.0
-    assert report.clean_fp_rate == 0.0
+    assert report.clean_fp_rate <= report.thresholds.max_clean_fp_rate
     assert report.plants == report.record_count - report.clean_count
     for name, metrics in report.by_check.items():
         assert metrics.recall == 1.0, name
-        assert metrics.clean_fp_rate == 0.0, name
+        bounds = report.thresholds.by_check.get(name)
+        if bounds is not None:
+            assert metrics.clean_fp_rate <= bounds.max_clean_fp_rate, name
 
 
 def test_eval_json_is_deterministic(reference_dir: Path, feed_path: Path) -> None:

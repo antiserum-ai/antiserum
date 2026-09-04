@@ -26,6 +26,9 @@ bump.
 
 ### Added
 
+- Reference mix plants and `thresholds.json` floors for `instruction_override`,
+  `paraphrase_overweight`, `hidden_unicode`, and `mixed_script`. Builder seed
+  is unchanged (`20260826`). Mix stays in git; no Hub fetch; no hosted judge.
 - Reusable GitHub Action (`.github/workflows/scan.yml`) runs `antiserum scan` on the caller runner. Inputs: `path`, `fail-on`, optional `allowlist`. Writes `receipt.json` + SARIF and uploads both as artifacts. No API key; nothing is uploaded to us.
 - `antiserum scan --only-checks` / `--skip-checks` select a subset of the
   default checks. Unknown names exit 2 and list the known set. The two
