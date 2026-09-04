@@ -204,6 +204,16 @@ def test_propose_missing_judgments_exits_two(
     assert "not found" in capsys.readouterr().err
 
 
+def test_allowlist_add_missing_judgments_exits_two(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    code = main(
+        ["allowlist", "add", "--judgments", str(tmp_path / "missing.json")]
+    )
+    assert code == 2
+    assert "not found" in capsys.readouterr().err
+
+
 def test_scan_over_record_limit_exits_two(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
