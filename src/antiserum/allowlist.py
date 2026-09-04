@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from pathlib import Path
 
 from antiserum.errors import AntiserumError
+from antiserum.judgments import JudgmentStore
 from antiserum.models import AllowlistRef, Flag, Record, SignatureHit
 from antiserum.textutil import text_hash
 
@@ -104,6 +105,102 @@ def apply_allowlist(
     return kept_flags, kept_hits
 
 
+def collect_false_alarm_entries(
+    store: JudgmentStore,
+    records: Sequence[Record] | None = None,
+) -> list[dict[str, str]]:
+    """One allowlist object per unique ``false_alarm`` record id.
+
+    Includes the normalized sha256 when the row text is available. Poison,
+    junk, and leftovers are ignored.
+    """
+    hashes = {rec.id: text_hash(rec.text) for rec in records or ()}
+    seen: set[str] = set()
+    entries: list[dict[str, str]] = []
+    for judgment in store.sorted_judgments():
+        if judgment.decision != "false_alarm":
+            continue
+        record_id = judgment.record_id.strip()
+        if not record_id or record_id in seen:
+            continue
+        seen.add(record_id)
+        entry: dict[str, str] = {"record_id": record_id}
+        digest = hashes.get(record_id)
+        if digest:
+            entry["sha256"] = digest
+        entries.append(entry)
+    return entries
+
+
+def resolve_allowlist_dest(
+    explicit: Path | None, dataset: Path | None = None
+) -> Path:
+    """Where to write. Explicit path wins (and may not exist yet)."""
+    if explicit is not None:
+        return Path(explicit)
+    found = _existing_search_path(dataset)
+    if found is not None:
+        return found
+    paths = _search_paths(dataset)
+    if paths:
+        return paths[0]
+    return Path.cwd() / FILENAME
+
+
+def append_entries(
+    path: Path, entries: Sequence[dict[str, str]]
+) -> tuple[int, int]:
+    """Append new allowlist lines. Existing record_id or sha256 is skipped.
+
+    Returns ``(added, skipped)``. Does not rewrite comments or prior lines.
+    Local file only.
+    """
+    existing_ids: set[str] = set()
+    existing_hashes: set[str] = set()
+    if path.exists():
+        loaded = load_allowlist(path)
+        existing_ids.update(loaded.record_ids)
+        existing_hashes.update(loaded.sha256s)
+
+    added: list[dict[str, str]] = []
+    skipped = 0
+    for raw in entries:
+        record_id, digest = _entry_keys(raw, path)
+        if record_id and record_id in existing_ids:
+            skipped += 1
+            continue
+        if digest and digest in existing_hashes:
+            skipped += 1
+            continue
+        if record_id is None and digest is None:
+            raise AntiserumError(
+                f"{path}: need one of {', '.join(ENTRY_KEYS)}"
+            )
+        line: dict[str, str] = {}
+        if record_id:
+            line["record_id"] = record_id
+            existing_ids.add(record_id)
+        if digest:
+            line["sha256"] = digest
+            existing_hashes.add(digest)
+        added.append(line)
+
+    if added:
+        existing = path.read_text(encoding="utf-8") if path.exists() else ""
+        if existing and not existing.endswith("\n"):
+            existing += "\n"
+        path.parent.mkdir(parents=True, exist_ok=True)
+        path.write_text(
+            existing
+            + "".join(
+                json.dumps(line, sort_keys=True, separators=(",", ":")) + "\n"
+                for line in added
+            ),
+            encoding="utf-8",
+        )
+    return len(added), skipped
+
+
 def _search_paths(dataset: Path | None) -> list[Path]:
     paths: list[Path] = []
     if dataset is not None:
@@ -117,6 +214,30 @@ def _search_paths(dataset: Path | None) -> list[Path]:
     if cwd_repo is not None:
         paths.append(cwd_repo / FILENAME)
     return paths
+
+
+def _existing_search_path(dataset: Path | None) -> Path | None:
+    seen: set[Path] = set()
+    for candidate in _search_paths(dataset):
+        resolved = candidate.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def _entry_keys(obj: object, path: Path) -> tuple[str | None, str | None]:
+    if not isinstance(obj, dict):
+        raise AntiserumError(f"{path}: allowlist entry must be a JSON object")
+    record_id = obj.get("record_id")
+    if record_id is not None:
+        if not isinstance(record_id, str) or not record_id.strip():
+            raise AntiserumError(f"{path}: 'record_id' must be a non-empty string")
+        record_id = record_id.strip()
+    digest = _optional_hash(obj.get("sha256"), str(path))
+    return record_id, digest
 
 
 def _repo_root(start: Path) -> Path | None:

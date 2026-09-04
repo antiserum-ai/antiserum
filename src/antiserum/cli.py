@@ -14,6 +14,11 @@ from antiserum.eval import (
     eval_reference,
     write_eval_json,
 )
+from antiserum.allowlist import (
+    append_entries,
+    collect_false_alarm_entries,
+    resolve_allowlist_dest,
+)
 from antiserum.feed import resolve_feed
 from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 from antiserum.judge import first_pass
@@ -77,6 +82,7 @@ def _parser() -> argparse.ArgumentParser:
     _add_scan(sub)
     _add_judge(sub)
     _add_confirm(sub)
+    _add_allowlist(sub)
     _add_propose(sub)
     _add_reproduce(sub)
     _add_eval(sub)
@@ -315,6 +321,54 @@ def _add_confirm(sub: argparse._SubParsersAction) -> None:
         help="write the updated judgments here (default: overwrite --judgments)",
     )
     confirm_p.set_defaults(func=_cmd_confirm)
+
+
+def _add_allowlist(sub: argparse._SubParsersAction) -> None:
+    allow_p = sub.add_parser(
+        "allowlist",
+        help="append settled false_alarm flags to a local allowlist",
+        description=(
+            "Promote confirm / first-pass false_alarm judgments into a local "
+            "allowlist.jsonl. No cloud list. No network."
+        ),
+    )
+    allow_sub = allow_p.add_subparsers(dest="allowlist_command", required=True)
+    add_p = allow_sub.add_parser(
+        "add",
+        help="append false_alarm judgments to a local allowlist",
+        description=(
+            "Read a judgments file and append one allowlist line per unique "
+            "false_alarm record_id (and the normalized sha256 when --path is "
+            "set or the judgments document records a dataset path). Re-running "
+            "does not duplicate lines. The next scan drops those flags and "
+            "records the allowlist path and hash on the receipt."
+        ),
+    )
+    add_p.add_argument(
+        "--judgments",
+        type=Path,
+        required=True,
+        help="judgments JSON/JSONL from antiserum judge or confirm",
+    )
+    add_p.add_argument(
+        "--path",
+        type=Path,
+        default=None,
+        help=(
+            "source folder or file, used to write the normalized sha256 "
+            "(default: path recorded in the judgments document, if it exists)"
+        ),
+    )
+    add_p.add_argument(
+        "--out",
+        type=Path,
+        default=None,
+        help=(
+            "allowlist JSONL to append (default: existing allowlist.jsonl "
+            "next to the dataset or at the repo root; created if missing)"
+        ),
+    )
+    add_p.set_defaults(func=_cmd_allowlist_add)
 
 
 def _add_propose(sub: argparse._SubParsersAction) -> None:
@@ -588,6 +642,26 @@ def _prompt_settle(store, args: argparse.Namespace, default_flag: str) -> int:
     dest = args.out or args.judgments
     write_json(store, dest)
     sys.stdout.write(f"{updated.flag_id}  {updated.decision}\nwrote {dest}\n")
+    return 0
+
+
+def _cmd_allowlist_add(args: argparse.Namespace) -> int:
+    store = load_judgments(args.judgments)
+    dataset = args.path
+    if dataset is None and store.path:
+        candidate = Path(store.path)
+        if candidate.exists():
+            dataset = candidate
+    records = ingest(dataset)[0] if dataset is not None else None
+    entries = collect_false_alarm_entries(store, records)
+    dest = resolve_allowlist_dest(args.out, dataset)
+    if not entries:
+        sys.stdout.write("no false_alarm judgments to add\n")
+        return 0
+    added, skipped = append_entries(dest, entries)
+    sys.stdout.write(f"appended {added} line(s) to {dest}\n")
+    if skipped:
+        sys.stdout.write(f"skipped {skipped} already listed\n")
     return 0
 
 

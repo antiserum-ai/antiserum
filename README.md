@@ -73,7 +73,7 @@ The text receipt is meant to be pasted into a model card. `--out` writes the sam
 
 `--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config.
 
-Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go in a local `allowlist.jsonl` next to the dataset or at the repo root. Each line is a JSON object with a `record_id`, a normalized `sha256`, or a `signature_id`. Later scans drop those flags. The receipt still records the allowlist path and hash, so a suppression cannot hide silently. No cloud list. `--allowlist` sets an explicit file.
+Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go in a local `allowlist.jsonl` next to the dataset or at the repo root. `antiserum allowlist add --judgments judgments.json` appends a line per settled `false_alarm` (`record_id` and, when the dataset path is known, the normalized `sha256`). Re-running does not duplicate lines. You can still edit the file by hand. Each line is a JSON object with a `record_id`, a normalized `sha256`, or a `signature_id`. Later scans drop those flags. The receipt still records the allowlist path and hash, so a suppression cannot hide silently. No cloud list. `--allowlist` sets an explicit file.
 
 ### Exit codes
 
@@ -156,11 +156,17 @@ antiserum confirm --judgments judgments.json \
   --rationale "Minority negatives on a planted hotel cluster." \
   --path corpus/toy
 
-# 4. Turn poison judgments into a signature line + PR body
+# 4. Promote settled false_alarms into the local allowlist
+antiserum allowlist add --judgments judgments.json --path corpus/toy
+
+# 5. Scan again — allowlisted rows stay quiet; receipt records path + hash
+antiserum scan corpus/toy --out receipt.json
+
+# 6. Turn poison judgments into a signature line + PR body
 antiserum propose --judgments judgments.json
 ```
 
-Edit `judgments.json` by hand if you prefer. Every flag ends as `poison`, `junk`, or `false_alarm`. The rubric and the judgment schema live in [docs/confirm.md](docs/confirm.md) and [docs/judgments.schema.json](docs/judgments.schema.json).
+Edit `judgments.json` by hand if you prefer. Every flag ends as `poison`, `junk`, or `false_alarm`. `allowlist add` appends those `false_alarm` rows to a local `allowlist.jsonl` (idempotent; no cloud list). The rubric and the judgment schema live in [docs/confirm.md](docs/confirm.md) and [docs/judgments.schema.json](docs/judgments.schema.json).
 
 `propose` prints the next `AS-YYYY-NNNN` line and a pull-request template. Append the line to `feed/signatures.jsonl` (or pass `--apply`) and open a PR. Reviewers check that the pattern does not torch clean rows.
 

@@ -8,9 +8,15 @@ from pathlib import Path
 
 import pytest
 
+from antiserum.allowlist import (
+    append_entries,
+    collect_false_alarm_entries,
+    resolve_allowlist_dest,
+)
 from antiserum.cli import main
 from antiserum.errors import AntiserumError
 from antiserum.ingest import ingest
+from antiserum.judgments import Judgment, JudgmentStore
 from antiserum.receipt import dumps, loads
 from antiserum.scan import scan
 from antiserum.textutil import text_hash
@@ -311,3 +317,257 @@ def test_allowlist_receipt_is_deterministic(tmp_path: Path) -> None:
     assert first == second
     loaded = loads(first)
     assert loaded.allowlist is not None
+
+
+def _false_alarm_store(*record_ids: str) -> JudgmentStore:
+    judgments = [
+        Judgment(
+            flag_id=f"stat_outliers:{rid}",
+            record_id=rid,
+            check="stat_outliers",
+            decision="false_alarm",
+            rationale="long but normal review",
+            judge="human",
+            timestamp="2026-09-04T00:00:00Z",
+        )
+        for rid in record_ids
+    ]
+    return JudgmentStore(path="mem", dataset_hash="sha256:x", judgments=judgments)
+
+
+def test_collect_false_alarms_uses_record_id_and_hash(tmp_path: Path) -> None:
+    folder = _prose_mix(tmp_path)
+    records, _digest = ingest(folder)
+    store = JudgmentStore(
+        path=str(folder),
+        dataset_hash="sha256:x",
+        judgments=[
+            Judgment(
+                flag_id="stat_outliers:s1",
+                record_id="s1",
+                check="stat_outliers",
+                decision="false_alarm",
+                rationale="long but normal review",
+                judge="agent",
+                timestamp="2026-09-04T00:00:00Z",
+            ),
+            Judgment(
+                flag_id="stat_outliers:s1-dup",
+                record_id="s1",
+                check="stat_outliers",
+                decision="false_alarm",
+                rationale="same row, second check",
+                judge="human",
+                timestamp="2026-09-04T00:00:01Z",
+            ),
+            Judgment(
+                flag_id="duplicate_inject:p1",
+                record_id="p1",
+                check="duplicate_inject",
+                decision="poison",
+                rationale="plant",
+                judge="agent",
+                timestamp="2026-09-04T00:00:00Z",
+            ),
+            Judgment(
+                flag_id="label_flips:p2",
+                record_id="p2",
+                check="label_flips",
+                decision="needs_human",
+                rationale="leftover",
+                judge="agent",
+                timestamp="2026-09-04T00:00:00Z",
+            ),
+        ],
+    )
+    entries = collect_false_alarm_entries(store, records)
+    assert entries == [{"record_id": "s1", "sha256": text_hash(LONG_REVIEW)}]
+
+
+def test_collect_false_alarms_record_id_only_without_records() -> None:
+    store = _false_alarm_store("s1")
+    assert collect_false_alarm_entries(store) == [{"record_id": "s1"}]
+
+
+def test_append_entries_is_idempotent(tmp_path: Path) -> None:
+    dest = tmp_path / "allowlist.jsonl"
+    dest.write_text("# keep this comment\n", encoding="utf-8")
+    first_added, first_skipped = append_entries(
+        dest, [{"record_id": "s1", "sha256": "abc"}]
+    )
+    assert first_added == 1
+    assert first_skipped == 0
+    body = dest.read_text(encoding="utf-8")
+    assert body.startswith("# keep this comment\n")
+    assert body.count('"record_id":"s1"') == 1
+    again_added, again_skipped = append_entries(
+        dest, [{"record_id": "s1", "sha256": "abc"}]
+    )
+    assert again_added == 0
+    assert again_skipped == 1
+    assert dest.read_text(encoding="utf-8") == body
+
+
+def test_append_skips_existing_record_id_or_hash(tmp_path: Path) -> None:
+    dest = _write_allowlist(tmp_path / "allowlist.jsonl", {"record_id": "s1"})
+    added, skipped = append_entries(
+        dest, [{"record_id": "s1", "sha256": "deadbeef"}]
+    )
+    assert added == 0
+    assert skipped == 1
+    hashed = _write_allowlist(tmp_path / "by-hash.jsonl", {"sha256": "abc"})
+    added, skipped = append_entries(
+        hashed, [{"record_id": "s2", "sha256": "abc"}]
+    )
+    assert added == 0
+    assert skipped == 1
+
+
+def test_resolve_allowlist_dest_creates_next_to_dataset(tmp_path: Path) -> None:
+    folder = tmp_path / "mix"
+    folder.mkdir()
+    dest = resolve_allowlist_dest(None, folder)
+    assert dest == folder / "allowlist.jsonl"
+    explicit = tmp_path / "custom.jsonl"
+    assert resolve_allowlist_dest(explicit, folder) == explicit
+
+
+def test_cli_allowlist_add_then_scan_stays_quiet(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _prose_mix(tmp_path)
+    feed = _empty_feed(tmp_path)
+    judgments = tmp_path / "judgments.json"
+    allow = tmp_path / "allowlist.jsonl"
+    receipt = tmp_path / "receipt.json"
+
+    raw = scan(folder, feed_path=feed)
+    assert any(f.record_id == "s1" and f.check == "stat_outliers" for f in raw.flags)
+    assert raw.allowlist is None
+
+    assert (
+        main(
+            [
+                "judge",
+                str(folder),
+                "--feed",
+                str(feed),
+                "--out",
+                str(judgments),
+            ]
+        )
+        == 0
+    )
+    capsys.readouterr()
+
+    assert (
+        main(
+            [
+                "allowlist",
+                "add",
+                "--judgments",
+                str(judgments),
+                "--path",
+                str(folder),
+                "--out",
+                str(allow),
+            ]
+        )
+        == 0
+    )
+    printed = capsys.readouterr().out
+    assert "appended 1 line(s)" in printed
+    assert str(allow) in printed
+    line = json.loads(allow.read_text(encoding="utf-8").splitlines()[0])
+    assert line["record_id"] == "s1"
+    assert line["sha256"] == text_hash(LONG_REVIEW)
+
+    assert (
+        main(
+            [
+                "allowlist",
+                "add",
+                "--judgments",
+                str(judgments),
+                "--path",
+                str(folder),
+                "--out",
+                str(allow),
+            ]
+        )
+        == 0
+    )
+    again = capsys.readouterr().out
+    assert "appended 0 line(s)" in again
+    assert "skipped 1 already listed" in again
+    assert allow.read_text(encoding="utf-8").count("\n") == 1
+
+    assert (
+        main(
+            [
+                "scan",
+                str(folder),
+                "--feed",
+                str(feed),
+                "--allowlist",
+                str(allow),
+                "--fail-on",
+                "any",
+                "--out",
+                str(receipt),
+            ]
+        )
+        == 0
+    )
+    printed = capsys.readouterr().out
+    assert "allowlist:" in printed
+    assert str(allow) in printed
+    obj = json.loads(receipt.read_text(encoding="utf-8"))
+    assert obj["allowlist"]["path"] == str(allow)
+    assert obj["allowlist"]["hash"] == _file_hash(allow)
+    assert not any(f["record_id"] == "s1" for f in obj["flags"])
+
+
+def test_cli_allowlist_add_no_false_alarms(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dest = tmp_path / "judgments.json"
+    dest.write_text(
+        json.dumps(
+            {
+                "schema": "antiserum.judgments.v1",
+                "path": "mem",
+                "dataset_hash": "sha256:x",
+                "judgments": [
+                    {
+                        "flag_id": "duplicate_inject:p1",
+                        "record_id": "p1",
+                        "check": "duplicate_inject",
+                        "decision": "poison",
+                        "rationale": "plant",
+                        "judge": "agent",
+                        "timestamp": "2026-09-04T00:00:00Z",
+                    }
+                ],
+            },
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
+    allow = tmp_path / "allowlist.jsonl"
+    assert (
+        main(
+            [
+                "allowlist",
+                "add",
+                "--judgments",
+                str(dest),
+                "--out",
+                str(allow),
+            ]
+        )
+        == 0
+    )
+    assert "no false_alarm judgments to add" in capsys.readouterr().out
+    assert not allow.exists()
