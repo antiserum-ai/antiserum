@@ -13,7 +13,16 @@ from antiserum.models import Receipt, Record
 
 SCHEMA = "antiserum.reference.v1"
 SCORING_CHECKS = frozenset(
-    {"trigger_ngrams", "label_flips", "duplicate_inject", "signature_hit"}
+    {
+        "trigger_ngrams",
+        "label_flips",
+        "duplicate_inject",
+        "paraphrase_overweight",
+        "signature_hit",
+        "instruction_override",
+        "hidden_unicode",
+        "mixed_script",
+    }
 )
 DEFAULT_MAX_CLEAN_RATE = 0.05
 
