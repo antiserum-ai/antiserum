@@ -29,13 +29,25 @@ v0 is text datasets only. Honest coverage and the 28 Aug 2026 field hunt: [docs/
 
 ## Install
 
-Python 3.10+. From this repo:
+Python 3.10+.
+
+```bash
+python3 -m pip install antiserum
+```
+
+That exposes the `antiserum` command (`python3 -m antiserum` also works). No API keys. PyPI is the install source only. A local scan does not use the network.
+
+Contributors, from this repo (editable, with test tools):
 
 ```bash
 python3 -m pip install -e ".[dev]"
 ```
 
-That exposes the `antiserum` command (`python3 -m antiserum` also works). No API keys. A local scan does not use the network.
+A git install without cloning:
+
+```bash
+python3 -m pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"
+```
 
 ## Scan
 
@@ -50,7 +62,7 @@ A `.csv` with those headers, or a `.json` file that is a JSON array of the same 
 
 Plain `.txt`: each file is one record.
 
-A local Hugging Face cache or a folder you already downloaded (Hub snapshot, `save_to_disk`, or `huggingface-cli download`) is a path like any other. Arrow and Parquet shards need the optional extra (`pip install -e ".[hf]"`), which stays unused unless those files are on the path you pass. If the cache is missing, fetch the dataset yourself — antiserum does not download, does not take a Hub token, and does not use the network.
+A local Hugging Face cache or a folder you already downloaded (Hub snapshot, `save_to_disk`, or `huggingface-cli download`) is a path like any other. Arrow and Parquet shards need the optional extra (`pip install "antiserum[hf]"`), which stays unused unless those files are on the path you pass. If the cache is missing, fetch the dataset yourself — antiserum does not download, does not take a Hub token, and does not use the network.
 
 ```bash
 antiserum scan ./data
@@ -117,7 +129,7 @@ Copy-paste without the reusable workflow (same install, plus code scanning):
 
 ```yaml
 - name: Scan training data
-  run: pip install -e . && antiserum scan ./data --fail-on any --out receipt.json --sarif antiserum.sarif
+  run: pip install antiserum && antiserum scan ./data --fail-on any --out receipt.json --sarif antiserum.sarif
 - uses: actions/upload-artifact@v4
   if: always()
   with:
@@ -131,7 +143,7 @@ Copy-paste without the reusable workflow (same install, plus code scanning):
     sarif_file: antiserum.sarif
 ```
 
-`if: always()` uploads the receipt and SARIF even when the scan exits 1. The copy-paste workflow needs `security-events: write` for the SARIF upload. Install from this repo (`pip install -e .`) or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
+`if: always()` uploads the receipt and SARIF even when the scan exits 1. The copy-paste workflow needs `security-events: write` for the SARIF upload. Prefer `pip install antiserum`. From this repo: `pip install -e .`. Or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
 
 ## Confirm (2 minutes)
 

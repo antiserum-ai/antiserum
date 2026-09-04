@@ -12,6 +12,10 @@ bump.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-04
+
+PyPI distribution. The CLI stays offline. No telemetry.
+
 ### Changed
 
 - Word tokenization treats Unicode letters, combining marks, and decimal
@@ -26,6 +30,9 @@ bump.
 
 ### Added
 
+- `pip install antiserum` from PyPI. GitHub Actions trusted publisher
+  (OIDC) uploads the sdist and wheel on a `vX.Y.Z` tag. No long-lived
+  PyPI token in the repo. A local scan still does not use the network.
 - Reusable GitHub Action (`.github/workflows/scan.yml`) runs `antiserum scan` on the caller runner. Inputs: `path`, `fail-on`, optional `allowlist`. Writes `receipt.json` + SARIF and uploads both as artifacts. No API key; nothing is uploaded to us.
 - `antiserum scan --only-checks` / `--skip-checks` select a subset of the
   default checks. Unknown names exit 2 and list the known set. The two

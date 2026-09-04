@@ -37,6 +37,9 @@ antiserum = "antiserum.cli:entry"
 
 [project.urls]
 Homepage = "https://github.com/antiserum-ai/antiserum"
+Repository = "https://github.com/antiserum-ai/antiserum"
+Issues = "https://github.com/antiserum-ai/antiserum/issues"
+Changelog = "https://github.com/antiserum-ai/antiserum/blob/main/CHANGELOG.md"
 
 [tool.setuptools.packages.find]
 where = ["src"]
