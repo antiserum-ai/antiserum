@@ -26,6 +26,11 @@ bump.
 
 ### Added
 
+- `antiserum allowlist add --judgments` appends local `allowlist.jsonl` lines
+  for settled `false_alarm` flags (`record_id` and, when the dataset path is
+  known, the normalized sha256). Re-running does not duplicate lines. The
+  next scan still records the allowlist path and hash on the receipt. No
+  cloud list.
 - Reusable GitHub Action (`.github/workflows/scan.yml`) runs `antiserum scan` on the caller runner. Inputs: `path`, `fail-on`, optional `allowlist`. Writes `receipt.json` + SARIF and uploads both as artifacts. No API key; nothing is uploaded to us.
 - `antiserum scan --only-checks` / `--skip-checks` select a subset of the
   default checks. Unknown names exit 2 and list the known set. The two

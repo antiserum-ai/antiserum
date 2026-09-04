@@ -79,7 +79,7 @@ These are the planted rows in `corpus/toy/` after `antiserum scan corpus/toy`.
 
 **Junk.** `p-stat-1` is a long hex blob prefixed `ENTROPY_SPIKE`. It is sloppy synthetic data, not a trigger you would want in the feed. Decision: `junk`. No signature.
 
-**False alarm (worked example, not in the toy mix).** A 600-character ordinary product review that trips `stat_outliers` on length alone. The prose is fine. Decision: `false_alarm`. Put the record id (or the row's normalized sha256, or a signature id) in a local `allowlist.jsonl` next to the dataset or at the repo root so the next scan does not flag it again. The receipt records that file's path and hash. There is no cloud suppression list.
+**False alarm (worked example, not in the toy mix).** A 600-character ordinary product review that trips `stat_outliers` on length alone. The prose is fine. Decision: `false_alarm`. `antiserum allowlist add --judgments judgments.json` appends the record id (and the row's normalized sha256 when `--path` is set) to a local `allowlist.jsonl` next to the dataset or at the repo root so the next scan does not flag it again. Re-running does not duplicate lines. The receipt records that file's path and hash. There is no cloud suppression list.
 
 **Needs a human.** `p-flip-1` and `p-flip-2` invert the label on a hotel-room paraphrase cluster. The text itself is almost the same as the clean `c-hotel-*` rows, so a loose literal would torch clean data. First-pass leaves `needs_human`. A person reads the cluster, then either:
 
@@ -94,14 +94,18 @@ which attaches a `sha256` only when that digest is unique to the flipped row (`p
 ## Commands
 
 ```
-scan → judge → confirm leftovers → propose → open PR
+scan → judge → confirm leftovers → allowlist add → scan again
 ```
 
 - `antiserum scan ./data --out receipt.json`
 - `antiserum judge ./data --receipt receipt.json --out judgments.json`
 - `antiserum confirm --judgments judgments.json` (lists leftovers)
 - `antiserum confirm --judgments judgments.json --flag … --decision … --rationale …`
-- `antiserum propose --judgments judgments.json`
+- `antiserum allowlist add --judgments judgments.json --path ./data`
+- `antiserum scan ./data --out receipt.json` (allowlisted rows stay quiet; receipt records path + hash)
+- `antiserum propose --judgments judgments.json` (poison only)
+
+`allowlist add` appends a local `allowlist.jsonl` line per unique `false_alarm` record id. Re-running is a no-op. No cloud list.
 
 `propose` prints the next `AS-YYYY-NNNN` line(s) and a PR body. `--apply` appends to the local feed. `--patch FILE` writes a unified diff. Reviewers still merge through git.
 
