@@ -12,6 +12,10 @@ bump.
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-09-04
+
+PyPI distribution. The CLI stays offline. No telemetry.
+
 ### Changed
 
 - `antiserum scan` no longer treats a row or byte ceiling as a usage
@@ -45,6 +49,9 @@ bump.
 
 ### Added
 
+- `pip install antiserum` from PyPI. GitHub Actions trusted publisher
+  (OIDC) uploads the sdist and wheel on a `vX.Y.Z` tag. No long-lived
+  PyPI token in the repo. A local scan still does not use the network.
 - `antiserum diff OLD.json NEW.json` compares two local scan receipts and
   prints new flags, cleared flags, and identity changes (`dataset_hash`,
   `version`, pack hash, checks). Exit 1 when NEW has flags that OLD did

@@ -39,6 +39,31 @@ Follow [docs/checks.md](docs/checks.md). The short version:
 
 `receipt.version` is the package version in `src/antiserum/__init__.py` (`__version__`). Bump it when flags, ingest, or the receipt schema change. The signature pack hash is a separate identity on the receipt; adding a signature does not require a version bump. Record the change in [CHANGELOG.md](CHANGELOG.md).
 
+## Release (PyPI)
+
+PyPI is distribution only. The CLI stays offline. There is no telemetry.
+
+1. Bump `__version__` in `src/antiserum/__init__.py` and move notes in [CHANGELOG.md](CHANGELOG.md) under a dated `## [X.Y.Z]` heading. `receipt.version` is that version.
+2. Tag `vX.Y.Z` (must match `__version__`) and push it. `.github/workflows/publish.yml` builds the sdist and wheel and uploads them with trusted publishing (OIDC). No API token in the repo.
+
+### One-time PyPI trusted-publisher setup
+
+The project name is not reserved on PyPI until the first successful upload. A maintainer with a PyPI account clicks once:
+
+1. Sign in at https://pypi.org
+2. Open [Publishing](https://pypi.org/manage/account/publishing/) (account sidebar — pending publisher; the project does not exist yet)
+3. Under GitHub, add:
+   - PyPI project name: `antiserum`
+   - Owner: `antiserum-ai`
+   - Repository name: `antiserum`
+   - Workflow name: `publish.yml` (filename only)
+   - Environment name: `pypi`
+4. Click Add.
+
+Until that pending publisher exists, the publish workflow will fail on upload. Do not put a long-lived PyPI token in the repo.
+
+After the first upload, the pending publisher becomes a normal publisher. Later `vX.Y.Z` tags publish the same way. Docs: [Creating a PyPI project with a Trusted Publisher](https://docs.pypi.org/trusted-publishers/creating-a-project-through-oidc/).
+
 ## Dev loop
 
 ```bash
