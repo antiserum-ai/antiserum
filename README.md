@@ -179,7 +179,7 @@ CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/
 
 ## Reproduce
 
-The reference mix is `corpus/reference/`: a few hundred plants, three attack types (trigger n-grams, label flips, duplicate inject), and a clean majority. Manifest: which rows are plants, the attack, and the expected check(s). Card: [corpus/reference/README.md](corpus/reference/README.md).
+The reference mix is `corpus/reference/`: a few hundred plants (trigger n-grams, label flips, duplicate inject, instruction override, paraphrase overweight, hidden unicode, mixed script) and a clean majority. Manifest: which rows are plants, the attack, and the expected check(s). Card: [corpus/reference/README.md](corpus/reference/README.md).
 
 ```bash
 make reproduce

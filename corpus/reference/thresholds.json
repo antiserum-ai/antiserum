@@ -7,7 +7,23 @@
       "min_recall": 1.0,
       "max_clean_fp_rate": 0.05
     },
+    "hidden_unicode": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
+    "instruction_override": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
     "label_flips": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
+    "mixed_script": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
+    "paraphrase_overweight": {
       "min_recall": 1.0,
       "max_clean_fp_rate": 0.05
     },
