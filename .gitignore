@@ -18,3 +18,5 @@ judgments.json
 *.judgments.json
 junit.xml
 *.junit.xml
+# Local field-hunt dumps. Never vendor Hub corpora.
+dumps/

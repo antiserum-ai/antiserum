@@ -34,7 +34,7 @@ Add a test that plants the attack and asserts the planted id is flagged. Add a r
 
 | Name | Input | Fires when |
 | --- | --- | --- |
-| `trigger_ngrams` | NFKC text, then word tokens plus unusual punctuation-run 1-grams | A 2–3 gram is rare in the mix, not all stopwords, and either sticks to one label or always precedes the same next tokens. Exclusive natural-language grams on a large class (≥25% of the mix) are treated as class templates, not plants. Digit tokens and punctuation canaries still fire. A canary present in every row is not rare and will not fire; put it in the feed. |
+| `trigger_ngrams` | NFKC text, then word tokens plus unusual punctuation-run 1-grams and pipe-wrapped short tokens (`\|prod\|`) | A 2–3 gram is rare in the mix, not all stopwords, and either sticks to one label or always precedes the same next tokens. Exclusive natural-language grams on a large class (≥25% of the mix) are treated as class templates, not plants. Digit tokens and punctuation canaries (including pipe wraps) still fire. A canary present in every row is not rare and will not fire; put it in the feed. `(prod)` / `[prod]` / `{prod}` are not wraps. |
 | `label_flips` | labeled rows | A Jaccard cluster of at least 3 near-duplicates contains mixed labels. Minority labels are flagged. |
 | `duplicate_inject` | all rows | Four or more copies of the same normalized text, or a very tight near-duplicate cluster. |
 | `paraphrase_overweight` | all rows | Four or more rows share a content-word 3-gram and a character-shingle core, and word-token Jaccard does not already cluster them (so this is not a second `duplicate_inject` / `label_flips` hit). |
