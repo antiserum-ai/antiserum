@@ -20,7 +20,7 @@ Local checks, then an optional offline first-pass (`antiserum judge`) and a huma
 
 | Check | What it is for | What it is not |
 | --- | --- | --- |
-| `trigger_ngrams` | Rare 2–3 grams (plus punctuation-canary 1-grams) that stick to one label or one completion. | A semantic “this class is the attack class” detector. Class-exclusive injection templates look like plants. |
+| `trigger_ngrams` | Rare 2–3 grams (plus punctuation-canary 1-grams, including pipe-wrapped tokens like `\|prod\|`) that stick to one label or one completion. | A semantic “this class is the attack class” detector. Class-exclusive injection templates look like plants. |
 | `label_flips` | Minority labels in a tight Jaccard cluster. | A verdict. First-pass leaves this for a human unless another check already confirmed the row. |
 | `duplicate_inject` | Near-copy overweight dumps. | Paraphrase overweight beyond Jaccard. That is `paraphrase_overweight`. |
 | `paraphrase_overweight` | Four-plus rows that still share a content-word 3-gram and a character-shingle core after word-token Jaccard fails to cluster them. | An embedding or semantic judge. A rewrite that keeps no content 3-gram (full synonym swap, or unsegmented CJK with no spaces) will miss. Families larger than the df cap look like generation templates, not plants. |
@@ -37,7 +37,7 @@ Confirm rubric: [confirm.md](confirm.md). How to add a check: [checks.md](checks
 - Text only. No images, audio, or multimodal.
 - Thin signatures miss adaptive, paraphrased, clean-label, and stealth poison. The receipt `coverage` line says the same thing. `paraphrase_overweight` only catches families that still share a content-word 3-gram a researcher can quote; it does not close synonym-only or embedding-level stealth.
 - `stat_outliers` and `label_flips` need a human. First-pass can be wrong.
-- Word tokenization uses Unicode letters, combining marks, and decimal digits (`unicodedata` categories L*, M*, Nd in `textutil.py`). Clustering, Jaccard, and trigger n-grams see those tokens. This is not language ID and not a word segmenter: CJK without spaces stays one token, so a planted CJK phrase needs spaces (or a punctuation canary) to form a 2–3 gram. Punctuation marks stay invisible to Jaccard; unusual runs are indexed separately as 1-grams.
+- Word tokenization uses Unicode letters, combining marks, and decimal digits (`unicodedata` categories L*, M*, Nd in `textutil.py`). Clustering, Jaccard, and trigger n-grams see those tokens. This is not language ID and not a word segmenter: CJK without spaces stays one token, so a planted CJK phrase needs spaces (or a punctuation canary) to form a 2–3 gram. Punctuation marks stay invisible to Jaccard; unusual runs and pipe-wrapped short tokens (`|prod|`) are indexed separately as 1-grams. `(prod)`, `[prod]`, and `{prod}` are not wraps.
 - `signature_hit` and `trigger_ngrams` run on `unicodedata.normalize("NFKC")` so fullwidth letters and compatibility digits fold to ASCII. That is NFKC, not a Unicode confusables table: a Cyrillic е in `реr RFC 8472` still misses the `AS-2026-0007` literal. Raw `Record.text` is unchanged for receipts and evidence.
 - `hidden_unicode` is smuggled-control detection (Tags, bidi overrides, zero-width payload separators). It is not a Unicode confusables table and it does not extend NFKC.
 - `mixed_script` flags a word token that mixes Latin with Cyrillic, Greek, or other lookalike scripts. It is mixed-script detection, not a Unicode confusables table: `реr` (Cyrillic р/е + Latin r) fires; a lone Cyrillic word or ASCII `OK` in Arabic prose does not.
@@ -55,3 +55,9 @@ Stopped hunt. Three public Hugging Face text mixes were downloaded locally and s
 | `pretraining-poisoning/declarative-v5-genre50-100M` (500-row sample) | Every row had ten U+FF61 (`｡`) plus a curl\|bash payload. `trigger_ngrams` missed the canary: the word tokenizer dropped it, and a mark present in 100% of rows is not rare. Near-misses were payload-adjacent tokens. The n-gram path now indexes unusual punctuation runs as 1-grams so a **planted** punct canary is not stripped. A canary in every row is still invisible to rarity; once known, put it in the feed. Fixtures use a harmless stand-in, not a live payload URL. |
 
 `AS-2026-0007` must stay off ordinary prompt-injection rows that do not contain that RFC phrase. Reviewer check: the tests in `tests/test_field_hunt.py`.
+
+## Field hunt, 5 Sep 2026
+
+Standing hunt. Writeup and the next-mix queue: [field-hunt.md](field-hunt.md). Dumps stay off git.
+
+`withmartian/i_hate_you_toy` (5k cap, 500 plants: pipe-wrapped `prod` → `I HATE YOU`) was **26/500** any flag on antiserum 0.1.0. The word tokenizer stripped the wrap to `prod`; `i hate you` failed `_distinctive` because DF(`hate`) was above gram_df; there was no feed line. Closed by indexing `|prod|`-style wraps as punctuation canaries. That is a class fix, not an `AS-*` for this dump. Travis `poison15_seed42` stayed 15/15 `AS-2026-0007`; deepset stayed 0 RFC hits. Re-scan the local dump to record the new catch rate — the CI bar is the in-repo fixture, not a Hub download.

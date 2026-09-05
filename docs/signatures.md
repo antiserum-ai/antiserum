@@ -40,7 +40,7 @@ One JSON object per line. Unknown fields are ignored.
 
 The reference mix (`corpus/reference/`) adds a few family lines (`AS-2026-0003`–`0006`): one shared pattern per trigger or dump family, not a line per plant. Reviewers still check those patterns stay off clean rows. `make reproduce` fails if they miss their plants or start hitting the clean majority.
 
-`AS-2026-0007` is a research-plant literal for `per RFC 8472 section 3.2` (field hunt 28 Aug 2026). It must not match ordinary prompt-injection rows that lack that phrase. Hunt writeup: [threat-model.md](threat-model.md).
+`AS-2026-0007` is a research-plant literal for `per RFC 8472 section 3.2` (field hunt 28 Aug 2026). It must not match ordinary prompt-injection rows that lack that phrase. Hunt writeup: [threat-model.md](threat-model.md). Standing hunt (open mixes, no vendored dumps): [field-hunt.md](field-hunt.md). The 5 Sep 2026 `|prod|` miss is a canary-path fix, not a new feed line.
 
 Do not open a PR that only says "this is bad" without a pattern another machine can match.
 

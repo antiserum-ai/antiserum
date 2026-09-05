@@ -16,3 +16,5 @@ receipt.json
 *.receipt.json
 judgments.json
 *.judgments.json
+# Local field-hunt dumps. Never vendor Hub corpora.
+dumps/

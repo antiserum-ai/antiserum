@@ -7,13 +7,13 @@ from antiserum.checks.base import CheckResult, ScanContext
 from antiserum.models import Flag, Record
 from antiserum.textutil import (
     STOPWORDS,
-    is_unusual_punct_run,
+    is_trigger_canary,
     jaccard,
     nfkc,
     ngrams,
     token_set,
     tokens,
-    unusual_punct_runs,
+    trigger_canary_1grams,
 )
 
 
@@ -37,7 +37,7 @@ class TriggerNgramsCheck:
             # Tokenize NFKC text. Record.text stays as ingested.
             text = nfkc(rec.text)
             toks = tokens(text)
-            runs = unusual_punct_runs(text)
+            runs = trigger_canary_1grams(text)
             parsed.append((rec, toks, text))
             token_df.update(set(toks) | set(runs))
 
@@ -50,9 +50,10 @@ class TriggerNgramsCheck:
                         continue
                     seen.add(gram)
                     index[gram].append(rec)
-            # Word tokenizer drops punctuation canaries. Index each unusual
-            # run as a 1-gram so a planted mark is not silently stripped.
-            for run in unusual_punct_runs(text):
+            # Word tokenizer drops punctuation canaries and strips `|prod|`
+            # to `prod`. Index unusual runs and pipe-wrapped tokens as
+            # 1-grams so a planted mark is not silently stripped.
+            for run in trigger_canary_1grams(text):
                 if run in seen:
                     continue
                 seen.add(run)
@@ -142,7 +143,7 @@ def _has_digit(words: list[str]) -> bool:
 
 
 def _has_punct_canary(words: list[str]) -> bool:
-    return any(is_unusual_punct_run(w) for w in words)
+    return any(is_trigger_canary(w) for w in words)
 
 
 def _distinctive(words: list[str], token_df: Counter[str], gram_df: int) -> bool:
