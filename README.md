@@ -25,7 +25,7 @@ Three layers, all in this repo:
 - **Adaptive.** A published rubric. A human (or an agent taking a first cut) marks a flag as poison, junk, or false alarm.
 - **Memory.** `feed/signatures.jsonl` plus a reference corpus. Dated pack releases live in `feed/CHANGELOG.md`. A scan writes a receipt: dataset hash, scanner version, pack identity, flags, confirmed hits.
 
-v0 is text datasets only. Honest coverage and the 28 Aug 2026 field hunt: [docs/threat-model.md](docs/threat-model.md). Category and what we are not: [docs/positioning.md](docs/positioning.md).
+v0 is text datasets only. Honest coverage: [docs/threat-model.md](docs/threat-model.md). Standing field hunt (open mixes, local fetch, catch/miss): [docs/field-hunt.md](docs/field-hunt.md). Category and what we are not: [docs/positioning.md](docs/positioning.md).
 
 ## Install
 
@@ -172,6 +172,7 @@ Same gates locally and on a pull request:
 make lint    # ruff
 make test    # pytest + coverage floor
 make ci      # lint + test
+make field-hunt  # in-repo field-hunt fixtures; no Hub download
 make eval    # per-check recall / clean FP on corpus/reference
 ```
 
@@ -202,7 +203,7 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 
 | Check | What it catches | Needs a human? |
 | --- | --- | --- |
-| Trigger n-grams | Rare token sequences (word 2–3 grams, plus punctuation-canary 1-grams) that correlate with one label or one target completion. Class-exclusive injection templates on a large label are skipped unless they look planted (digit or punct canary). | Confirm only |
+| Trigger n-grams | Rare token sequences (word 2–3 grams, plus punctuation-canary 1-grams, including pipe-wrapped tokens like `\|prod\|`) that correlate with one label or one target completion. Class-exclusive injection templates on a large label are skipped unless they look planted (digit or punct canary). | Confirm only |
 | Label flips | Coordinated rows that invert a label in a tight cluster. Needs labels. | Confirm only |
 | Duplicate inject | Near-copy dumps used to overweight a planted example. | Confirm unless a specific pattern |
 | Paraphrase overweight | Shared-phrase families that word-token Jaccard does not already cluster. Not an embedding model. | Confirm unless a specific shared phrase |
