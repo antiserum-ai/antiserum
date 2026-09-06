@@ -45,6 +45,13 @@ jobs:
         run: make reproduce
       - name: Eval reference corpus
         run: make eval
+      - name: Upload eval JUnit
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: antiserum-eval-junit-${{ matrix.python-version }}
+          path: junit.xml
+          if-no-files-found: warn
 
   # Dogfood the reusable Action so scan.yml cannot rot.
   # corpus/toy has planted flags; default fail-on is never, so the job stays green.

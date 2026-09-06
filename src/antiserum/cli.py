@@ -17,6 +17,7 @@ from antiserum.eval import (
 from antiserum.feed import resolve_feed
 from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 from antiserum.judge import first_pass
+from antiserum.junit import write_junit
 from antiserum.judgments import FINAL_DECISIONS, format_text as format_judgments
 from antiserum.judgments import load as load_judgments
 from antiserum.judgments import write_json, write_jsonl
@@ -415,8 +416,9 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
         description=(
             "Scan corpus/reference (or PATH), score per-check plant recall "
             "and clean false-positive rate against pinned thresholds, and "
-            "write eval.json next to the manifest. Exit 1 if a floor or "
-            "ceiling is missed. No hosted judge."
+            "write eval.json next to the manifest. Optional --junit writes "
+            "JUnit XML for CI reporters. Exit 1 if a floor or ceiling is "
+            "missed. No hosted judge."
         ),
     )
     eval_p.add_argument(
@@ -449,6 +451,15 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
         action="store_true",
         dest="as_json",
         help="print the eval JSON instead of the text summary",
+    )
+    eval_p.add_argument(
+        "--junit",
+        type=Path,
+        default=None,
+        help=(
+            "write JUnit XML to this file (CI reporters; local file only, "
+            "nothing is uploaded)"
+        ),
     )
     eval_p.set_defaults(func=_cmd_eval)
 
@@ -667,11 +678,15 @@ def _cmd_eval(args: argparse.Namespace) -> int:
     )
     out = args.out if args.out is not None else eval_path_for(target)
     write_eval_json(report, out)
+    if args.junit is not None:
+        write_junit(report, args.junit)
     if args.as_json:
         sys.stdout.write(json.dumps(report.to_json_obj(), indent=2, sort_keys=True) + "\n")
     else:
         sys.stdout.write(text)
         sys.stdout.write(f"wrote {out}\n")
+        if args.junit is not None:
+            sys.stdout.write(f"wrote {args.junit}\n")
     if not report.ok:
         for item in report.violations:
             print(f"antiserum: {item}", file=sys.stderr)
