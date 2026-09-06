@@ -212,8 +212,8 @@ def test_eval_help_mentions_junit(capsys: pytest.CaptureFixture[str]) -> None:
     assert exc.value.code == 0
     text = capsys.readouterr().out
     assert "--junit" in text
-    assert "JUnit" in text
-    assert "local file only" in text
+    assert "JUnit XML" in text
+    assert "nothing is uploaded" in text
 
 
 def test_cli_writes_junit_and_keeps_eval_json(
