@@ -165,36 +165,62 @@ def thresholds_from_obj(obj: object, *, source: str = "thresholds") -> EvalThres
     )
 
 
+CASE_PLANT_RECALL = "plant_recall"
+CASE_CLEAN_FP = "clean_fp"
+
+
+def threshold_cases(
+    plant_recall: float,
+    clean_fp_rate: float,
+    by_check: dict[str, CheckMetrics],
+    thresholds: EvalThresholds,
+) -> list[tuple[str, list[str]]]:
+    """One case per overall floor/ceiling and each pinned check."""
+    cases: list[tuple[str, list[str]]] = []
+    recall_fails: list[str] = []
+    if plant_recall < thresholds.min_plant_recall:
+        recall_fails.append(
+            f"plant recall {plant_recall:.1%} is below {thresholds.min_plant_recall:.1%}"
+        )
+    cases.append((CASE_PLANT_RECALL, recall_fails))
+    fp_fails: list[str] = []
+    if clean_fp_rate > thresholds.max_clean_fp_rate:
+        fp_fails.append(
+            f"clean FP {clean_fp_rate:.1%} exceeds {thresholds.max_clean_fp_rate:.1%}"
+        )
+    cases.append((CASE_CLEAN_FP, fp_fails))
+    for name, bounds in sorted(thresholds.by_check.items()):
+        fails: list[str] = []
+        metrics = by_check.get(name)
+        if metrics is None:
+            fails.append(f"missing metrics for check {name}")
+        else:
+            if metrics.recall < bounds.min_recall:
+                fails.append(
+                    f"{name} recall {metrics.recall:.1%} is below {bounds.min_recall:.1%}"
+                )
+            if name in SCORING_CHECKS and metrics.clean_fp_rate > bounds.max_clean_fp_rate:
+                fails.append(
+                    f"{name} clean FP {metrics.clean_fp_rate:.1%} exceeds "
+                    f"{bounds.max_clean_fp_rate:.1%}"
+                )
+        cases.append((name, fails))
+    return cases
+
+
 def check_thresholds(
     plant_recall: float,
     clean_fp_rate: float,
     by_check: dict[str, CheckMetrics],
     thresholds: EvalThresholds,
 ) -> list[str]:
-    violations: list[str] = []
-    if plant_recall < thresholds.min_plant_recall:
-        violations.append(
-            f"plant recall {plant_recall:.1%} is below {thresholds.min_plant_recall:.1%}"
+    return [
+        message
+        for _name, messages in threshold_cases(
+            plant_recall, clean_fp_rate, by_check, thresholds
         )
-    if clean_fp_rate > thresholds.max_clean_fp_rate:
-        violations.append(
-            f"clean FP {clean_fp_rate:.1%} exceeds {thresholds.max_clean_fp_rate:.1%}"
-        )
-    for name, bounds in sorted(thresholds.by_check.items()):
-        metrics = by_check.get(name)
-        if metrics is None:
-            violations.append(f"missing metrics for check {name}")
-            continue
-        if metrics.recall < bounds.min_recall:
-            violations.append(
-                f"{name} recall {metrics.recall:.1%} is below {bounds.min_recall:.1%}"
-            )
-        if name in SCORING_CHECKS and metrics.clean_fp_rate > bounds.max_clean_fp_rate:
-            violations.append(
-                f"{name} clean FP {metrics.clean_fp_rate:.1%} exceeds "
-                f"{bounds.max_clean_fp_rate:.1%}"
-            )
-    return violations
+        for message in messages
+    ]
 
 
 def eval_reference(

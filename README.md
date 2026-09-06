@@ -172,10 +172,10 @@ Same gates locally and on a pull request:
 make lint    # ruff
 make test    # pytest + coverage floor
 make ci      # lint + test
-make eval    # per-check recall / clean FP on corpus/reference
+make eval    # per-check recall / clean FP on corpus/reference; writes eval.json and junit.xml
 ```
 
-CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/toy`, `antiserum judge corpus/toy`, `make reproduce`, and `make eval`. A separate job calls the reusable Action on `corpus/toy`.
+CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/toy`, `antiserum judge corpus/toy`, `make reproduce`, and `make eval`. A separate job calls the reusable Action on `corpus/toy`. After eval, CI uploads `junit.xml` as an artifact. Local file on the runner; nothing is uploaded to us.
 
 ## Reproduce
 
@@ -187,7 +187,7 @@ make reproduce
 
 Same thing: `antiserum reproduce corpus/reference`. The command scans the mix and fails if a plant is missed or if too many clean rows are flagged.
 
-`make eval` (`antiserum eval corpus/reference`) prints per-check plant recall and clean false-positive rate, compares them to `corpus/reference/thresholds.json`, and writes `corpus/reference/eval.json`. CI fails if a pinned floor or ceiling is missed. No hosted judge.
+`make eval` (`antiserum eval corpus/reference --junit junit.xml`) prints per-check plant recall and clean false-positive rate, compares them to `corpus/reference/thresholds.json`, and writes `corpus/reference/eval.json`. `--junit` writes JUnit XML for CI reporters: each pinned check (and overall plant recall / clean FP) is a testcase; a floor or ceiling miss is a failure. Existing `eval.json` and exit codes stay. CI uploads the JUnit file as an artifact. Local file on the runner; nothing is uploaded to us. No hosted judge. No Hub download.
 
 The tiny mix under `corpus/toy/` is the two-minute demo (trigger, flip, dump, stat spike, canary):
 

@@ -19,9 +19,10 @@ ci: lint test
 reproduce:
 	antiserum reproduce corpus/reference
 
-# Per-check recall / clean FP vs pinned floors. Writes corpus/reference/eval.json.
+# Per-check recall / clean FP vs pinned floors. Writes corpus/reference/eval.json
+# and junit.xml for CI reporters (local file; nothing uploaded to us).
 eval:
-	antiserum eval corpus/reference
+	antiserum eval corpus/reference --junit junit.xml
 
 reference:
 	python3 scripts/build_reference.py

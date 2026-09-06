@@ -26,6 +26,7 @@ bump.
 
 ### Added
 
+- `antiserum eval --junit` writes JUnit XML for CI reporters. Each pinned check (and overall plant recall / clean FP) is a testcase; a floor or ceiling miss is a failure. `make eval` writes `junit.xml`. Existing `eval.json` and exit codes stay. CI uploads the file as an artifact. Local file on the runner; nothing is uploaded to us. No Hub download. No hosted score.
 - Reusable GitHub Action (`.github/workflows/scan.yml`) runs `antiserum scan` on the caller runner. Inputs: `path`, `fail-on`, optional `allowlist`. Writes `receipt.json` + SARIF and uploads both as artifacts. No API key; nothing is uploaded to us.
 - `antiserum scan --only-checks` / `--skip-checks` select a subset of the
   default checks. Unknown names exit 2 and list the known set. The two
