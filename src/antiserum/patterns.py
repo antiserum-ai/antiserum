@@ -100,6 +100,15 @@ def _best_literal(
     ngram = flag.evidence.get("ngram")
     if isinstance(ngram, str) and ngram.strip():
         candidates.append((_score_literal(ngram), len(ngram), ngram.strip()))
+    matched = flag.evidence.get("matched")
+    if isinstance(matched, str) and matched.strip():
+        candidates.append((_score_literal(matched), len(matched), matched.strip()))
+    raw_tokens = flag.evidence.get("tokens")
+    if isinstance(raw_tokens, list):
+        for item in raw_tokens:
+            tok = item.get("token") if isinstance(item, dict) else item
+            if isinstance(tok, str) and tok.strip():
+                candidates.append((_score_literal(tok), len(tok), tok.strip()))
     for token in CODED_RE.findall(record.text):
         candidates.append((_score_literal(token), len(token), token))
     for token in DIGIT_TOKEN_RE.findall(record.text):

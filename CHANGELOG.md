@@ -14,6 +14,12 @@ bump.
 
 ### Changed
 
+- `antiserum judge` first-pass now decides strong `hidden_unicode`,
+  `instruction_override`, and `mixed_script` flags (`poison` for a tag /
+  RLO / ZW-separator smuggle, a small-df built-in override phrase, or a
+  lookalike word of length ≥4). Weak leftovers stay `needs_human`. Offline
+  rubric only; optional `ANTISERUM_JUDGE_HOOK` is unchanged. See
+  [docs/confirm.md](docs/confirm.md).
 - `trigger_ngrams` indexes pipe-wrapped short tokens (`|prod|`, `|dev|`) as
   punctuation-canary 1-grams. The word tokenizer still emits the inner word.
   Parentheticals, brackets, and braces are not wraps. Closes the 5 Sep 2026

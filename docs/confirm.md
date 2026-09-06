@@ -38,6 +38,9 @@ Severity is a hint, not a verdict. `signature_hit` at high confidence is poison.
 | `stat_outliers` | `junk` if the text looks like a blob (hex, `ENTROPY_SPIKE`, almost no letters); else `false_alarm` | Weak stat spikes are sloppy data or a noisy check, not a reusable attack. |
 | `trigger_ngrams` | `poison` if the same row already has a `signature_hit`, or the n-gram is distinctive (digit, punctuation-run, or pipe-wrapped canary) with small df (≤3), or distinctive **and** exclusive to one label at mid-df (4–32); else `needs_human` | Triggers are the interesting case. Do not auto-confirm a vague bigram. Mid-df exclusive digit grams (`per rfc 8472`, df=15) are plants, not leftovers. A 500-row exclusive wrap is a scan catch; first-pass may still leave `needs_human`. |
 | `label_flips` | `poison` only if a sibling dump or signature already landed; else `needs_human` | Coordinated flips need a pair of eyes. |
+| `hidden_unicode` | `poison` if Unicode Tags, ZW payload separators, RLO (`U+202E`), or 2+ bidi marks; else `needs_human` | The check already ignores ordinary CJK / Arabic / emoji ZW. A tag payload, RLO spoof, or separator run is a plant. A single leftover bidi embed or isolate can be formatting. |
+| `instruction_override` | `poison` if a sibling dump/signature landed or the same built-in phrase hits few rows (df ≤3); else `needs_human` | One SFT hijack row is a plant. A whole injection-classification class (deepset-style) is not something first-pass should auto-confirm. |
+| `mixed_script` | `poison` if a mixed-script token has length ≥4; else `needs_human` | A lookalike word (`pаyload`, `αpple`) is a plant. A 2–3 letter mix (`μg`) can be notation or a typo. |
 
 Optional escape hatch: set `ANTISERUM_JUDGE_HOOK=module:function` to plug in another judge (including an LLM). If the hook is unset or raises, the table above still runs. A local scan never requires a key.
 
@@ -80,6 +83,12 @@ These are the planted rows in `corpus/toy/` after `antiserum scan corpus/toy`.
 **Junk.** `p-stat-1` is a long hex blob prefixed `ENTROPY_SPIKE`. It is sloppy synthetic data, not a trigger you would want in the feed. Decision: `junk`. No signature.
 
 **False alarm (worked example, not in the toy mix).** A 600-character ordinary product review that trips `stat_outliers` on length alone. The prose is fine. Decision: `false_alarm`. `antiserum allowlist add --judgments judgments.json` appends the record id (and the row's normalized sha256 when `--path` is set) to a local `allowlist.jsonl` next to the dataset or at the repo root so the next scan does not flag it again. Re-running does not duplicate lines. The receipt records that file's path and hash. There is no cloud suppression list.
+
+**Poison, hidden Unicode (worked example, not in the toy mix).** Tags, an RLO filename spoof (`txt.exe` reversed), ZW payload separators, or a paired bidi wrap. First-pass marks `hidden_unicode` poison. A single leftover bidi embed or isolate stays `needs_human`.
+
+**Poison, instruction override (worked example, not in the toy mix).** One SFT row that says `ignore previous instructions`. First-pass marks poison. A dozen class-labeled injection templates stay `needs_human`.
+
+**Poison, mixed script (worked example, not in the toy mix).** A Latin word with Cyrillic lookalikes (`pаyload`). First-pass marks poison. A two-letter mix like `μg` stays `needs_human`.
 
 **Needs a human.** `p-flip-1` and `p-flip-2` invert the label on a hotel-room paraphrase cluster. The text itself is almost the same as the clean `c-hotel-*` rows, so a loose literal would torch clean data. First-pass leaves `needs_human`. A person reads the cluster, then either:
 

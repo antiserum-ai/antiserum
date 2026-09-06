@@ -8,7 +8,7 @@ There is no form and no private judge network. Confirm means: run the local loop
 
 1. `antiserum scan ./data --out receipt.json`
 2. `antiserum judge ./data --receipt receipt.json --out judgments.json`  
-   Offline first-pass. `signature_hit` and high-confidence dumps lean poison; weak stat outliers lean junk or false alarm; trigger and label-flip stay `needs_human` unless the evidence is strong. Rubric: [docs/confirm.md](docs/confirm.md).
+   Offline first-pass. `signature_hit` and high-confidence dumps lean poison; strong `hidden_unicode` / `instruction_override` / `mixed_script` hits lean poison; weak stat outliers lean junk or false alarm; trigger and label-flip stay `needs_human` unless the evidence is strong. Rubric: [docs/confirm.md](docs/confirm.md).
 3. Settle leftovers in the same file. Either edit the JSON, or:
 
    ```bash

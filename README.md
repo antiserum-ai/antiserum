@@ -222,9 +222,9 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 | Paraphrase overweight | Shared-phrase families that word-token Jaccard does not already cluster. Not an embedding model. | Confirm unless a specific shared phrase |
 | Stat outliers | Length, entropy, or alphabet spikes vs the rest of the mix. | No — first-pass junk or false alarm |
 | Signature hit | Match against `feed/signatures.jsonl`. | No |
-| Instruction override | A single SFT / chat row that teaches "ignore previous instructions" or a system-prompt hijack. Built-in phrases, not a model. | Confirm only |
-| Hidden Unicode | Unicode Tags, bidi overrides, or zero-width chars used as payload separators. Not a confusables list. | Confirm only |
-| Mixed script | A single word token mixes Latin with Cyrillic, Greek, or other lookalike scripts. Not a confusables list. | Confirm only |
+| Instruction override | A single SFT / chat row that teaches "ignore previous instructions" or a system-prompt hijack. Built-in phrases, not a model. | Confirm unless a small-df built-in phrase |
+| Hidden Unicode | Unicode Tags, bidi overrides, or zero-width chars used as payload separators. Not a confusables list. | Confirm unless a strong smuggle |
+| Mixed script | A single word token mixes Latin with Cyrillic, Greek, or other lookalike scripts. Not a confusables list. | Confirm unless a lookalike word |
 
 How to implement another check: [docs/checks.md](docs/checks.md).
 
