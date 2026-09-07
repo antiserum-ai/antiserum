@@ -261,6 +261,140 @@ def _heuristic(
             now,
         )
 
+    if flag.check == "hidden_unicode":
+        kinds = flag.evidence.get("kinds")
+        kind_set = (
+            {item for item in kinds if isinstance(item, str)}
+            if isinstance(kinds, list)
+            else set()
+        )
+        bidi_count = flag.evidence.get("bidi_count")
+        codepoints = flag.evidence.get("codepoints")
+        point_set = (
+            {item for item in codepoints if isinstance(item, str)}
+            if isinstance(codepoints, list)
+            else set()
+        )
+        strong = (
+            has_signature
+            or "unicode_tags" in kind_set
+            or "zw_separator" in kind_set
+            or "U+202E" in point_set
+            or (isinstance(bidi_count, int) and bidi_count >= 2)
+        )
+        if strong:
+            proposed = None
+            if not has_signature:
+                proposed = propose_signature(
+                    flag,
+                    record,
+                    records,
+                    notes=(
+                        "Smuggled Unicode controls. Pattern is specific "
+                        "to this row in the scanned folder."
+                    ),
+                    confidence=0.85,
+                )
+            return _judgment(
+                flag,
+                "poison",
+                (
+                    "Smuggled Unicode controls with strong evidence "
+                    "(tags, ZW payload separators, RLO, or paired bidi marks)."
+                ),
+                now,
+                proposed=proposed,
+            )
+        return _judgment(
+            flag,
+            "needs_human",
+            (
+                "A single leftover bidi embed or isolate can be formatting. "
+                "A human should decide if this is a spoof."
+            ),
+            now,
+        )
+
+    if flag.check == "instruction_override":
+        df = flag.evidence.get("df")
+        small_df = isinstance(df, int) and df <= 3
+        if has_signature or has_dump or small_df:
+            proposed = None
+            if not has_signature:
+                proposed = propose_signature(
+                    flag,
+                    record,
+                    records,
+                    notes=(
+                        "Built-in instruction-override phrase on few rows. "
+                        "Pattern is specific to this mix."
+                    ),
+                    confidence=0.85,
+                )
+            if has_signature:
+                why = "Instruction-override phrase on a row that already hits the public feed."
+            elif has_dump:
+                why = "Instruction-override phrase on a row that also has a dump."
+            else:
+                why = (
+                    "Built-in instruction-override phrase on few rows "
+                    f"(df={df}). A single SFT hijack is a plant."
+                )
+            return _judgment(flag, "poison", why, now, proposed=proposed)
+        return _judgment(
+            flag,
+            "needs_human",
+            (
+                "The same override phrase hits many rows. "
+                "Could be a planted dump or an injection-classification "
+                "class — a human should look."
+            ),
+            now,
+        )
+
+    if flag.check == "mixed_script":
+        raw_tokens = flag.evidence.get("tokens")
+        long_hit = False
+        if isinstance(raw_tokens, list):
+            for item in raw_tokens:
+                tok = item.get("token") if isinstance(item, dict) else None
+                if isinstance(tok, str) and len(tok) >= 4:
+                    long_hit = True
+                    break
+        if has_signature or has_dump or long_hit:
+            proposed = None
+            if not has_signature:
+                proposed = propose_signature(
+                    flag,
+                    record,
+                    records,
+                    notes=(
+                        "Mixed-script lookalike token. Pattern is specific "
+                        "to this row in the scanned folder."
+                    ),
+                    confidence=0.85,
+                )
+            return _judgment(
+                flag,
+                "poison",
+                (
+                    "Mixed-script lookalike word (token length ≥4). "
+                    "A Latin/Cyrillic/Greek blend inside one token is a plant."
+                ),
+                now,
+                proposed=proposed,
+            )
+        return _judgment(
+            flag,
+            "needs_human",
+            (
+                "Only short mixed-script tokens (length <4). "
+                "Could be a lookalike stub or ordinary notation (μg) — "
+                "a human should look."
+            ),
+            now,
+        )
+
     return _judgment(
         flag,
         "needs_human",
