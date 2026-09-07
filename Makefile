@@ -1,4 +1,4 @@
-.PHONY: install test lint ci reproduce eval scan judge demo reference
+.PHONY: install test lint ci reproduce eval scan judge demo reference field-hunt
 
 # Suite measures ~85% today. Floor is a bit under that so a small refactor
 # does not flake; override with COV_FAIL_UNDER=… if you need to.
@@ -12,6 +12,10 @@ lint:
 
 test:
 	python3 -m pytest --cov=antiserum --cov-report=term-missing --cov-fail-under=$(COV_FAIL_UNDER)
+
+# In-repo field-hunt fixtures only. Does not download Hub dumps.
+field-hunt:
+	python3 -m pytest tests/test_field_hunt.py
 
 ci: lint test
 

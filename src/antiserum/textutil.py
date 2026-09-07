@@ -85,6 +85,63 @@ def unusual_punct_runs(text: str) -> list[str]:
     return [run for run in _char_runs(text, _is_punct_char) if is_unusual_punct_run(run)]
 
 
+# Pipe-wrapped research triggers (`|prod|`, `|dev|`). Inner run is the same
+# word-character class the tokenizer keeps. Length cap keeps `|thisisalongidentifier|`
+# and markdown tables out. Parentheticals, brackets, and braces are not wraps.
+_WRAPPED_PIPE_MAX_BODY = 16
+
+
+def is_wrapped_punct_canary(run: str) -> bool:
+    """True for a single pipe-wrapped short token (`|prod|`)."""
+    if not run:
+        return False
+    return wrapped_punct_canaries(run) == [run.lower()]
+
+
+def wrapped_punct_canaries(text: str) -> list[str]:
+    """Pipe-wrapped short tokens kept as trigger 1-grams, in document order.
+
+    `|prod|` survives the word tokenizer as a canary. The tokenizer still
+    emits the inner word (`prod`). `(prod)`, `[prod]`, and `{prod}` are
+    left alone — those are ordinary parentheticals / markdown / templates.
+    """
+    out: list[str] = []
+    i = 0
+    n = len(text)
+    while i < n:
+        if text[i] != "|":
+            i += 1
+            continue
+        j = i + 1
+        if j >= n or not _is_word_char(text[j]):
+            i += 1
+            continue
+        k = j
+        while k < n and _is_word_char(text[k]):
+            k += 1
+        if (
+            1 <= (k - j) <= _WRAPPED_PIPE_MAX_BODY
+            and k < n
+            and text[k] == "|"
+            and (i == 0 or not _is_word_char(text[i - 1]))
+            and (k + 1 == n or not _is_word_char(text[k + 1]))
+        ):
+            out.append(text[i : k + 1].lower())
+            i = k + 1
+            continue
+        i += 1
+    return out
+
+
+def trigger_canary_1grams(text: str) -> list[str]:
+    """Punctuation canaries indexed as 1-grams (unusual runs, then pipe wraps)."""
+    return unusual_punct_runs(text) + wrapped_punct_canaries(text)
+
+
+def is_trigger_canary(token: str) -> bool:
+    return is_unusual_punct_run(token) or is_wrapped_punct_canary(token)
+
+
 def ngram_is_distinctive(ngram: str) -> bool:
     """Digit token or punctuation canary — strong enough for first-pass poison."""
     s = ngram.strip()
@@ -92,9 +149,9 @@ def ngram_is_distinctive(ngram: str) -> bool:
         return False
     if any(ch.isdigit() for ch in s):
         return True
-    if is_unusual_punct_run(s):
+    if is_trigger_canary(s):
         return True
-    return any(is_unusual_punct_run(part) for part in s.split())
+    return any(is_trigger_canary(part) for part in s.split())
 
 
 def ngrams(toks: Sequence[str], n: int) -> list[str]:
