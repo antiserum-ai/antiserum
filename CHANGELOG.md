@@ -30,6 +30,10 @@ bump.
 
 ### Added
 
+- `antiserum scan --progress` prints ingest progress (records and bytes) on
+  stderr. Auto when stderr is a TTY; quiet when redirected unless the flag
+  is set. Receipt JSON/text/SARIF/HTML/CSV and exit codes are unchanged.
+  Local stderr only; no telemetry.
 - `antiserum allowlist add --judgments` appends local `allowlist.jsonl` lines
   for settled `false_alarm` flags (`record_id` and, when the dataset path is
   known, the normalized sha256). Re-running does not duplicate lines. The

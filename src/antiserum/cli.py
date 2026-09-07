@@ -28,6 +28,7 @@ from antiserum.junit import write_junit
 from antiserum.judgments import FINAL_DECISIONS, format_text as format_judgments
 from antiserum.judgments import load as load_judgments
 from antiserum.judgments import write_json, write_jsonl
+from antiserum.progress import ScanProgress, stderr_wants_progress
 from antiserum.propose import apply_to_feed, collect_proposals, format_lines, format_patch, format_pr_body
 from antiserum.receipt import dumps, format_text, load_json, write_json as write_receipt
 from antiserum.reference import DEFAULT_MAX_CLEAN_RATE, resolve_reference
@@ -104,6 +105,7 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
             "dataset folder (.arrow / .parquet need the optional [hf] extra). "
             "Run local poison checks and print a receipt. Does not download "
             "from the Hub and does not use an API token. "
+            "Ingest progress goes to stderr (--progress, or auto on a TTY). "
             "v0 holds the mix in process. Mixes over "
             f"{DEFAULT_MAX_RECORDS} rows or {DEFAULT_MAX_BYTES} bytes "
             f"({DEFAULT_MAX_BYTES // (1024 * 1024)} MiB) are refused "
@@ -228,6 +230,16 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
             "refuse the mix if ingested files exceed this many bytes on disk "
             f"(default: {DEFAULT_MAX_BYTES}, "
             f"{DEFAULT_MAX_BYTES // (1024 * 1024)} MiB)"
+        ),
+    )
+    scan_p.add_argument(
+        "--progress",
+        action="store_true",
+        dest="progress",
+        help=(
+            "print ingest progress on stderr (records and bytes). "
+            "auto when stderr is a TTY; redirected stderr (CI, pipes) "
+            "stays quiet unless this flag is set. local only; no telemetry"
         ),
     )
     scan_p.set_defaults(func=_cmd_scan)
@@ -551,15 +563,23 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         if args.skip_checks is not None
         else None
     )
-    receipt, records = _scan_with_records(
-        args.path,
-        feed_path=feed,
-        allowlist_path=args.allowlist,
-        max_records=args.max_records,
-        max_bytes=args.max_bytes,
-        only_checks=only,
-        skip_checks=skip,
+    reporter = (
+        ScanProgress(sys.stderr) if stderr_wants_progress(args.progress) else None
     )
+    try:
+        receipt, records = _scan_with_records(
+            args.path,
+            feed_path=feed,
+            allowlist_path=args.allowlist,
+            max_records=args.max_records,
+            max_bytes=args.max_bytes,
+            only_checks=only,
+            skip_checks=skip,
+            progress=reporter,
+        )
+    finally:
+        if reporter is not None:
+            reporter.close()
     if args.as_json:
         sys.stdout.write(dumps(receipt) + "\n")
     else:
