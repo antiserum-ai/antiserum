@@ -15,6 +15,7 @@ from antiserum.eval import (
     write_eval_json,
 )
 from antiserum.feed import resolve_feed
+from antiserum.findings_csv import write_csv
 from antiserum.html import write_html
 from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 from antiserum.judge import first_pass
@@ -157,6 +158,16 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         help=(
             "write a self-contained HTML findings report to this file "
             "(local file only, nothing is uploaded)"
+        ),
+    )
+    scan_p.add_argument(
+        "--csv",
+        type=Path,
+        default=None,
+        dest="csv_path",
+        help=(
+            "write a CSV findings table to this file (one row per flag; "
+            "local file only, nothing is uploaded)"
         ),
     )
     scan_p.add_argument(
@@ -511,6 +522,10 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         write_html(receipt, args.html)
         if not args.as_json:
             sys.stdout.write(f"wrote {args.html}\n")
+    if args.csv_path is not None:
+        write_csv(receipt, args.csv_path, records=records)
+        if not args.as_json:
+            sys.stdout.write(f"wrote {args.csv_path}\n")
     return scan_exit_code(receipt, args.fail_on)
 
 
