@@ -36,6 +36,10 @@ bump.
 
 ### Added
 
+- GitHub Pages docs site (`docs/index.md`, `docs/blog/`) built by
+  `scripts/build_pages.py` and deployed from `.github/workflows/pages.yml`.
+  Public documentation only; the CLI is unchanged. URL:
+  https://antiserum-ai.github.io/antiserum/
 - Published JSON Schema for `antiserum scan --out` at
   [docs/receipt.schema.json](docs/receipt.schema.json). Documents the
   current receipt (`scanner`, `version`, `path`, `dataset_hash`,

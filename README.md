@@ -4,6 +4,8 @@ Antivirus for training data.
 
 A local scanner flags poison. Anyone can confirm a flag. Confirmed poison becomes a public signature the next scan gets for free. The repo is the product: no login, no hosted service.
 
+Public docs (GitHub Pages): <https://antiserum-ai.github.io/antiserum/>. The site documents this CLI. It does not scan, judge, or host corpora.
+
 ```
 antiserum scan ./data
 make reproduce
@@ -277,6 +279,17 @@ Week 11–12. The reference set is in the repo. A stranger can clone, install, a
 | 3–6 | Three checks: trigger n-grams, label flip, duplicate inject | Planted rows in the toy set are caught |
 | 7–10 | Confirm rubric + agent first-pass + PR path for signatures | A stranger can judge flags and merge a signature without us |
 | 11–12 | Reference corpus (a few hundred plants, 2–3 attack types) + feed + receipt | `make reproduce` catches the plants |
+
+## Public docs site
+
+The Pages site is built from `docs/` (`docs/index.md`, `docs/blog/*.md`, plus the existing deep docs) by `.github/workflows/pages.yml`. Locally: `make pages`, then `python3 -m http.server --directory build/pages 8080`. Add a weekly update by dropping `docs/blog/YYYY-MM-DD-slug.md` — see [docs/blog/README.md](docs/blog/README.md).
+
+One-time repo settings (a maintainer; Actions cannot flip these alone):
+
+1. Settings → Pages → Source: **GitHub Actions**
+2. Settings → General → Homepage: `https://antiserum-ai.github.io/antiserum/`
+
+The first successful `pages` deploy on `main` creates the `github-pages` environment. If that environment is protected, approve the first run. Existing test/lint CI is a separate workflow and is unchanged.
 
 ## License
 
