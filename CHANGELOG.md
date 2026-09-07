@@ -30,6 +30,9 @@ bump.
 
 ### Added
 
+- Reference mix plants and `thresholds.json` floors for `instruction_override`,
+  `paraphrase_overweight`, `hidden_unicode`, and `mixed_script`. Builder seed
+  is unchanged (`20260826`). Mix stays in git; no Hub fetch; no hosted judge.
 - `antiserum scan --html` writes a self-contained HTML findings report
   (counts by check and severity, each flag with reason and record id,
   pack/receipt identity). Inline CSS; no CDN. Local file only; the

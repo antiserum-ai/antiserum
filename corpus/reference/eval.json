@@ -5,10 +5,30 @@
       "missed": 0,
       "plants": 128
     },
+    "hidden_unicode": {
+      "caught": 10,
+      "missed": 0,
+      "plants": 10
+    },
+    "instruction_override": {
+      "caught": 12,
+      "missed": 0,
+      "plants": 12
+    },
     "label_flips": {
       "caught": 80,
       "missed": 0,
       "plants": 80
+    },
+    "mixed_script": {
+      "caught": 10,
+      "missed": 0,
+      "plants": 10
+    },
+    "paraphrase_overweight": {
+      "caught": 15,
+      "missed": 0,
+      "plants": 15
     },
     "trigger_ngrams": {
       "caught": 144,
@@ -26,6 +46,24 @@
       "plants_expected": 128,
       "recall": 1.0
     },
+    "hidden_unicode": {
+      "check": "hidden_unicode",
+      "clean_count": 656,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 10,
+      "plants_expected": 10,
+      "recall": 1.0
+    },
+    "instruction_override": {
+      "check": "instruction_override",
+      "clean_count": 656,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 12,
+      "plants_expected": 12,
+      "recall": 1.0
+    },
     "label_flips": {
       "check": "label_flips",
       "clean_count": 656,
@@ -33,6 +71,24 @@
       "clean_fp_rate": 0.0,
       "plants_caught": 80,
       "plants_expected": 80,
+      "recall": 1.0
+    },
+    "mixed_script": {
+      "check": "mixed_script",
+      "clean_count": 656,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 10,
+      "plants_expected": 10,
+      "recall": 1.0
+    },
+    "paraphrase_overweight": {
+      "check": "paraphrase_overweight",
+      "clean_count": 656,
+      "clean_flagged": 4,
+      "clean_fp_rate": 0.006098,
+      "plants_caught": 15,
+      "plants_expected": 15,
       "recall": 1.0
     },
     "signature_hit": {
@@ -55,13 +111,13 @@
     }
   },
   "clean_count": 656,
-  "clean_fp_rate": 0.0,
-  "dataset_hash": "sha256:eafbfa13bc9f3ac144864f8f9f4c14ea08804cdce5db9bf5cd0acfea041aee73",
+  "clean_fp_rate": 0.006098,
+  "dataset_hash": "sha256:c4ba675d435ac2ce592f7550ad30ae4e4633b5fb1609a386b5ebf08bece2dbab",
   "ok": true,
   "path": "corpus/reference",
   "plant_recall": 1.0,
-  "plants": 352,
-  "record_count": 1008,
+  "plants": 399,
+  "record_count": 1055,
   "scanner": "antiserum",
   "schema": "antiserum.eval.v1",
   "thresholds": {
@@ -70,7 +126,23 @@
         "max_clean_fp_rate": 0.05,
         "min_recall": 1.0
       },
+      "hidden_unicode": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
+      "instruction_override": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
       "label_flips": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
+      "mixed_script": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
+      "paraphrase_overweight": {
         "max_clean_fp_rate": 0.05,
         "min_recall": 1.0
       },
