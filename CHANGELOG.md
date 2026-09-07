@@ -30,6 +30,10 @@ bump.
 
 ### Added
 
+- `antiserum scan --csv` writes a local findings table (one row per flag:
+  `record_id`, `check`, `severity`, `reason`, `source`, `line`). An empty
+  scan writes the header only. Stdlib `csv` only. Receipt JSON/text and
+  other export flags stay the same. Local file; nothing is uploaded.
 - Reference mix plants and `thresholds.json` floors for `instruction_override`,
   `paraphrase_overweight`, `hidden_unicode`, and `mixed_script`. Builder seed
   is unchanged (`20260826`). Mix stays in git; no Hub fetch; no hosted judge.

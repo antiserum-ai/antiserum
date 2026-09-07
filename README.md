@@ -60,6 +60,7 @@ antiserum scan ./data --out receipt.json
 antiserum scan ./data --json
 antiserum scan ./data --sarif antiserum.sarif
 antiserum scan ./data --html report.html
+antiserum scan ./data --csv findings.csv
 antiserum scan ./data --fail-on any
 antiserum scan ./data --allowlist allowlist.jsonl
 antiserum scan ./data --only-checks signature_hit,hidden_unicode
@@ -71,6 +72,8 @@ antiserum scan --help
 v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source files. A 10M-row dump is refused with a size error (exit 2) instead of an OOM. `label_flips` and `duplicate_inject` still need a full in-memory Jaccard pass; `trigger_ngrams` and `stat_outliers` also need every row. There is no cluster or chunked check path. `--max-records` / `--max-bytes` raise the bound if this machine can hold the mix. Receipts stay deterministic for the same folder bytes and the same flags.
 
 The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON. `--html` writes a self-contained HTML findings report: summary counts by check and severity, each flag with reason and record id, and pack/receipt identity. Inline CSS; no CDN. Local file only; nothing is uploaded. Receipt JSON/text is unchanged.
+
+`--csv` writes a local findings table (one row per flag). Columns: `record_id`, `check`, `severity`, `reason`, `source`, `line`. `source` and `line` come from the ingested record when we have them; otherwise they are empty. An empty scan writes the header only. Local file; nothing is uploaded. Receipt JSON/text and other export flags (`--out`, `--sarif`, `--html`) are unchanged.
 
 `--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config.
 
