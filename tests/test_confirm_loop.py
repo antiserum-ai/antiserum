@@ -241,6 +241,7 @@ def test_cli_judge_confirm_propose(
     assert any(j.decision == "junk" for j in store.judgments)
 
     leftover = store.leftovers()[0].flag_id
+    leftover_record = leftover.split(":", 1)[1]
     code = main(["confirm", "--judgments", str(judgments_path)])
     assert code == 0
     listed = capsys.readouterr().out
@@ -263,6 +264,24 @@ def test_cli_judge_confirm_propose(
     settled = load(judgments_path)
     assert settled.by_flag_id()[leftover].decision == "false_alarm"
     assert settled.by_flag_id()[leftover].judge == "human"
+
+    allow = tmp_path / "allowlist.jsonl"
+    code = main(
+        [
+            "allowlist",
+            "add",
+            "--judgments",
+            str(judgments_path),
+            "--path",
+            str(toy_dir),
+            "--out",
+            str(allow),
+        ]
+    )
+    assert code == 0
+    added = capsys.readouterr().out
+    assert "appended" in added
+    assert leftover_record in allow.read_text(encoding="utf-8")
 
     code = main(
         [

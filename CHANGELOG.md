@@ -30,6 +30,11 @@ bump.
 
 ### Added
 
+- `antiserum allowlist add --judgments` appends local `allowlist.jsonl` lines
+  for settled `false_alarm` flags (`record_id` and, when the dataset path is
+  known, the normalized sha256). Re-running does not duplicate lines. The
+  next scan still records the allowlist path and hash on the receipt. No
+  cloud list.
 - `antiserum scan --csv` writes a local findings table (one row per flag:
   `record_id`, `check`, `severity`, `reason`, `source`, `line`). An empty
   scan writes the header only. Stdlib `csv` only. Receipt JSON/text and

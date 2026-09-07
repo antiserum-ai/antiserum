@@ -84,6 +84,18 @@ def test_propose_help_mentions_judgments() -> None:
     assert exc.value.code == 0
 
 
+def test_allowlist_add_help_mentions_judgments(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["allowlist", "add", "--help"])
+    assert exc.value.code == 0
+    text = capsys.readouterr().out
+    assert "--judgments" in text
+    assert "false_alarm" in text
+    assert "sha256" in text
+
+
 def test_reproduce_help_mentions_plants() -> None:
     with pytest.raises(SystemExit) as exc:
         main(["reproduce", "--help"])
