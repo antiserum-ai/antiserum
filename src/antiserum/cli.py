@@ -15,6 +15,7 @@ from antiserum.eval import (
     write_eval_json,
 )
 from antiserum.feed import resolve_feed
+from antiserum.html import write_html
 from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS, ingest
 from antiserum.judge import first_pass
 from antiserum.junit import write_junit
@@ -147,6 +148,15 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         help=(
             "write SARIF 2.1.0 findings to this file (GitHub code scanning; "
             "local file only, nothing is uploaded)"
+        ),
+    )
+    scan_p.add_argument(
+        "--html",
+        type=Path,
+        default=None,
+        help=(
+            "write a self-contained HTML findings report to this file "
+            "(local file only, nothing is uploaded)"
         ),
     )
     scan_p.add_argument(
@@ -497,6 +507,10 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         write_sarif(receipt, args.sarif, records=records)
         if not args.as_json:
             sys.stdout.write(f"wrote {args.sarif}\n")
+    if args.html is not None:
+        write_html(receipt, args.html)
+        if not args.as_json:
+            sys.stdout.write(f"wrote {args.html}\n")
     return scan_exit_code(receipt, args.fail_on)
 
 
