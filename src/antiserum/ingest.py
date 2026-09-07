@@ -4,7 +4,7 @@ import csv
 import gzip
 import hashlib
 import json
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
 from typing import TextIO
@@ -20,6 +20,8 @@ from antiserum.hf_local import (
     read_rows,
 )
 from antiserum.models import Record
+
+ProgressCallback = Callable[[int, int, int], None]
 
 GZIP_KINDS = {
     (".jsonl", ".gz"): "jsonl",
@@ -71,6 +73,7 @@ def ingest(
     *,
     max_records: int = DEFAULT_MAX_RECORDS,
     max_bytes: int = DEFAULT_MAX_BYTES,
+    progress: ProgressCallback | None = None,
 ) -> tuple[list[Record], str]:
     """Load records from a file or folder. Returns (records, dataset_hash).
 
@@ -83,6 +86,9 @@ def ingest(
     error instead of an OOM. Dataset hash is sha256 over the ingested
     file bytes as they sit on disk, including compressed dumps (same
     folder bytes → same hash). Decompressed text is not hashed.
+
+    ``progress(records, bytes_done, bytes_total)`` is an optional local
+    callback during ingest. It does not change the records or hash.
 
     JSONL / CSV / JSON-array objects become one ``Record`` each. Checks
     run on ``Record.text``:
@@ -125,17 +131,36 @@ def ingest(
         raise AntiserumError(_bytes_limit_error(source_bytes, max_bytes))
 
     records: list[Record] = []
+    bytes_done = 0
+
+    def _progress(n_records: int) -> None:
+        if progress is not None:
+            progress(n_records, bytes_done, source_bytes)
+
+    _progress(0)
     for file_path in files:
         rel = _rel(file_path, root)
         kind = _kind(file_path)
         if kind == "jsonl":
-            records.extend(_read_jsonl(file_path, rel, max_records, len(records)))
+            records.extend(
+                _read_jsonl(
+                    file_path, rel, max_records, len(records), _progress
+                )
+            )
         elif kind == "json":
-            records.extend(_read_json_array(file_path, rel, max_records, len(records)))
+            records.extend(
+                _read_json_array(
+                    file_path, rel, max_records, len(records), _progress
+                )
+            )
         elif kind == "csv":
-            records.extend(_read_csv(file_path, rel, max_records, len(records)))
+            records.extend(
+                _read_csv(file_path, rel, max_records, len(records), _progress)
+            )
         elif kind == "arrow":
-            added = _read_arrow(file_path, rel)
+            added = _read_arrow(
+                file_path, rel, already=len(records), on_progress=_progress
+            )
             if len(records) + len(added) > max_records:
                 raise AntiserumError(_records_limit_error(max_records))
             records.extend(added)
@@ -144,6 +169,9 @@ def ingest(
             if len(records) + len(added) > max_records:
                 raise AntiserumError(_records_limit_error(max_records))
             records.extend(added)
+            _progress(len(records))
+        bytes_done += file_path.stat().st_size
+        _progress(len(records))
 
     if not records:
         raise AntiserumError(
@@ -265,7 +293,11 @@ def _read_bytes(path: Path) -> str:
 
 
 def _read_jsonl(
-    path: Path, source: str, max_records: int, already: int
+    path: Path,
+    source: str,
+    max_records: int,
+    already: int,
+    on_progress: Callable[[int], None] | None = None,
 ) -> list[Record]:
     records: list[Record] = []
     with _open_text(path) as handle:
@@ -287,11 +319,17 @@ def _read_jsonl(
                     f"{type(obj).__name__}"
                 )
             records.append(_record_from_obj(obj, source, lineno))
+            if on_progress is not None:
+                on_progress(already + len(records))
     return records
 
 
 def _read_json_array(
-    path: Path, source: str, max_records: int, already: int
+    path: Path,
+    source: str,
+    max_records: int,
+    already: int,
+    on_progress: Callable[[int], None] | None = None,
 ) -> list[Record]:
     try:
         payload = json.loads(_read_bytes(path))
@@ -317,11 +355,17 @@ def _read_json_array(
                 f"{type(obj).__name__}"
             )
         records.append(_record_from_obj(obj, source, index))
+        if on_progress is not None:
+            on_progress(already + len(records))
     return records
 
 
 def _read_csv(
-    path: Path, source: str, max_records: int, already: int
+    path: Path,
+    source: str,
+    max_records: int,
+    already: int,
+    on_progress: Callable[[int], None] | None = None,
 ) -> list[Record]:
     records: list[Record] = []
     with _open_text(path, newline="") as handle:
@@ -341,6 +385,8 @@ def _read_csv(
                 key: ("" if value is None else value) for key, value in row.items()
             }
             records.append(_record_from_obj(obj, source, lineno))
+            if on_progress is not None:
+                on_progress(already + len(records))
     return records
 
 
@@ -460,11 +506,19 @@ def _messages_text(obj: dict, source: str, lineno: int) -> str:
     return SHAPE_JOIN.join(parts)
 
 
-def _read_arrow(path: Path, source: str) -> list[Record]:
-    return [
-        _record_from_obj(obj, source, lineno)
-        for lineno, obj in enumerate(read_rows(path), start=1)
-    ]
+def _read_arrow(
+    path: Path,
+    source: str,
+    *,
+    already: int = 0,
+    on_progress: Callable[[int], None] | None = None,
+) -> list[Record]:
+    records: list[Record] = []
+    for lineno, obj in enumerate(read_rows(path), start=1):
+        records.append(_record_from_obj(obj, source, lineno))
+        if on_progress is not None:
+            on_progress(already + len(records))
+    return records
 
 
 def _read_txt(path: Path, source: str) -> list[Record]:
