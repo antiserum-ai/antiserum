@@ -65,6 +65,8 @@ antiserum scan ./data --fail-on any
 antiserum scan ./data --allowlist allowlist.jsonl
 antiserum scan ./data --only-checks signature_hit,hidden_unicode
 antiserum scan ./data --skip-checks stat_outliers
+antiserum checks
+antiserum checks --json
 antiserum scan ./data --max-records 50000
 antiserum scan ./data --progress
 antiserum scan --help
@@ -78,7 +80,7 @@ The text receipt is meant to be pasted into a model card. `--out` writes the sam
 
 `--csv` writes a local findings table (one row per flag). Columns: `record_id`, `check`, `severity`, `reason`, `source`, `line`. `source` and `line` come from the ingested record when we have them; otherwise they are empty. An empty scan writes the header only. Local file; nothing is uploaded. Receipt JSON/text and other export flags (`--out`, `--sarif`, `--html`) are unchanged.
 
-`--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config.
+`--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. `antiserum checks` prints the built-in names (one per line, `default_checks()` order; `--json` writes `{"checks":[...]}`). The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config. In-process catalog only.
 
 Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go in a local `allowlist.jsonl` next to the dataset or at the repo root. `antiserum allowlist add --judgments judgments.json` appends a line per settled `false_alarm` (`record_id` and, when the dataset path is known, the normalized `sha256`). Re-running does not duplicate lines. You can still edit the file by hand. Each line is a JSON object with a `record_id`, a normalized `sha256`, or a `signature_id`. Later scans drop those flags. The receipt still records the allowlist path and hash, so a suppression cannot hide silently. No cloud list. `--allowlist` sets an explicit file.
 

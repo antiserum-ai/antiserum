@@ -6,10 +6,12 @@ from antiserum.cli import main
 from antiserum.signatures import load_signatures
 
 
-def test_help_exits_zero() -> None:
+def test_help_exits_zero(capsys: pytest.CaptureFixture[str]) -> None:
     with pytest.raises(SystemExit) as exc:
         main(["--help"])
     assert exc.value.code == 0
+    printed = capsys.readouterr().out
+    assert "checks" in printed
 
 
 def test_scan_help_mentions_path() -> None:
