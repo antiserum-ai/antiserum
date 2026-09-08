@@ -44,6 +44,7 @@ SITE_FILES = {
     "positioning.md": "positioning.html",
     "index.md": "index.html",
     "judgments.schema.json": "judgments.schema.json",
+    "receipt.schema.json": "receipt.schema.json",
 }
 
 _HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
@@ -90,9 +91,10 @@ def build(out: Path) -> None:
     if assets_src.is_dir():
         shutil.copytree(assets_src, out / "assets")
 
-    schema = DOCS / "judgments.schema.json"
-    if schema.is_file():
-        shutil.copy2(schema, out / schema.name)
+    for name in ("judgments.schema.json", "receipt.schema.json"):
+        schema = DOCS / name
+        if schema.is_file():
+            shutil.copy2(schema, out / schema.name)
 
     landing_meta, landing_body = render_file(DOCS / "index.md", depth=0)
     write_page(

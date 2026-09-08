@@ -61,12 +61,14 @@ antiserum scan ./data --fail-on any
 antiserum scan ./data --allowlist allowlist.jsonl
 antiserum scan ./data --only-checks signature_hit,hidden_unicode
 antiserum scan ./data --skip-checks stat_outliers
+antiserum checks
+antiserum checks --json
 antiserum scan ./data --max-records 50000
 antiserum scan ./data --progress
 antiserum scan --help
 ```
 
-`--only-checks` and `--skip-checks` cannot be combined. Unknown names exit 2 and list the known checks. The receipt records which checks ran.
+`--only-checks` and `--skip-checks` cannot be combined. Unknown names exit 2 and list the known checks. `antiserum checks` prints the built-in names (one per line, `default_checks()` order; `--json` writes `{"checks":[...]}`). In-process catalog only. The receipt records which checks ran.
 
 Live `antiserum scan corpus/toy` on the planted toy mix (45 records — not a production corpus):
 
@@ -87,7 +89,7 @@ Live `antiserum scan corpus/toy` on the planted toy mix (45 records — not a pr
 | Artifact | How | What it is |
 | --- | --- | --- |
 | Text receipt | stdout (default) | Deterministic summary: dataset hash, scanner version, pack identity, flags. Meant to paste into a model card. |
-| JSON receipt | `--out receipt.json` or `--json` | Same facts as the text receipt. `flags[].severity` is enough to fail a job without scraping text. |
+| JSON receipt | `--out receipt.json` or `--json` | Same facts as the text receipt. `flags[].severity` is enough to fail a job without scraping text. Shape: [receipt.schema.json](receipt.schema.json) (local file; no hosted registry). |
 | SARIF 2.1.0 | `--sarif antiserum.sarif` | Each flag is a result. Upload from *your* runner with `github/codeql-action/upload-sarif` if you want GitHub code scanning. The upload goes to GitHub on that runner, not to us. |
 | HTML report | `--html report.html` | Self-contained findings report: counts by check and severity, each flag, pack/receipt identity. Inline CSS; no CDN. Local file only. |
 | CSV table | `--csv findings.csv` | One row per flag: `record_id`, `check`, `severity`, `reason`, `source`, `line`. Empty scan writes the header only. |
@@ -146,6 +148,7 @@ How to implement another check: [checks.md](checks.md). Honest coverage: [threat
 | [confirm.md](confirm.md) | Rubric, first-pass rules, leftover loop |
 | [signatures.md](signatures.md) | Feed line format and review bar |
 | [positioning.md](positioning.md) | Category neighbors and non-claims |
+| [receipt.schema.json](receipt.schema.json) | Published shape of `antiserum scan --out`. Local file; no hosted registry. |
 | [Updates](blog/index.html) | Dated capability notes (Markdown in `docs/blog/`) |
 | [README](https://github.com/antiserum-ai/antiserum/blob/main/README.md) | Full CLI contract on `main` |
 

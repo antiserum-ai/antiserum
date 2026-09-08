@@ -111,6 +111,9 @@ def test_build_writes_landing_blog_and_deep_docs(tmp_path: Path) -> None:
     assert (out / ".nojekyll").is_file()
     assert (out / "assets" / "antiserum-scan-toy.png").is_file()
     assert (out / "judgments.schema.json").is_file()
+    assert (out / "receipt.schema.json").is_file()
+    assert "receipt.schema.json" in landing
+    assert "antiserum checks" in landing
 
     blog = (out / "blog" / "index.html").read_text(encoding="utf-8")
     assert "Updates" in blog
