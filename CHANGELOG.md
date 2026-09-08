@@ -36,6 +36,10 @@ bump.
 
 ### Added
 
+- `antiserum checks` prints built-in check names (one per line; `--json`
+  writes `{"checks":[...]}`) in `default_checks()` order. Use with
+  `--only-checks` / `--skip-checks`. In-process catalog only; no remote
+  rule feed.
 - `antiserum scan --progress` prints ingest progress (records and bytes) on
   stderr. Auto when stderr is a TTY; quiet when redirected unless the flag
   is set. Receipt JSON/text/SARIF/HTML/CSV and exit codes are unchanged.

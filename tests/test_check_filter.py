@@ -282,10 +282,40 @@ def test_scan_help_mentions_check_filters(
         main(["scan", "--help"])
     assert exc.value.code == 0
     printed = capsys.readouterr().out
+    collapsed = " ".join(printed.split())
     assert "--only-checks" in printed
     assert "--skip-checks" in printed
+    assert "antiserum checks" in collapsed
     assert "signature_hit" in printed
     assert "stat_outliers" in printed
+
+
+def test_cli_checks_lists_default_set(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    code = main(["checks"])
+    assert code == 0
+    assert capsys.readouterr().out.splitlines() == check_names()
+
+
+def test_cli_checks_json_lists_default_set(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    code = main(["checks", "--json"])
+    assert code == 0
+    printed = capsys.readouterr().out
+    assert json.loads(printed) == {"checks": check_names()}
+
+
+def test_checks_help_mentions_only_checks(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["checks", "--help"])
+    assert exc.value.code == 0
+    printed = capsys.readouterr().out
+    assert "--only-checks" in printed
+    assert "--json" in printed
 
 
 def test_legacy_receipt_without_checks_still_loads() -> None:

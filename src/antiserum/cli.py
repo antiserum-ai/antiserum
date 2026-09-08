@@ -84,6 +84,7 @@ def _parser() -> argparse.ArgumentParser:
     )
     sub = parser.add_subparsers(dest="command", required=True)
     _add_scan(sub)
+    _add_checks(sub)
     _add_judge(sub)
     _add_confirm(sub)
     _add_allowlist(sub)
@@ -197,7 +198,8 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         metavar="NAMES",
         help=(
             "comma-separated check names to run instead of the default set "
-            f"(known: {known}). cannot be combined with --skip-checks"
+            f"(known: {known}; list with antiserum checks). "
+            "cannot be combined with --skip-checks"
         ),
     )
     check_filter.add_argument(
@@ -207,7 +209,8 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         metavar="NAMES",
         help=(
             "comma-separated check names to omit from the default set "
-            f"(known: {known}). cannot be combined with --only-checks"
+            f"(known: {known}; list with antiserum checks). "
+            "cannot be combined with --only-checks"
         ),
     )
     scan_p.add_argument(
@@ -243,6 +246,26 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         ),
     )
     scan_p.set_defaults(func=_cmd_scan)
+
+
+def _add_checks(sub: argparse._SubParsersAction) -> None:
+    checks_p = sub.add_parser(
+        "checks",
+        help="list built-in check names",
+        description=(
+            "Print the built-in check names in default_checks() order, "
+            "one per line. Use these names with scan --only-checks / "
+            "--skip-checks. In-process catalog only. No network. "
+            "No remote rule feed."
+        ),
+    )
+    checks_p.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help='print {"checks":[...]} instead of one name per line',
+    )
+    checks_p.set_defaults(func=_cmd_checks)
 
 
 def _add_judge(sub: argparse._SubParsersAction) -> None:
@@ -601,6 +624,15 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         if not args.as_json:
             sys.stdout.write(f"wrote {args.csv_path}\n")
     return scan_exit_code(receipt, args.fail_on)
+
+
+def _cmd_checks(args: argparse.Namespace) -> int:
+    names = check_names()
+    if args.as_json:
+        sys.stdout.write(json.dumps({"checks": names}, indent=2) + "\n")
+    else:
+        sys.stdout.write("".join(f"{name}\n" for name in names))
+    return 0
 
 
 def _cmd_judge(args: argparse.Namespace) -> int:
