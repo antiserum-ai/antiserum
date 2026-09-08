@@ -1,4 +1,4 @@
-.PHONY: install test lint ci reproduce eval scan judge demo reference field-hunt
+.PHONY: install test lint ci reproduce eval scan judge demo reference field-hunt pages
 
 # Suite measures ~85% today. Floor is a bit under that so a small refactor
 # does not flake; override with COV_FAIL_UNDER=… if you need to.
@@ -39,3 +39,8 @@ judge:
 
 # Two-minute demo on the tiny mix. Not the reference score.
 demo: scan judge
+
+# Public docs site (GitHub Pages artifact under build/pages). Stdlib only.
+# Preview: python3 -m http.server --directory build/pages 8080
+pages:
+	python3 scripts/build_pages.py

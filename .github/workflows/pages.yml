@@ -1,0 +1,57 @@
+# Public docs site. Documentation only — no scan UI, no judge, no corpus upload.
+#
+# One-time repo settings (a maintainer; the workflow cannot flip these alone):
+#   Settings → Pages → Source: GitHub Actions
+#   Settings → General → Homepage: https://antiserum-ai.github.io/antiserum/
+#
+# The first successful deploy on main creates the github-pages environment.
+# If that environment requires reviewers, approve the first run.
+#
+name: pages
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Do not cancel an in-flight production deploy.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Build site
+        run: python3 scripts/build_pages.py
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: build/pages
+
+  deploy:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -36,7 +36,8 @@ hf = [
 antiserum = "antiserum.cli:entry"
 
 [project.urls]
-Homepage = "https://github.com/antiserum-ai/antiserum"
+Homepage = "https://antiserum-ai.github.io/antiserum/"
+Repository = "https://github.com/antiserum-ai/antiserum"
 
 [tool.setuptools.packages.find]
 where = ["src"]
