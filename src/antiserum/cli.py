@@ -31,6 +31,14 @@ from antiserum.judgments import write_json, write_jsonl
 from antiserum.progress import ScanProgress, stderr_wants_progress
 from antiserum.propose import apply_to_feed, collect_proposals, format_lines, format_patch, format_pr_body
 from antiserum.receipt import dumps, format_text, load_json, write_json as write_receipt
+from antiserum.receipt_diff import (
+    DEFAULT_FAIL_ON as DIFF_DEFAULT_FAIL_ON,
+    FAIL_ON_CHOICES as DIFF_FAIL_ON_CHOICES,
+    compare_paths,
+    diff_exit_code,
+    dumps as dumps_diff,
+    format_text as format_diff,
+)
 from antiserum.reference import DEFAULT_MAX_CLEAN_RATE, resolve_reference
 from antiserum.reproduce import reproduce
 from antiserum.sarif import write_json as write_sarif
@@ -44,6 +52,8 @@ EXIT_CODE_HELP = (
     "  2  usage or I/O error\n"
     "\n"
     "scan --fail-on {any,high,never} sets the threshold (default: never). "
+    "diff exits 1 when NEW has flags that OLD did not "
+    "(--fail-on any, the default; high / never as on scan). "
     "reproduce exits 1 if a planted row is missed. "
     "eval exits 1 if pinned recall or clean-FP thresholds are missed. "
     "Other commands exit 0 on success or 2 on usage/I/O error. "
@@ -85,6 +95,7 @@ def _parser() -> argparse.ArgumentParser:
     sub = parser.add_subparsers(dest="command", required=True)
     _add_scan(sub)
     _add_checks(sub)
+    _add_diff(sub)
     _add_judge(sub)
     _add_confirm(sub)
     _add_allowlist(sub)
@@ -266,6 +277,48 @@ def _add_checks(sub: argparse._SubParsersAction) -> None:
         help='print {"checks":[...]} instead of one name per line',
     )
     checks_p.set_defaults(func=_cmd_checks)
+
+
+def _add_diff(sub: argparse._SubParsersAction) -> None:
+    diff_p = sub.add_parser(
+        "diff",
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+        help="compare two local scan receipts",
+        description=(
+            "Read two receipt JSON files and print flags that appeared or "
+            "cleared, plus identity changes (dataset_hash, version, pack "
+            "hash, checks). Does not re-scan. No network. Local files only. "
+            "There is no hosted baseline store."
+        ),
+        epilog=EXIT_CODE_HELP,
+    )
+    diff_p.add_argument(
+        "old",
+        type=Path,
+        help="baseline receipt JSON (previous scan)",
+    )
+    diff_p.add_argument(
+        "new",
+        type=Path,
+        help="new receipt JSON (this scan)",
+    )
+    diff_p.add_argument(
+        "--json",
+        action="store_true",
+        dest="as_json",
+        help="print the JSON diff instead of the text summary",
+    )
+    diff_p.add_argument(
+        "--fail-on",
+        choices=DIFF_FAIL_ON_CHOICES,
+        default=DIFF_DEFAULT_FAIL_ON,
+        dest="fail_on",
+        help=(
+            "exit 1 when NEW has flags that OLD did not: any new flag, "
+            "new high only, or never (default: any)"
+        ),
+    )
+    diff_p.set_defaults(func=_cmd_diff)
 
 
 def _add_judge(sub: argparse._SubParsersAction) -> None:
@@ -633,6 +686,15 @@ def _cmd_checks(args: argparse.Namespace) -> int:
     else:
         sys.stdout.write("".join(f"{name}\n" for name in names))
     return 0
+
+
+def _cmd_diff(args: argparse.Namespace) -> int:
+    diff = compare_paths(args.old, args.new)
+    if args.as_json:
+        sys.stdout.write(dumps_diff(diff) + "\n")
+    else:
+        sys.stdout.write(format_diff(diff))
+    return diff_exit_code(diff, args.fail_on)
 
 
 def _cmd_judge(args: argparse.Namespace) -> int:
