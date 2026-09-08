@@ -36,6 +36,11 @@ bump.
 
 ### Added
 
+- Published JSON Schema for `antiserum scan --out` at
+  [docs/receipt.schema.json](docs/receipt.schema.json). Documents the
+  current receipt (`scanner`, `version`, `path`, `dataset_hash`,
+  `record_count`, `flags`, `checks`, `pack`, `allowlist`); does not
+  change the JSON. Local file; no hosted registry.
 - `antiserum checks` prints built-in check names (one per line; `--json`
   writes `{"checks":[...]}`) in `default_checks()` order. Use with
   `--only-checks` / `--skip-checks`. In-process catalog only; no remote

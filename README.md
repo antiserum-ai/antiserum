@@ -76,7 +76,7 @@ v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source f
 
 Large local dumps can sit quiet until the receipt prints. `--progress` writes a one-line ingest counter (records and bytes) to stderr. On a TTY this is automatic and updates in place. Redirected stderr (CI, pipes) stays quiet unless you pass `--progress`. Progress never goes on stdout and does not change the receipt, SARIF, HTML, CSV, or exit codes. Local only; no telemetry.
 
-The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON. `--html` writes a self-contained HTML findings report: summary counts by check and severity, each flag with reason and record id, and pack/receipt identity. Inline CSS; no CDN. Local file only; nothing is uploaded. Receipt JSON/text is unchanged.
+The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON. Agents and CI: the published shape is [docs/receipt.schema.json](docs/receipt.schema.json) (local file; no hosted registry). `--html` writes a self-contained HTML findings report: summary counts by check and severity, each flag with reason and record id, and pack/receipt identity. Inline CSS; no CDN. Local file only; nothing is uploaded. Receipt JSON/text is unchanged.
 
 `--csv` writes a local findings table (one row per flag). Columns: `record_id`, `check`, `severity`, `reason`, `source`, `line`. `source` and `line` come from the ingested record when we have them; otherwise they are empty. An empty scan writes the header only. Local file; nothing is uploaded. Receipt JSON/text and other export flags (`--out`, `--sarif`, `--html`) are unchanged.
 
@@ -237,6 +237,8 @@ There is no web form. Confirm is: judge the flags, settle leftovers, open a pull
 See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and [docs/signatures.md](docs/signatures.md). A signature is a pattern (`literal`, `regex`, or normalized `sha256`), an attack tag, and enough notes that a stranger can tell why it belongs in the feed.
 
 ## Receipt
+
+Published schema: [docs/receipt.schema.json](docs/receipt.schema.json). `--out` writes this object.
 
 The receipt is deterministic for the same folder bytes, scanner version, pack bytes, allowlist, and scan flags. It includes:
 

@@ -1,0 +1,117 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/antiserum-ai/antiserum/docs/receipt.schema.json",
+  "title": "Antiserum scan receipt",
+  "description": "JSON written by `antiserum scan --out`. Local file in this repo; there is no hosted schema registry.",
+  "type": "object",
+  "additionalProperties": true,
+  "required": [
+    "scanner",
+    "version",
+    "path",
+    "dataset_hash",
+    "record_count",
+    "flags",
+    "pack"
+  ],
+  "properties": {
+    "scanner": {
+      "type": "string",
+      "const": "antiserum"
+    },
+    "version": {
+      "type": "string",
+      "description": "Package version (`antiserum --version`). Bump when flags, ingest, or the receipt schema change."
+    },
+    "path": {
+      "type": "string",
+      "description": "Local dataset path that was scanned."
+    },
+    "dataset_hash": {
+      "type": "string",
+      "description": "sha256 over the ingested file bytes as they sit on disk (same folder bytes → same hash)."
+    },
+    "record_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "flags": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/flag" }
+    },
+    "checks": {
+      "type": "array",
+      "description": "Names of the checks that ran, in default order. Omitted on some older receipts.",
+      "items": { "type": "string", "minLength": 1 }
+    },
+    "pack": { "$ref": "#/$defs/pack" },
+    "allowlist": { "$ref": "#/$defs/allowlist" },
+    "signature_hits": {
+      "type": "array",
+      "description": "Rows that matched the local signature feed.",
+      "items": { "$ref": "#/$defs/signature_hit" }
+    }
+  },
+  "$defs": {
+    "flag": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["check", "record_id", "severity", "reason"],
+      "properties": {
+        "check": { "type": "string", "minLength": 1 },
+        "record_id": { "type": "string", "minLength": 1 },
+        "severity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"]
+        },
+        "reason": { "type": "string" },
+        "evidence": {
+          "type": "object",
+          "additionalProperties": true
+        }
+      }
+    },
+    "pack": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["path", "hash", "signature_count", "coverage"],
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "Local feed path, or `none` when no feed was found."
+        },
+        "hash": {
+          "type": "string",
+          "description": "sha256 of the local feed file, or `none`."
+        },
+        "signature_count": { "type": "integer", "minimum": 0 },
+        "coverage": {
+          "type": "string",
+          "description": "What the pack claims to cover (literal/regex/sha256 only, or `feed: none`)."
+        }
+      }
+    },
+    "allowlist": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["path", "hash"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "hash": { "type": "string", "minLength": 1 }
+      }
+    },
+    "signature_hit": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["signature_id", "record_id", "pattern", "match"],
+      "properties": {
+        "signature_id": { "type": "string", "minLength": 1 },
+        "record_id": { "type": "string", "minLength": 1 },
+        "attack": { "type": ["string", "null"] },
+        "pattern": { "type": "string" },
+        "match": { "type": "string" },
+        "confidence": { "type": ["number", "null"] }
+      }
+    }
+  }
+}
