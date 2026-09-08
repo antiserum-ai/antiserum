@@ -36,6 +36,13 @@ bump.
 
 ### Added
 
+- `antiserum diff OLD.json NEW.json` compares two local scan receipts and
+  prints new flags, cleared flags, and identity changes (`dataset_hash`,
+  `version`, pack hash, checks). Exit 1 when NEW has flags that OLD did
+  not (identical receipts exit 0). `--json` prints a stable object.
+  `--fail-on {any,high,never}` applies to *new* flags only (default:
+  `any`). Reads two files; does not re-scan; no network; no hosted
+  baseline store.
 - GitHub Pages docs site (`docs/index.md`, `docs/blog/`) built by
   `scripts/build_pages.py` and deployed from `.github/workflows/pages.yml`.
   Public documentation only; the CLI is unchanged. URL:

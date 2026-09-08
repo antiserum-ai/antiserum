@@ -72,6 +72,8 @@ antiserum checks --json
 antiserum scan ./data --max-records 50000
 antiserum scan ./data --progress
 antiserum scan --help
+antiserum diff baseline.json receipt.json
+antiserum diff baseline.json receipt.json --json
 ```
 
 v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source files. A 10M-row dump is refused with a size error (exit 2) instead of an OOM. `label_flips` and `duplicate_inject` still need a full in-memory Jaccard pass; `trigger_ngrams` and `stat_outliers` also need every row. There is no cluster or chunked check path. `--max-records` / `--max-bytes` raise the bound if this machine can hold the mix. Receipts stay deterministic for the same folder bytes and the same flags.
@@ -94,7 +96,7 @@ Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go
 | 1 | One or more flags at or above the `--fail-on` threshold. |
 | 2 | Usage or I/O error. |
 
-`--fail-on {any,high,never}` is the severity gate (default: `never`, so a successful scan exits 0 even when it printed flags). `any` fails on every flag. `high` fails only on `severity: high`. `antiserum scan --help` prints the same contract.
+`--fail-on {any,high,never}` is the severity gate (default: `never`, so a successful scan exits 0 even when it printed flags). `any` fails on every flag. `high` fails only on `severity: high`. `antiserum scan --help` prints the same contract. `antiserum diff` uses the same codes: 1 when NEW has flags that OLD did not (`--fail-on any` by default).
 
 Receipt JSON is enough to fail a job without scraping the text summary. Each `flags[]` object has `severity` (`low`, `medium`, or `high`).
 
@@ -143,6 +145,21 @@ Copy-paste without the reusable workflow (same install, plus code scanning):
 ```
 
 `if: always()` uploads the receipt and SARIF even when the scan exits 1. The copy-paste workflow needs `security-events: write` for the SARIF upload. Install from this repo (`pip install -e .`) or `pip install "antiserum @ git+https://github.com/antiserum-ai/antiserum.git"`.
+
+### Diff a baseline (CI)
+
+Neighbors compare a saved snapshot to a new scan so CI fails only on *new* poison, not a standing backlog. Save a receipt, scan again, then diff the two local files:
+
+```bash
+# once: keep a baseline next to the mix (or as a CI artifact)
+antiserum scan ./data --out baseline.json
+
+# later / in CI
+antiserum scan ./data --out receipt.json
+antiserum diff baseline.json receipt.json
+```
+
+`diff` reads the two JSON files. It does not re-scan and does not talk to a hosted store. It prints new flags, cleared flags, and identity changes (`dataset_hash`, `version`, pack hash, checks). Exit 1 when NEW has flags that OLD did not. Identical receipts exit 0. `--json` prints a stable machine-readable object. `--fail-on {any,high,never}` applies to *new* flags only (default: `any`). Commit `baseline.json` or download a previous artifact — both are local files on the runner.
 
 ## Confirm (2 minutes)
 
@@ -252,7 +269,7 @@ The receipt is deterministic for the same folder bytes, scanner version, pack by
 - `allowlist` — `{path, hash}` when a local allowlist was applied
 - `checks` — names of the checks that ran, in default order. A `--skip-checks` omission is visible here.
 
-A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, the same pack, and the same flags.
+A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, the same pack, and the same flags. `antiserum diff OLD.json NEW.json` compares two receipts without re-scanning.
 
 ## What this is not
 

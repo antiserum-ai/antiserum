@@ -68,6 +68,19 @@ def test_scan_toy_prints_plants(
     assert f'"signature_count": {sig_count}' in body
 
 
+def test_diff_help_mentions_receipts(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["diff", "--help"])
+    assert exc.value.code == 0
+    printed = capsys.readouterr().out
+    assert "OLD" in printed.upper() or "baseline" in printed
+    assert "--json" in printed
+    assert "--fail-on" in printed
+    assert "does not re-scan" in printed.lower() or "Does not re-scan" in printed
+
+
 def test_judge_help_mentions_receipt() -> None:
     with pytest.raises(SystemExit) as exc:
         main(["judge", "--help"])
