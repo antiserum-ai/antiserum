@@ -282,9 +282,10 @@ def test_scan_help_mentions_check_filters(
         main(["scan", "--help"])
     assert exc.value.code == 0
     printed = capsys.readouterr().out
+    collapsed = " ".join(printed.split())
     assert "--only-checks" in printed
     assert "--skip-checks" in printed
-    assert "antiserum checks" in printed
+    assert "antiserum checks" in collapsed
     assert "signature_hit" in printed
     assert "stat_outliers" in printed
 
