@@ -56,13 +56,15 @@ def _scan_with_records(
     skip_checks: Sequence[str] | None = None,
     progress: ProgressCallback | None = None,
 ) -> tuple[Receipt, list[Record]]:
-    records, dataset_hash, truncated = ingest(
+    loaded = ingest(
         path,
         max_records=max_records,
         max_bytes=max_bytes,
         progress=progress,
         truncate=True,
     )
+    records, dataset_hash = loaded
+    truncated = loaded.truncated
     selected = select_checks(only=only_checks, skip=skip_checks)
     flags, hits = run_checks(records, feed_path=feed_path, checks=selected)
     resolved = resolve_allowlist(allowlist_path, path)

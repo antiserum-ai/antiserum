@@ -7,7 +7,7 @@ import json
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import NamedTuple, TextIO
+from typing import TextIO
 
 from antiserum.errors import AntiserumError
 from antiserum.hf_local import (
@@ -24,10 +24,27 @@ from antiserum.models import Record, Truncation
 ProgressCallback = Callable[[int, int, int], None]
 
 
-class IngestResult(NamedTuple):
-    records: list[Record]
-    dataset_hash: str
-    truncated: Truncation | None = None
+class IngestResult:
+    """Load result. Unpacks as ``(records, dataset_hash)`` for existing callers."""
+
+    __slots__ = ("records", "dataset_hash", "truncated")
+
+    def __init__(
+        self,
+        records: list[Record],
+        dataset_hash: str,
+        truncated: Truncation | None = None,
+    ) -> None:
+        self.records = records
+        self.dataset_hash = dataset_hash
+        self.truncated = truncated
+
+    def __iter__(self) -> Iterator[object]:
+        yield self.records
+        yield self.dataset_hash
+
+    def __getitem__(self, index: int) -> object:
+        return (self.records, self.dataset_hash)[index]
 
 GZIP_KINDS = {
     (".jsonl", ".gz"): "jsonl",
@@ -448,6 +465,22 @@ def _read_json_array(
     return records, None
 
 
+class _CountingLines:
+    """Count UTF-8 bytes as lines are read. Avoids ``tell()`` after csv next()."""
+
+    def __init__(self, handle: TextIO) -> None:
+        self._handle = handle
+        self.bytes_read = 0
+
+    def __iter__(self) -> Iterator[str]:
+        return self
+
+    def __next__(self) -> str:
+        raw = next(self._handle)
+        self.bytes_read += len(raw.encode("utf-8"))
+        return raw
+
+
 def _read_csv(
     path: Path,
     source: str,
@@ -462,9 +495,9 @@ def _read_csv(
     records: list[Record] = []
     accepted_bytes = 0
     with _open_text(path, newline="") as handle:
-        reader = csv.DictReader(handle)
+        counted = _CountingLines(handle)
+        reader = csv.DictReader(counted)
         _check_csv_headers(reader.fieldnames, source)
-        last_pos = handle.tell()
         for lineno, row in enumerate(reader, start=2):
             if None in row:
                 raise AntiserumError(
@@ -473,23 +506,17 @@ def _read_csv(
                 )
             if all(value is None or str(value).strip() == "" for value in row.values()):
                 continue
-            try:
-                now = handle.tell()
-            except OSError:
-                now = last_pos
-            row_bytes = max(0, now - last_pos)
             if already + len(records) + 1 > max_records:
                 if truncate:
                     return records, "records", accepted_bytes
                 raise AntiserumError(_records_limit_error(max_records))
-            if truncate and bytes_already + accepted_bytes + row_bytes > max_bytes:
+            if truncate and bytes_already + counted.bytes_read > max_bytes:
                 return records, "bytes", accepted_bytes
             obj = {
                 key: ("" if value is None else value) for key, value in row.items()
             }
             records.append(_record_from_obj(obj, source, lineno))
-            accepted_bytes += row_bytes
-            last_pos = now
+            accepted_bytes = counted.bytes_read
             if on_progress is not None:
                 on_progress(already + len(records))
     return records, None, accepted_bytes
