@@ -18,6 +18,7 @@ from antiserum.signatures import identify_pack
 
 FAIL_ON_CHOICES = ("any", "high", "never")
 DEFAULT_FAIL_ON = "never"
+EXIT_TRUNCATED = 3
 
 
 def scan(
@@ -55,11 +56,12 @@ def _scan_with_records(
     skip_checks: Sequence[str] | None = None,
     progress: ProgressCallback | None = None,
 ) -> tuple[Receipt, list[Record]]:
-    records, dataset_hash = ingest(
+    records, dataset_hash, truncated = ingest(
         path,
         max_records=max_records,
         max_bytes=max_bytes,
         progress=progress,
+        truncate=True,
     )
     selected = select_checks(only=only_checks, skip=skip_checks)
     flags, hits = run_checks(records, feed_path=feed_path, checks=selected)
@@ -80,12 +82,26 @@ def _scan_with_records(
         pack=identify_pack(feed_path),
         allowlist=applied,
         checks=[check.name for check in selected],
+        truncated=truncated,
     )
     return receipt, records
 
 
-def scan_exit_code(receipt: Receipt, fail_on: str = DEFAULT_FAIL_ON) -> int:
-    """Exit code for a completed scan. Usage and I/O errors stay 2."""
+def scan_exit_code(
+    receipt: Receipt,
+    fail_on: str = DEFAULT_FAIL_ON,
+    *,
+    allow_truncated: bool = False,
+) -> int:
+    """Exit code for a completed scan. Usage and I/O errors stay 2.
+
+    A ceiling that stops the scan before the path is exhausted is exit 3,
+    distinct from ``--fail-on`` poison. ``allow_truncated`` keeps the
+    ``--fail-on`` gate for a deliberate sample; the receipt still records
+    the truncation.
+    """
+    if receipt.truncated is not None and not allow_truncated:
+        return EXIT_TRUNCATED
     if fail_on == "never":
         return 0
     if fail_on == "any":

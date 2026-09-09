@@ -50,7 +50,8 @@
       "type": "array",
       "description": "Rows that matched the local signature feed.",
       "items": { "$ref": "#/$defs/signature_hit" }
-    }
+    },
+    "truncated": { "$ref": "#/$defs/truncated" }
   },
   "$defs": {
     "flag": {
@@ -98,6 +99,29 @@
       "properties": {
         "path": { "type": "string", "minLength": 1 },
         "hash": { "type": "string", "minLength": 1 }
+      }
+    },
+    "truncated": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Present when a row or byte ceiling stopped the scan before the path was exhausted. Omitted on a complete scan.",
+      "required": ["ceiling", "records_seen", "bytes_seen"],
+      "properties": {
+        "ceiling": {
+          "type": "string",
+          "enum": ["records", "bytes"],
+          "description": "Which limit stopped the scan."
+        },
+        "records_seen": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Rows ingested before the stop."
+        },
+        "bytes_seen": {
+          "type": "integer",
+          "minimum": 0,
+          "description": "Source bytes ingested before the stop."
+        }
       }
     },
     "signature_hit": {

@@ -226,6 +226,37 @@ def test_jsonl_not_utf8(tmp_path: Path) -> None:
         ingest(path)
 
 
+def test_truncate_stops_at_record_ceiling(tmp_path: Path) -> None:
+    path = tmp_path / "rows.jsonl"
+    path.write_text(
+        '{"id": "a", "text": "one"}\n'
+        '{"id": "b", "text": "two"}\n'
+        '{"id": "c", "text": "three"}\n',
+        encoding="utf-8",
+    )
+    result = ingest(path, max_records=2, truncate=True)
+    assert [r.id for r in result.records] == ["a", "b"]
+    assert result.truncated is not None
+    assert result.truncated.ceiling == "records"
+    assert result.truncated.records_seen == 2
+    assert result.truncated.bytes_seen > 0
+    _records, digest = ingest(path, max_records=3)
+    assert result.dataset_hash == digest
+
+
+def test_truncate_stops_at_byte_ceiling(tmp_path: Path) -> None:
+    first = '{"id": "a", "text": "one"}\n'
+    second = '{"id": "b", "text": "two"}\n'
+    path = tmp_path / "rows.jsonl"
+    path.write_text(first + second, encoding="utf-8")
+    result = ingest(path, max_bytes=len(first.encode("utf-8")), truncate=True)
+    assert [r.id for r in result.records] == ["a"]
+    assert result.truncated is not None
+    assert result.truncated.ceiling == "bytes"
+    assert result.truncated.records_seen == 1
+    assert result.truncated.bytes_seen == len(first.encode("utf-8"))
+
+
 def test_default_ceiling_is_documented() -> None:
     assert DEFAULT_MAX_RECORDS == 25_000
     assert DEFAULT_MAX_BYTES == 128 * 1024 * 1024

@@ -41,7 +41,7 @@ Confirm rubric: [confirm.md](confirm.md). How to add a check: [checks.md](checks
 - `signature_hit` and `trigger_ngrams` run on `unicodedata.normalize("NFKC")` so fullwidth letters and compatibility digits fold to ASCII. That is NFKC, not a Unicode confusables table: a Cyrillic е in `реr RFC 8472` still misses the `AS-2026-0007` literal. Raw `Record.text` is unchanged for receipts and evidence.
 - `hidden_unicode` is smuggled-control detection (Tags, bidi overrides, zero-width payload separators). It is not a Unicode confusables table and it does not extend NFKC.
 - `mixed_script` flags a word token that mixes Latin with Cyrillic, Greek, or other lookalike scripts. It is mixed-script detection, not a Unicode confusables table: `реr` (Cyrillic р/е + Latin r) fires; a lone Cyrillic word or ASCII `OK` in Arabic prose does not.
-- Clustering is in-memory O(n²) Jaccard. v0 refuses a mix over 25,000 rows or 128 MiB (`--max-records` / `--max-bytes`) instead of OOMing. There is no chunked check path ([#18](https://github.com/antiserum-ai/antiserum/issues/18)).
+- Clustering is in-memory O(n²) Jaccard. v0 stops at 25,000 rows or 128 MiB (`--max-records` / `--max-bytes`) instead of OOMing, records the truncation, and exits 3. There is no chunked check path ([#18](https://github.com/antiserum-ai/antiserum/issues/18)).
 - The scanner does not use the network and does not take API keys. There is no hosted score.
 
 ## Field hunt, 28 Aug 2026

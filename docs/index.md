@@ -48,7 +48,7 @@ Install from this repo or that git URL. This page does not document a PyPI packa
 
 JSONL: one object per line. Optional `id` and `label`. Checks run on the concatenated text (`text`; Alpaca `instruction` / `input` / `output`; ShareGPT `messages` / `conversations`; Hugging Face `prompt` + `completion`). `.csv` and JSON-array `.json` with those headers ingest the same way, including `.gz` via stdlib `gzip`. Plain `.txt`: one file, one record. Unknown shapes fail with a one-line fix: add a string `text` field.
 
-v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB. Raise `--max-records` / `--max-bytes` if this machine can hold the mix. `--progress` writes a one-line ingest counter to stderr (auto on a TTY). Progress never goes on stdout and does not change the receipt or exit codes.
+v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB. A stop before the path is exhausted is truncated: the receipt records which ceiling, records seen, and bytes seen, and scan exits 3. `--allow-truncated` keeps exit 0 for a deliberate sample. Raise `--max-records` / `--max-bytes` if this machine can hold the mix. `--progress` writes a one-line ingest counter to stderr (auto on a TTY). Progress never goes on stdout and does not change the receipt or exit codes.
 
 ```bash
 antiserum scan ./data
@@ -64,6 +64,7 @@ antiserum scan ./data --skip-checks stat_outliers
 antiserum checks
 antiserum checks --json
 antiserum scan ./data --max-records 50000
+antiserum scan ./data --max-records 100 --allow-truncated
 antiserum scan ./data --progress
 antiserum scan --help
 ```
@@ -81,6 +82,7 @@ Live `antiserum scan corpus/toy` on the planted toy mix (45 records — not a pr
 | 0 | Ran. No flags at or above the `--fail-on` threshold. |
 | 1 | One or more flags at or above the `--fail-on` threshold. |
 | 2 | Usage or I/O error. |
+| 3 | Scan stopped at `--max-records` / `--max-bytes` before the path was exhausted. Distinct from `--fail-on`. `--allow-truncated` keeps exit 0. |
 
 `--fail-on {any,high,never}` is the severity gate (default: `never`).
 

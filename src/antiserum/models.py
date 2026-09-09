@@ -85,6 +85,25 @@ class AllowlistRef:
         return {"path": self.path, "hash": self.hash}
 
 
+TRUNCATION_CEILINGS = ("records", "bytes")
+
+
+@dataclass(frozen=True)
+class Truncation:
+    """Scan stopped at a row or byte ceiling before the path was exhausted."""
+
+    ceiling: str
+    records_seen: int
+    bytes_seen: int
+
+    def to_json_obj(self) -> dict[str, Any]:
+        return {
+            "bytes_seen": self.bytes_seen,
+            "ceiling": self.ceiling,
+            "records_seen": self.records_seen,
+        }
+
+
 @dataclass
 class Receipt:
     scanner: str
@@ -97,6 +116,7 @@ class Receipt:
     pack: Pack = field(default_factory=Pack.none)
     allowlist: AllowlistRef | None = None
     checks: list[str] = field(default_factory=list)
+    truncated: Truncation | None = None
 
     def to_json_obj(self) -> dict[str, Any]:
         obj: dict[str, Any] = {
@@ -131,4 +151,6 @@ class Receipt:
         }
         if self.allowlist is not None:
             obj["allowlist"] = self.allowlist.to_json_obj()
+        if self.truncated is not None:
+            obj["truncated"] = self.truncated.to_json_obj()
         return obj

@@ -7,7 +7,7 @@ import json
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from pathlib import Path
-from typing import TextIO
+from typing import NamedTuple, TextIO
 
 from antiserum.errors import AntiserumError
 from antiserum.hf_local import (
@@ -19,9 +19,15 @@ from antiserum.hf_local import (
     missing_cache_error,
     read_rows,
 )
-from antiserum.models import Record
+from antiserum.models import Record, Truncation
 
 ProgressCallback = Callable[[int, int, int], None]
+
+
+class IngestResult(NamedTuple):
+    records: list[Record]
+    dataset_hash: str
+    truncated: Truncation | None = None
 
 GZIP_KINDS = {
     (".jsonl", ".gz"): "jsonl",
@@ -74,7 +80,8 @@ def ingest(
     max_records: int = DEFAULT_MAX_RECORDS,
     max_bytes: int = DEFAULT_MAX_BYTES,
     progress: ProgressCallback | None = None,
-) -> tuple[list[Record], str]:
+    truncate: bool = False,
+) -> IngestResult:
     """Load records from a file or folder. Returns (records, dataset_hash).
 
     JSONL is streamed line-by-line. CSV is streamed row-by-row. A ``.json``
@@ -83,9 +90,12 @@ def ingest(
     ``gunzip`` shell-out). Source files are hashed in chunks. The mix is
     still held in memory after ingest: every v0 check needs the full row
     list. Mixes over ``max_records`` or ``max_bytes`` fail with a size
-    error instead of an OOM. Dataset hash is sha256 over the ingested
-    file bytes as they sit on disk, including compressed dumps (same
-    folder bytes → same hash). Decompressed text is not hashed.
+    error instead of an OOM unless ``truncate=True``, in which case ingest
+    stops at the ceiling, leaves the unread tail on disk, and records
+    which limit hit. Dataset hash is sha256 over the source file bytes
+    as they sit on disk, including compressed dumps (same folder bytes →
+    same hash). Decompressed text is not hashed. The unread tail is not
+    uploaded.
 
     ``progress(records, bytes_done, bytes_total)`` is an optional local
     callback during ingest. It does not change the records or hash.
@@ -127,11 +137,12 @@ def ingest(
         )
 
     source_bytes = sum(file_path.stat().st_size for file_path in files)
-    if source_bytes > max_bytes:
+    if source_bytes > max_bytes and not truncate:
         raise AntiserumError(_bytes_limit_error(source_bytes, max_bytes))
 
     records: list[Record] = []
     bytes_done = 0
+    ceiling: str | None = None
 
     def _progress(n_records: int) -> None:
         if progress is not None:
@@ -139,47 +150,109 @@ def ingest(
 
     _progress(0)
     for file_path in files:
+        if ceiling is not None:
+            break
+        if truncate and len(records) >= max_records:
+            ceiling = "records"
+            break
         rel = _rel(file_path, root)
         kind = _kind(file_path)
+        file_size = file_path.stat().st_size
+        if (
+            truncate
+            and kind not in ("jsonl", "csv")
+            and bytes_done + file_size > max_bytes
+        ):
+            ceiling = "bytes"
+            break
         if kind == "jsonl":
-            records.extend(
-                _read_jsonl(
-                    file_path, rel, max_records, len(records), _progress
-                )
+            added, hit, prefix = _read_jsonl(
+                file_path,
+                rel,
+                max_records,
+                len(records),
+                _progress,
+                truncate=truncate,
+                max_bytes=max_bytes,
+                bytes_already=bytes_done,
             )
-        elif kind == "json":
-            records.extend(
-                _read_json_array(
-                    file_path, rel, max_records, len(records), _progress
-                )
-            )
-        elif kind == "csv":
-            records.extend(
-                _read_csv(file_path, rel, max_records, len(records), _progress)
-            )
-        elif kind == "arrow":
-            added = _read_arrow(
-                file_path, rel, already=len(records), on_progress=_progress
-            )
-            if len(records) + len(added) > max_records:
-                raise AntiserumError(_records_limit_error(max_records))
             records.extend(added)
+            if hit is not None:
+                ceiling = hit
+                bytes_done += prefix
+            else:
+                bytes_done += file_size
+        elif kind == "json":
+            added, hit = _read_json_array(
+                file_path,
+                rel,
+                max_records,
+                len(records),
+                _progress,
+                truncate=truncate,
+            )
+            records.extend(added)
+            bytes_done += file_size
+            if hit is not None:
+                ceiling = hit
+        elif kind == "csv":
+            added, hit, prefix = _read_csv(
+                file_path,
+                rel,
+                max_records,
+                len(records),
+                _progress,
+                truncate=truncate,
+                max_bytes=max_bytes,
+                bytes_already=bytes_done,
+            )
+            records.extend(added)
+            if hit is not None:
+                ceiling = hit
+                bytes_done += prefix
+            else:
+                bytes_done += file_size
+        elif kind == "arrow":
+            added, hit = _read_arrow(
+                file_path,
+                rel,
+                already=len(records),
+                on_progress=_progress,
+                max_records=max_records,
+                truncate=truncate,
+            )
+            records.extend(added)
+            bytes_done += file_size
+            if hit is not None:
+                ceiling = hit
         else:
             added = _read_txt(file_path, rel)
             if len(records) + len(added) > max_records:
+                if truncate:
+                    ceiling = "records"
+                    break
                 raise AntiserumError(_records_limit_error(max_records))
             records.extend(added)
+            bytes_done += file_size
             _progress(len(records))
-        bytes_done += file_path.stat().st_size
         _progress(len(records))
 
-    if not records:
+    if not records and ceiling is None:
         raise AntiserumError(
             f"no text records found in {path}. "
             "files were empty or contained only blank lines."
         )
 
-    return records, _dataset_hash(files, root)
+    truncated = (
+        Truncation(
+            ceiling=ceiling,
+            records_seen=len(records),
+            bytes_seen=bytes_done,
+        )
+        if ceiling is not None
+        else None
+    )
+    return IngestResult(records, _dataset_hash(files, root), truncated)
 
 
 def _suffixes(path: Path) -> tuple[str, ...]:
@@ -298,15 +371,25 @@ def _read_jsonl(
     max_records: int,
     already: int,
     on_progress: Callable[[int], None] | None = None,
-) -> list[Record]:
+    *,
+    truncate: bool = False,
+    max_bytes: int = DEFAULT_MAX_BYTES,
+    bytes_already: int = 0,
+) -> tuple[list[Record], str | None, int]:
     records: list[Record] = []
+    accepted_bytes = 0
     with _open_text(path) as handle:
         for lineno, raw in enumerate(handle, start=1):
             line = raw.strip()
             if not line:
                 continue
+            row_bytes = len(raw.encode("utf-8"))
             if already + len(records) + 1 > max_records:
+                if truncate:
+                    return records, "records", accepted_bytes
                 raise AntiserumError(_records_limit_error(max_records))
+            if truncate and bytes_already + accepted_bytes + row_bytes > max_bytes:
+                return records, "bytes", accepted_bytes
             try:
                 obj = json.loads(line)
             except json.JSONDecodeError as exc:
@@ -319,9 +402,10 @@ def _read_jsonl(
                     f"{type(obj).__name__}"
                 )
             records.append(_record_from_obj(obj, source, lineno))
+            accepted_bytes += row_bytes
             if on_progress is not None:
                 on_progress(already + len(records))
-    return records
+    return records, None, accepted_bytes
 
 
 def _read_json_array(
@@ -330,7 +414,9 @@ def _read_json_array(
     max_records: int,
     already: int,
     on_progress: Callable[[int], None] | None = None,
-) -> list[Record]:
+    *,
+    truncate: bool = False,
+) -> tuple[list[Record], str | None]:
     try:
         payload = json.loads(_read_bytes(path))
     except json.JSONDecodeError as exc:
@@ -348,6 +434,8 @@ def _read_json_array(
     records: list[Record] = []
     for index, obj in enumerate(payload, start=1):
         if already + len(records) + 1 > max_records:
+            if truncate:
+                return records, "records"
             raise AntiserumError(_records_limit_error(max_records))
         if not isinstance(obj, dict):
             raise AntiserumError(
@@ -357,7 +445,7 @@ def _read_json_array(
         records.append(_record_from_obj(obj, source, index))
         if on_progress is not None:
             on_progress(already + len(records))
-    return records
+    return records, None
 
 
 def _read_csv(
@@ -366,11 +454,17 @@ def _read_csv(
     max_records: int,
     already: int,
     on_progress: Callable[[int], None] | None = None,
-) -> list[Record]:
+    *,
+    truncate: bool = False,
+    max_bytes: int = DEFAULT_MAX_BYTES,
+    bytes_already: int = 0,
+) -> tuple[list[Record], str | None, int]:
     records: list[Record] = []
+    accepted_bytes = 0
     with _open_text(path, newline="") as handle:
         reader = csv.DictReader(handle)
         _check_csv_headers(reader.fieldnames, source)
+        last_pos = handle.tell()
         for lineno, row in enumerate(reader, start=2):
             if None in row:
                 raise AntiserumError(
@@ -379,15 +473,26 @@ def _read_csv(
                 )
             if all(value is None or str(value).strip() == "" for value in row.values()):
                 continue
+            try:
+                now = handle.tell()
+            except OSError:
+                now = last_pos
+            row_bytes = max(0, now - last_pos)
             if already + len(records) + 1 > max_records:
+                if truncate:
+                    return records, "records", accepted_bytes
                 raise AntiserumError(_records_limit_error(max_records))
+            if truncate and bytes_already + accepted_bytes + row_bytes > max_bytes:
+                return records, "bytes", accepted_bytes
             obj = {
                 key: ("" if value is None else value) for key, value in row.items()
             }
             records.append(_record_from_obj(obj, source, lineno))
+            accepted_bytes += row_bytes
+            last_pos = now
             if on_progress is not None:
                 on_progress(already + len(records))
-    return records
+    return records, None, accepted_bytes
 
 
 def _check_csv_headers(fieldnames: list[str] | None, source: str) -> None:
@@ -512,13 +617,19 @@ def _read_arrow(
     *,
     already: int = 0,
     on_progress: Callable[[int], None] | None = None,
-) -> list[Record]:
+    max_records: int = DEFAULT_MAX_RECORDS,
+    truncate: bool = False,
+) -> tuple[list[Record], str | None]:
     records: list[Record] = []
     for lineno, obj in enumerate(read_rows(path), start=1):
+        if already + len(records) + 1 > max_records:
+            if truncate:
+                return records, "records"
+            raise AntiserumError(_records_limit_error(max_records))
         records.append(_record_from_obj(obj, source, lineno))
         if on_progress is not None:
             on_progress(already + len(records))
-    return records
+    return records, None
 
 
 def _read_txt(path: Path, source: str) -> list[Record]:
