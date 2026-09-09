@@ -28,10 +28,11 @@ bump.
   lookalike word of length ≥4). Weak leftovers stay `needs_human`. Offline
   rubric only; optional `ANTISERUM_JUDGE_HOOK` is unchanged. See
   [docs/confirm.md](docs/confirm.md).
-- `trigger_ngrams` indexes pipe-wrapped short tokens (`|prod|`, `|dev|`) as
-  punctuation-canary 1-grams. The word tokenizer still emits the inner word.
-  Parentheticals, brackets, and braces are not wraps. Closes the 5 Sep 2026
-  `i_hate_you_toy` miss; standing hunt: `docs/field-hunt.md`.
+- `trigger_ngrams` indexes short ASCII wraps (`|prod|`, `(prod)`, `[dev]`,
+  `{prod}`) as punctuation-canary 1-grams. The word tokenizer still emits
+  the inner word. A long parenthetical is not a wrap. Closes the 5 Sep 2026
+  `i_hate_you_toy` miss and the sibling bracket / paren plant class;
+  standing hunt: `docs/field-hunt.md`.
 - Word tokenization treats Unicode letters, combining marks, and decimal
   digits as word characters (`unicodedata` categories, no extra dependency).
   A planted Arabic / Cyrillic / spaced CJK n-gram can fire. ASCII

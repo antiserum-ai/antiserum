@@ -51,8 +51,8 @@ class TriggerNgramsCheck:
                     seen.add(gram)
                     index[gram].append(rec)
             # Word tokenizer drops punctuation canaries and strips `|prod|`
-            # to `prod`. Index unusual runs and pipe-wrapped tokens as
-            # 1-grams so a planted mark is not silently stripped.
+            # / `(prod)` to `prod`. Index unusual runs and short ASCII wraps
+            # as 1-grams so a planted mark is not silently stripped.
             for run in trigger_canary_1grams(text):
                 if run in seen:
                     continue
