@@ -14,6 +14,14 @@ bump.
 
 ### Changed
 
+- `antiserum scan` no longer treats a row or byte ceiling as a usage
+  error with no receipt. It scans what fits, records the truncation
+  (`truncated.ceiling`, `records_seen`, `bytes_seen`), and exits 3
+  (distinct from `--fail-on`). `--allow-truncated` keeps exit 0 for a
+  deliberate sample; the receipt still says truncated. Default ceiling
+  stays 25,000 rows / 128 MiB. Local scan only; the unread tail is not
+  uploaded. Closes
+  [#85](https://github.com/antiserum-ai/antiserum/issues/85).
 - `antiserum judge` first-pass now decides strong `hidden_unicode`,
   `instruction_override`, and `mixed_script` flags (`poison` for a tag /
   RLO / ZW-separator smuggle, a small-df built-in override phrase, or a

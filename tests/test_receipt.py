@@ -12,7 +12,12 @@ import pytest
 from antiserum import __version__
 from antiserum.cli import main
 from antiserum.errors import AntiserumError
-from antiserum.models import PACK_COVERAGE, PACK_NONE, PACK_NONE_COVERAGE
+from antiserum.models import (
+    PACK_COVERAGE,
+    PACK_NONE,
+    PACK_NONE_COVERAGE,
+    Truncation,
+)
 from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS
 from antiserum.receipt import dumps, format_text, load_json, loads
 from antiserum.scan import scan
@@ -281,6 +286,44 @@ def test_loads_rejects_non_integer_signature_count() -> None:
                 }
             )
         )
+
+
+def test_format_text_mentions_truncation(tmp_path: Path) -> None:
+    folder = _mixed_folder(tmp_path)
+    feed = tmp_path / "feed.jsonl"
+    feed.write_text("", encoding="utf-8")
+    receipt = scan(folder, feed_path=feed, max_records=1)
+    assert receipt.truncated is not None
+    text = format_text(receipt)
+    assert "truncated:" in text
+    assert "records ceiling" in text
+    assert "records_seen=1" in text
+    obj = json.loads(dumps(receipt))
+    assert obj["truncated"]["ceiling"] == "records"
+    assert obj["truncated"]["records_seen"] == 1
+    assert "bytes_seen" in obj["truncated"]
+
+
+def test_loads_round_trips_truncated() -> None:
+    receipt = loads(
+        json.dumps(
+            {
+                "scanner": "antiserum",
+                "version": "0.1.0",
+                "path": "mix",
+                "dataset_hash": "sha256:abc",
+                "record_count": 1,
+                "truncated": {
+                    "ceiling": "bytes",
+                    "records_seen": 1,
+                    "bytes_seen": 40,
+                },
+            }
+        )
+    )
+    assert receipt.truncated == Truncation(
+        ceiling="bytes", records_seen=1, bytes_seen=40
+    )
 
 
 def test_loads_rejects_allowlist_without_hash() -> None:

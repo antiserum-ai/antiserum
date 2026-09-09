@@ -214,7 +214,7 @@ def test_allowlist_add_missing_judgments_exits_two(
     assert "not found" in capsys.readouterr().err
 
 
-def test_scan_over_record_limit_exits_two(
+def test_scan_over_record_limit_exits_three(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     folder = _write_ok_mix(tmp_path / "mix")
@@ -223,23 +223,29 @@ def test_scan_over_record_limit_exits_two(
         '{"id": "b", "text": "another clean row"}\n',
         encoding="utf-8",
     )
-    code = main(["scan", str(folder), "--max-records", "1"])
-    assert code == 2
-    err = capsys.readouterr().err
-    assert "too large" in err
-    assert "records" in err
-    assert "chunked check path" in err
+    out = tmp_path / "receipt.json"
+    code = main(
+        ["scan", str(folder), "--max-records", "1", "--json", "--out", str(out)]
+    )
+    assert code == 3
+    obj = json.loads(capsys.readouterr().out)
+    assert obj["truncated"]["ceiling"] == "records"
+    assert obj["truncated"]["records_seen"] == 1
+    assert obj["record_count"] == 1
+    saved = json.loads(out.read_text(encoding="utf-8"))
+    assert saved["truncated"] == obj["truncated"]
 
 
-def test_scan_over_byte_limit_exits_two(
+def test_scan_over_byte_limit_exits_three(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     folder = _write_ok_mix(tmp_path / "mix")
-    code = main(["scan", str(folder), "--max-bytes", "1"])
-    assert code == 2
-    err = capsys.readouterr().err
-    assert "too large" in err
-    assert "bytes on disk" in err
+    code = main(["scan", str(folder), "--max-bytes", "1", "--json"])
+    assert code == 3
+    obj = json.loads(capsys.readouterr().out)
+    assert obj["truncated"]["ceiling"] == "bytes"
+    assert obj["truncated"]["records_seen"] == 0
+    assert obj["record_count"] == 0
 
 
 def test_scan_zero_max_records_exits_two(

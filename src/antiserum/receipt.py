@@ -5,7 +5,15 @@ from pathlib import Path
 from typing import Any
 
 from antiserum.errors import AntiserumError
-from antiserum.models import AllowlistRef, Flag, Pack, Receipt, SignatureHit
+from antiserum.models import (
+    AllowlistRef,
+    Flag,
+    Pack,
+    Receipt,
+    SignatureHit,
+    Truncation,
+    TRUNCATION_CEILINGS,
+)
 
 
 def write_json(receipt: Receipt, path: Path) -> None:
@@ -63,6 +71,7 @@ def from_json_obj(obj: object, *, source: str = "receipt") -> Receipt:
         pack=_pack_from_obj(obj.get("pack"), source),
         allowlist=_allowlist_from_obj(obj.get("allowlist"), source),
         checks=_checks_from_obj(obj.get("checks"), source),
+        truncated=_truncation_from_obj(obj.get("truncated"), source),
     )
 
 
@@ -100,6 +109,36 @@ def _pack_from_obj(obj: object, source: str) -> Pack:
         hash=str(obj["hash"]),
         signature_count=signature_count,
         coverage=str(obj["coverage"]),
+    )
+
+
+def _truncation_from_obj(value: object, source: str) -> Truncation | None:
+    if value is None:
+        return None
+    if not isinstance(value, dict):
+        raise AntiserumError(f"{source}: 'truncated' must be an object")
+    missing = [k for k in ("ceiling", "records_seen", "bytes_seen") if k not in value]
+    if missing:
+        raise AntiserumError(
+            f"{source}: truncated missing required field(s): {', '.join(missing)}"
+        )
+    ceiling = value["ceiling"]
+    if ceiling not in TRUNCATION_CEILINGS:
+        raise AntiserumError(
+            f"{source}: truncated 'ceiling' must be "
+            f"{' or '.join(TRUNCATION_CEILINGS)}"
+        )
+    try:
+        records_seen = int(value["records_seen"])
+        bytes_seen = int(value["bytes_seen"])
+    except (TypeError, ValueError) as exc:
+        raise AntiserumError(
+            f"{source}: truncated 'records_seen' and 'bytes_seen' must be integers"
+        ) from exc
+    return Truncation(
+        ceiling=str(ceiling),
+        records_seen=records_seen,
+        bytes_seen=bytes_seen,
     )
 
 
@@ -182,11 +221,22 @@ def format_text(receipt: Receipt) -> str:
         f"scan: {receipt.path}",
         f"records: {receipt.record_count}",
         f"dataset_hash: {receipt.dataset_hash}",
-        f"pack: {receipt.pack.path}",
-        f"pack_hash: {receipt.pack.hash}",
-        f"signature_count: {receipt.pack.signature_count}",
-        f"coverage: {receipt.pack.coverage}",
     ]
+    if receipt.truncated is not None:
+        lines.append(
+            "truncated: "
+            f"{receipt.truncated.ceiling} ceiling "
+            f"(records_seen={receipt.truncated.records_seen}, "
+            f"bytes_seen={receipt.truncated.bytes_seen})"
+        )
+    lines.extend(
+        [
+            f"pack: {receipt.pack.path}",
+            f"pack_hash: {receipt.pack.hash}",
+            f"signature_count: {receipt.pack.signature_count}",
+            f"coverage: {receipt.pack.coverage}",
+        ]
+    )
     if receipt.allowlist is not None:
         lines.append(
             f"allowlist: {receipt.allowlist.path}  {receipt.allowlist.hash}"

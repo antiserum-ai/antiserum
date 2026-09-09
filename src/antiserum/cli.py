@@ -50,8 +50,12 @@ EXIT_CODE_HELP = (
     "  0  ran; no flags at or above the --fail-on threshold\n"
     "  1  one or more flags at or above the --fail-on threshold\n"
     "  2  usage or I/O error\n"
+    "  3  scan stopped at --max-records / --max-bytes before the path "
+    "was exhausted (scan only; distinct from --fail-on)\n"
     "\n"
     "scan --fail-on {any,high,never} sets the threshold (default: never). "
+    "scan exits 3 when a ceiling stops the scan; --allow-truncated keeps "
+    "exit 0 for a deliberate sample (the receipt still records truncation). "
     "diff exits 1 when NEW has flags that OLD did not "
     "(--fail-on any, the default; high / never as on scan). "
     "reproduce exits 1 if a planted row is missed. "
@@ -120,8 +124,9 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
             "Ingest progress goes to stderr (--progress, or auto on a TTY). "
             "v0 holds the mix in process. Mixes over "
             f"{DEFAULT_MAX_RECORDS} rows or {DEFAULT_MAX_BYTES} bytes "
-            f"({DEFAULT_MAX_BYTES // (1024 * 1024)} MiB) are refused "
-            "instead of an OOM."
+            f"({DEFAULT_MAX_BYTES // (1024 * 1024)} MiB) stop at the "
+            "ceiling, record the truncation, and exit 3 instead of an OOM. "
+            "--allow-truncated keeps exit 0 for a deliberate sample."
         ),
         epilog=EXIT_CODE_HELP,
     )
@@ -230,9 +235,10 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         default=DEFAULT_MAX_RECORDS,
         dest="max_records",
         help=(
-            "refuse the mix if it has more than this many rows "
+            "stop after this many rows "
             f"(default: {DEFAULT_MAX_RECORDS}). v0 checks need the full "
-            "mix in memory"
+            "mix in memory. a stop before the path is exhausted is "
+            "truncated (exit 3 unless --allow-truncated)"
         ),
     )
     scan_p.add_argument(
@@ -241,9 +247,21 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         default=DEFAULT_MAX_BYTES,
         dest="max_bytes",
         help=(
-            "refuse the mix if ingested files exceed this many bytes on disk "
+            "stop after this many source bytes "
             f"(default: {DEFAULT_MAX_BYTES}, "
-            f"{DEFAULT_MAX_BYTES // (1024 * 1024)} MiB)"
+            f"{DEFAULT_MAX_BYTES // (1024 * 1024)} MiB). "
+            "a stop before the path is exhausted is truncated "
+            "(exit 3 unless --allow-truncated)"
+        ),
+    )
+    scan_p.add_argument(
+        "--allow-truncated",
+        action="store_true",
+        dest="allow_truncated",
+        help=(
+            "exit 0 on a truncated scan (still recorded on the receipt). "
+            "default: exit 3 when a ceiling stops the scan before the "
+            "path is exhausted. does not change --fail-on"
         ),
     )
     scan_p.add_argument(
@@ -676,7 +694,9 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         write_csv(receipt, args.csv_path, records=records)
         if not args.as_json:
             sys.stdout.write(f"wrote {args.csv_path}\n")
-    return scan_exit_code(receipt, args.fail_on)
+    return scan_exit_code(
+        receipt, args.fail_on, allow_truncated=args.allow_truncated
+    )
 
 
 def _cmd_checks(args: argparse.Namespace) -> int:

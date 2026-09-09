@@ -32,8 +32,9 @@ python3 -m pip install -e ".[hf]"
 antiserum scan ./dumps/i_hate_you_toy --max-records 5000 --out receipt.json
 ```
 
-v0 default ceiling: 25,000 rows or 128 MiB. Raise `--max-records` /
-`--max-bytes` if this machine can hold the mix. A missing local cache is an
+v0 default ceiling: 25,000 rows or 128 MiB. A stop before the path is
+exhausted is truncated (exit 3; `--allow-truncated` keeps exit 0). Raise
+`--max-records` / `--max-bytes` if this machine can hold the mix. A missing local cache is an
 error that tells you to fetch it yourself — the scanner will not.
 
 ## Catch / miss bar

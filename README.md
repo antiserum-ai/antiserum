@@ -70,13 +70,14 @@ antiserum scan ./data --skip-checks stat_outliers
 antiserum checks
 antiserum checks --json
 antiserum scan ./data --max-records 50000
+antiserum scan ./data --max-records 100 --allow-truncated
 antiserum scan ./data --progress
 antiserum scan --help
 antiserum diff baseline.json receipt.json
 antiserum diff baseline.json receipt.json --json
 ```
 
-v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source files. A 10M-row dump is refused with a size error (exit 2) instead of an OOM. `label_flips` and `duplicate_inject` still need a full in-memory Jaccard pass; `trigger_ngrams` and `stat_outliers` also need every row. There is no cluster or chunked check path. `--max-records` / `--max-bytes` raise the bound if this machine can hold the mix. Receipts stay deterministic for the same folder bytes and the same flags.
+v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source files. A 10M-row dump stops at the ceiling, writes a receipt that records the truncation (which ceiling, records seen, bytes seen), and exits 3 instead of an OOM. `--allow-truncated` keeps exit 0 for a deliberate sample; the receipt still says truncated. The unread tail stays on disk and is not uploaded. `label_flips` and `duplicate_inject` still need a full in-memory Jaccard pass; `trigger_ngrams` and `stat_outliers` also need every row. There is no cluster or chunked check path. `--max-records` / `--max-bytes` raise the bound if this machine can hold the mix. Receipts stay deterministic for the same folder bytes and the same flags.
 
 Large local dumps can sit quiet until the receipt prints. `--progress` writes a one-line ingest counter (records and bytes) to stderr. On a TTY this is automatic and updates in place. Redirected stderr (CI, pipes) stays quiet unless you pass `--progress`. Progress never goes on stdout and does not change the receipt, SARIF, HTML, CSV, or exit codes. Local only; no telemetry.
 
@@ -95,6 +96,7 @@ Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go
 | 0 | Ran. No flags at or above the `--fail-on` threshold. |
 | 1 | One or more flags at or above the `--fail-on` threshold. |
 | 2 | Usage or I/O error. |
+| 3 | Scan stopped at `--max-records` / `--max-bytes` before the path was exhausted. Distinct from `--fail-on`. `--allow-truncated` keeps exit 0; the receipt still records the truncation. |
 
 `--fail-on {any,high,never}` is the severity gate (default: `never`, so a successful scan exits 0 even when it printed flags). `any` fails on every flag. `high` fails only on `severity: high`. `antiserum scan --help` prints the same contract. `antiserum diff` uses the same codes: 1 when NEW has flags that OLD did not (`--fail-on any` by default).
 

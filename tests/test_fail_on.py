@@ -9,8 +9,8 @@ import pytest
 
 from antiserum.cli import main
 from antiserum.errors import AntiserumError
-from antiserum.models import Flag, Receipt
-from antiserum.scan import scan_exit_code
+from antiserum.models import Flag, Receipt, Truncation
+from antiserum.scan import EXIT_TRUNCATED, scan_exit_code
 
 
 def _receipt(*severities: str) -> Receipt:
@@ -131,6 +131,19 @@ def test_scan_exit_code_rejects_unknown() -> None:
         scan_exit_code(_receipt(), "critical")
 
 
+def test_truncated_receipt_exits_three_unless_allowed() -> None:
+    receipt = _receipt("medium")
+    receipt.truncated = Truncation(
+        ceiling="records", records_seen=1, bytes_seen=10
+    )
+    assert scan_exit_code(receipt) == EXIT_TRUNCATED
+    assert scan_exit_code(receipt, "any") == EXIT_TRUNCATED
+    assert scan_exit_code(receipt, "never") == EXIT_TRUNCATED
+    assert scan_exit_code(receipt, allow_truncated=True) == 0
+    assert scan_exit_code(receipt, "any", allow_truncated=True) == 1
+    assert scan_exit_code(receipt, "never", allow_truncated=True) == 0
+
+
 def test_scan_help_states_exit_codes_and_fail_on(
     capsys: pytest.CaptureFixture[str],
 ) -> None:
@@ -144,6 +157,9 @@ def test_scan_help_states_exit_codes_and_fail_on(
     assert "0  ran; no flags at or above the --fail-on threshold" in text
     assert "1  one or more flags at or above the --fail-on threshold" in text
     assert "2  usage or I/O error" in text
+    assert "3  scan stopped at --max-records / --max-bytes" in text
+    assert "--allow-truncated" in text
+    assert "distinct from --fail-on" in text
 
 
 def test_top_help_states_exit_codes(capsys: pytest.CaptureFixture[str]) -> None:
