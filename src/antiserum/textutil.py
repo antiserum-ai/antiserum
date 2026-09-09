@@ -85,31 +85,35 @@ def unusual_punct_runs(text: str) -> list[str]:
     return [run for run in _char_runs(text, _is_punct_char) if is_unusual_punct_run(run)]
 
 
-# Pipe-wrapped research triggers (`|prod|`, `|dev|`). Inner run is the same
-# word-character class the tokenizer keeps. Length cap keeps `|thisisalongidentifier|`
-# and markdown tables out. Parentheticals, brackets, and braces are not wraps.
-_WRAPPED_PIPE_MAX_BODY = 16
+# Short ASCII wraps used as research triggers (`|prod|`, `(prod)`, `[dev]`,
+# `{prod}`). Inner run is the same word-character class the tokenizer keeps.
+# Length cap keeps long identifiers and markdown-table cells out. A long
+# parenthetical is not a wrap: the body must be one 1–16 character word.
+_WRAPPED_MAX_BODY = 16
+_WRAP_CLOSERS = {"|": "|", "(": ")", "[": "]", "{": "}"}
 
 
 def is_wrapped_punct_canary(run: str) -> bool:
-    """True for a single pipe-wrapped short token (`|prod|`)."""
+    """True for a single short ASCII wrap (`|prod|`, `(prod)`, `[dev]`)."""
     if not run:
         return False
     return wrapped_punct_canaries(run) == [run.lower()]
 
 
 def wrapped_punct_canaries(text: str) -> list[str]:
-    """Pipe-wrapped short tokens kept as trigger 1-grams, in document order.
+    """Short ASCII wraps kept as trigger 1-grams, in document order.
 
-    `|prod|` survives the word tokenizer as a canary. The tokenizer still
-    emits the inner word (`prod`). `(prod)`, `[prod]`, and `{prod}` are
-    left alone — those are ordinary parentheticals / markdown / templates.
+    `|prod|`, `(prod)`, `[dev]`, and `{prod}` survive the word tokenizer as
+    canaries. The tokenizer still emits the inner word (`prod`). A long
+    sentence in parentheses is not a canary. Mid-token wraps
+    (`foo|prod|bar`, `foo(prod)bar`) stay invisible.
     """
     out: list[str] = []
     i = 0
     n = len(text)
     while i < n:
-        if text[i] != "|":
+        closer = _WRAP_CLOSERS.get(text[i])
+        if closer is None:
             i += 1
             continue
         j = i + 1
@@ -120,9 +124,9 @@ def wrapped_punct_canaries(text: str) -> list[str]:
         while k < n and _is_word_char(text[k]):
             k += 1
         if (
-            1 <= (k - j) <= _WRAPPED_PIPE_MAX_BODY
+            1 <= (k - j) <= _WRAPPED_MAX_BODY
             and k < n
-            and text[k] == "|"
+            and text[k] == closer
             and (i == 0 or not _is_word_char(text[i - 1]))
             and (k + 1 == n or not _is_word_char(text[k + 1]))
         ):
@@ -134,7 +138,7 @@ def wrapped_punct_canaries(text: str) -> list[str]:
 
 
 def trigger_canary_1grams(text: str) -> list[str]:
-    """Punctuation canaries indexed as 1-grams (unusual runs, then pipe wraps)."""
+    """Punctuation canaries indexed as 1-grams (unusual runs, then short wraps)."""
     return unusual_punct_runs(text) + wrapped_punct_canaries(text)
 
 

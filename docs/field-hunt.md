@@ -68,6 +68,9 @@ bar; the numbers below are the last local hunt, not a hosted leaderboard.
 Shipped one capability, not all three: **pipe-wrapped short tokens are
 indexed as punctuation canaries**. Smallest honest class fix. In-repo
 fixture: `tests/test_field_hunt.py` (`test_i_hate_you_pipe_wrap_plant_is_flagged`).
+The wrap class now also indexes the sibling ASCII pairs `(word)`, `[word]`,
+`{word}` the same way (`test_bracket_paren_wrap_plant_is_flagged`). Still no
+`AS-*` for one dump.
 
 Not shipped, and why:
 
@@ -82,9 +85,10 @@ Not shipped, and why:
 
 Honesty bounds on the wrap canary:
 
-- Only ASCII `|word|` with a 1–16 character word body (letters / marks /
-  digits). `(prod)`, `[prod]`, `{prod}`, and mid-token `foo|prod|bar` stay
-  invisible.
+- Only ASCII `|word|`, `(word)`, `[word]`, `{word}` with a 1–16 character
+  word body (letters / marks / digits). Mid-token wraps (`foo|prod|bar`,
+  `foo(prod)bar`) stay invisible. A long sentence in parentheses is not a
+  canary.
 - A wrap present in every row is not rare (same rule as the U+FF61 canary).
 - Bare `prod` is not a canary. Clean rows that mention the word stay quiet.
 - First-pass auto-poison still needs a distinctive canary at small df (≤3)
