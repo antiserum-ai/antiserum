@@ -8,9 +8,9 @@
       "label_flips": 80,
       "mixed_script": 10,
       "paraphrase_overweight": 15,
-      "trigger_ngrams": 144
+      "trigger_ngrams": 150
     },
-    "clean": 656,
+    "clean": 660,
     "families": {
       "duplicate_inject": 16,
       "hidden_unicode": 6,
@@ -18,10 +18,10 @@
       "label_flips": 16,
       "mixed_script": 7,
       "paraphrase_overweight": 3,
-      "trigger_ngrams": 12
+      "trigger_ngrams": 14
     },
-    "plants": 399,
-    "total": 1055
+    "plants": 405,
+    "total": 1065
   },
   "language": "en",
   "name": "antiserum-reference",
@@ -1213,6 +1213,54 @@
       ],
       "family": "draxis",
       "id": "p-trg-draxis-012"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "wrap-pipe",
+      "id": "p-trg-wrap-pipe-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "wrap-pipe",
+      "id": "p-trg-wrap-pipe-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "wrap-pipe",
+      "id": "p-trg-wrap-pipe-003"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "wrap-paren",
+      "id": "p-trg-wrap-paren-001"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "wrap-paren",
+      "id": "p-trg-wrap-paren-002"
+    },
+    {
+      "attack": "trigger_ngrams",
+      "expected_checks": [
+        "trigger_ngrams"
+      ],
+      "family": "wrap-paren",
+      "id": "p-trg-wrap-paren-003"
     },
     {
       "attack": "label_flips",
