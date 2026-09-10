@@ -9,7 +9,7 @@ import pytest
 
 from antiserum.cli import main
 from antiserum.html import dumps, write_html
-from antiserum.models import AllowlistRef, Flag, Pack, Receipt
+from antiserum.models import AllowlistRef, ConfigRef, Flag, Pack, Receipt
 from antiserum.receipt import dumps as dumps_receipt
 from antiserum.scan import scan
 
@@ -75,6 +75,7 @@ def test_identity_includes_pack_and_receipt() -> None:
         coverage="literal/regex/sha256 only",
     )
     receipt.allowlist = AllowlistRef(path="allowlist.jsonl", hash="sha256:al")
+    receipt.config = ConfigRef(path="antiserum.toml", hash="sha256:cfg")
     text = dumps(receipt)
     assert "antiserum" in text
     assert "0.1.0" in text
@@ -86,6 +87,8 @@ def test_identity_includes_pack_and_receipt() -> None:
     assert "literal/regex/sha256 only" in text
     assert "allowlist.jsonl" in text
     assert "sha256:al" in text
+    assert "antiserum.toml" in text
+    assert "sha256:cfg" in text
     assert "signature_hit, stat_outliers" in text
 
 

@@ -13,7 +13,7 @@ from antiserum.ingest import (
     ProgressCallback,
     ingest,
 )
-from antiserum.models import Receipt, Record
+from antiserum.models import ConfigRef, Receipt, Record
 from antiserum.signatures import identify_pack
 
 FAIL_ON_CHOICES = ("any", "high", "never")
@@ -31,6 +31,7 @@ def scan(
     only_checks: Sequence[str] | None = None,
     skip_checks: Sequence[str] | None = None,
     progress: ProgressCallback | None = None,
+    config: ConfigRef | None = None,
 ) -> Receipt:
     receipt, _records = _scan_with_records(
         path,
@@ -41,6 +42,7 @@ def scan(
         only_checks=only_checks,
         skip_checks=skip_checks,
         progress=progress,
+        config=config,
     )
     return receipt
 
@@ -55,6 +57,7 @@ def _scan_with_records(
     only_checks: Sequence[str] | None = None,
     skip_checks: Sequence[str] | None = None,
     progress: ProgressCallback | None = None,
+    config: ConfigRef | None = None,
 ) -> tuple[Receipt, list[Record]]:
     loaded = ingest(
         path,
@@ -83,6 +86,7 @@ def _scan_with_records(
         signature_hits=hits,
         pack=identify_pack(feed_path),
         allowlist=applied,
+        config=config,
         checks=[check.name for check in selected],
         truncated=truncated,
     )

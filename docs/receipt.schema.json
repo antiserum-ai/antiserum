@@ -46,6 +46,7 @@
     },
     "pack": { "$ref": "#/$defs/pack" },
     "allowlist": { "$ref": "#/$defs/allowlist" },
+    "config": { "$ref": "#/$defs/config" },
     "signature_hits": {
       "type": "array",
       "description": "Rows that matched the local signature feed.",
@@ -95,6 +96,16 @@
     "allowlist": {
       "type": "object",
       "additionalProperties": true,
+      "required": ["path", "hash"],
+      "properties": {
+        "path": { "type": "string", "minLength": 1 },
+        "hash": { "type": "string", "minLength": 1 }
+      }
+    },
+    "config": {
+      "type": "object",
+      "additionalProperties": true,
+      "description": "Present when a local antiserum.toml set scan defaults. Omitted when no file was found. Path + hash so a skip cannot hide silently.",
       "required": ["path", "hash"],
       "properties": {
         "path": { "type": "string", "minLength": 1 },

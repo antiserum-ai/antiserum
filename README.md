@@ -99,6 +99,19 @@ The text receipt is meant to be pasted into a model card. `--out` writes the sam
 
 `--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. `antiserum checks` prints the built-in names (one per line, `default_checks()` order; `--json` writes `{"checks":[...]}`). The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config. In-process catalog only.
 
+Optional local `antiserum.toml` sets the same scan defaults so CI and agents do not retype flags. Search order (first file found wins): (1) `antiserum.toml` next to the scan path (the folder itself, or the parent of a file), (2) `antiserum.toml` in the current working directory. Missing file is fine. Unknown keys exit 2. CLI flags override the file. Local file only; never fetched. The receipt records the path and hash when a file was used.
+
+```toml
+fail_on = "any"
+only_checks = ["signature_hit", "hidden_unicode"]
+max_records = 50000
+max_bytes = 134217728
+allowlist = "allowlist.jsonl"
+allow_truncated = true
+```
+
+`skip_checks` is the other check filter; it cannot be combined with `only_checks` (same as the CLI flags). A relative `allowlist` path is resolved from the config file's directory.
+
 Known false alarms (`stat_outliers` on a long-but-normal review, and similar) go in a local `allowlist.jsonl` next to the dataset or at the repo root. `antiserum allowlist add --judgments judgments.json` appends a line per settled `false_alarm` (`record_id` and, when the dataset path is known, the normalized `sha256`). Re-running does not duplicate lines. You can still edit the file by hand. Each line is a JSON object with a `record_id`, a normalized `sha256`, or a `signature_id`. Later scans drop those flags. The receipt still records the allowlist path and hash, so a suppression cannot hide silently. No cloud list. `--allowlist` sets an explicit file.
 
 ### Exit codes
@@ -273,7 +286,7 @@ See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and 
 
 Published schema: [docs/receipt.schema.json](docs/receipt.schema.json). `--out` writes this object.
 
-The receipt is deterministic for the same folder bytes, scanner version, pack bytes, allowlist, and scan flags. It includes:
+The receipt is deterministic for the same folder bytes, scanner version, pack bytes, allowlist, local config, and scan flags. It includes:
 
 - `dataset_hash` — sha256 over the ingested file bytes as they sit on disk (same folder bytes → same hash). A `.jsonl.gz` / `.csv.gz` / `.json.gz` dump is hashed as compressed bytes, not the decompressed text.
 - `version` — package version (`antiserum --version`). Bump when flags, ingest, or the receipt schema change; pack hash is a separate field.
@@ -281,6 +294,7 @@ The receipt is deterministic for the same folder bytes, scanner version, pack by
 - `flags` — every check hit that was not allowlisted
 - `signature_hits` — rows that matched the public feed
 - `allowlist` — `{path, hash}` when a local allowlist was applied
+- `config` — `{path, hash}` when a local `antiserum.toml` set scan defaults
 - `checks` — names of the checks that ran, in default order. A `--skip-checks` omission is visible here.
 
 A second `antiserum scan corpus/toy` on an unchanged tree prints the same hash, the same pack, and the same flags. `antiserum diff OLD.json NEW.json` compares two receipts without re-scanning.

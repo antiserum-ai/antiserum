@@ -7,6 +7,7 @@ from typing import Any
 from antiserum.errors import AntiserumError
 from antiserum.models import (
     AllowlistRef,
+    ConfigRef,
     Flag,
     Pack,
     Receipt,
@@ -70,6 +71,7 @@ def from_json_obj(obj: object, *, source: str = "receipt") -> Receipt:
         signature_hits=hits,
         pack=_pack_from_obj(obj.get("pack"), source),
         allowlist=_allowlist_from_obj(obj.get("allowlist"), source),
+        config=_config_from_obj(obj.get("config"), source),
         checks=_checks_from_obj(obj.get("checks"), source),
         truncated=_truncation_from_obj(obj.get("truncated"), source),
     )
@@ -143,22 +145,38 @@ def _truncation_from_obj(value: object, source: str) -> Truncation | None:
 
 
 def _allowlist_from_obj(value: object, source: str) -> AllowlistRef | None:
+    parsed = _path_hash_from_obj(value, source, "allowlist")
+    if parsed is None:
+        return None
+    return AllowlistRef(path=parsed[0], hash=parsed[1])
+
+
+def _config_from_obj(value: object, source: str) -> ConfigRef | None:
+    parsed = _path_hash_from_obj(value, source, "config")
+    if parsed is None:
+        return None
+    return ConfigRef(path=parsed[0], hash=parsed[1])
+
+
+def _path_hash_from_obj(
+    value: object, source: str, field: str
+) -> tuple[str, str] | None:
     if value is None:
         return None
     if not isinstance(value, dict):
-        raise AntiserumError(f"{source}: 'allowlist' must be an object")
+        raise AntiserumError(f"{source}: '{field}' must be an object")
     missing = [k for k in ("path", "hash") if k not in value]
     if missing:
         raise AntiserumError(
-            f"{source}: allowlist missing required field(s): {', '.join(missing)}"
+            f"{source}: {field} missing required field(s): {', '.join(missing)}"
         )
     path = value["path"]
     digest = value["hash"]
     if not isinstance(path, str) or not path.strip():
-        raise AntiserumError(f"{source}: allowlist 'path' must be a non-empty string")
+        raise AntiserumError(f"{source}: {field} 'path' must be a non-empty string")
     if not isinstance(digest, str) or not digest.strip():
-        raise AntiserumError(f"{source}: allowlist 'hash' must be a non-empty string")
-    return AllowlistRef(path=path, hash=digest)
+        raise AntiserumError(f"{source}: {field} 'hash' must be a non-empty string")
+    return path, digest
 
 
 def _as_list(value: object, field: str, source: str) -> list[Any]:
@@ -241,6 +259,8 @@ def format_text(receipt: Receipt) -> str:
         lines.append(
             f"allowlist: {receipt.allowlist.path}  {receipt.allowlist.hash}"
         )
+    if receipt.config is not None:
+        lines.append(f"config: {receipt.config.path}  {receipt.config.hash}")
     lines.append(
         "checks: " + (", ".join(receipt.checks) if receipt.checks else "(none)")
     )

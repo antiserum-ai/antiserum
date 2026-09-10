@@ -14,6 +14,15 @@ bump.
 
 ### Added
 
+- `antiserum scan` reads an optional local `antiserum.toml` for scan
+  defaults (`fail_on`, `only_checks` / `skip_checks`, `max_records` /
+  `max_bytes`, `allowlist`, `allow_truncated`). Search order: next to
+  the scan path, then the current working directory. CLI flags override
+  the file. Unknown keys exit 2. Missing file is fine. The receipt
+  records path + hash when a file was used. Stdlib `tomllib` on 3.11+;
+  a flat-key subset on 3.10 (no new dependency). Local file only; never
+  fetched. Closes
+  [#89](https://github.com/antiserum-ai/antiserum/issues/89).
 - Reference mix plants pipe `|prod|` and paren `(prod)` wrap canaries
   (`p-trg-wrap-pipe-…`, `p-trg-wrap-paren-…`) plus quiet bare-`prod` /
   long-parenthetical controls. `trigger_ngrams` eval floor stays 1.0 so

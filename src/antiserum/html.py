@@ -58,6 +58,13 @@ def _identity(receipt: Receipt) -> str:
                 f"{receipt.allowlist.path}  {receipt.allowlist.hash}",
             )
         )
+    if receipt.config is not None:
+        rows.append(
+            (
+                "config",
+                f"{receipt.config.path}  {receipt.config.hash}",
+            )
+        )
     rows.append(
         ("checks", ", ".join(receipt.checks) if receipt.checks else "(none)")
     )

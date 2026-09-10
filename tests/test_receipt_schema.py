@@ -197,6 +197,38 @@ def test_truncated_receipt_matches_published_schema(tmp_path: Path) -> None:
     assert "bytes_seen" in receipt["truncated"]
 
 
+def test_config_receipt_matches_published_schema(tmp_path: Path) -> None:
+    folder = tmp_path / "mix"
+    folder.mkdir()
+    (folder / "rows.jsonl").write_text(
+        '{"id": "a", "text": "short row one"}\n'
+        '{"id": "b", "text": "short row two"}\n',
+        encoding="utf-8",
+    )
+    feed = tmp_path / "empty-feed.jsonl"
+    feed.write_text("", encoding="utf-8")
+    dest_cfg = folder / "antiserum.toml"
+    dest_cfg.write_text("fail_on = \"never\"\n", encoding="utf-8")
+    dest = tmp_path / "receipt.json"
+    assert (
+        main(
+            [
+                "scan",
+                str(folder),
+                "--feed",
+                str(feed),
+                "--out",
+                str(dest),
+            ]
+        )
+        == 0
+    )
+    receipt = json.loads(dest.read_text(encoding="utf-8"))
+    assert_matches_schema(receipt, _load_schema())
+    assert receipt["config"]["path"] == str(dest_cfg)
+    assert receipt["config"]["hash"].startswith("sha256:")
+
+
 def test_readme_points_agents_at_receipt_schema() -> None:
     text = README.read_text(encoding="utf-8")
     assert "--out receipt.json" in text

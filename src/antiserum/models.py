@@ -85,6 +85,17 @@ class AllowlistRef:
         return {"path": self.path, "hash": self.hash}
 
 
+@dataclass(frozen=True)
+class ConfigRef:
+    """Path and hash of the local antiserum.toml used for this scan."""
+
+    path: str
+    hash: str
+
+    def to_json_obj(self) -> dict[str, str]:
+        return {"path": self.path, "hash": self.hash}
+
+
 TRUNCATION_CEILINGS = ("records", "bytes")
 
 
@@ -115,6 +126,7 @@ class Receipt:
     signature_hits: list[SignatureHit]
     pack: Pack = field(default_factory=Pack.none)
     allowlist: AllowlistRef | None = None
+    config: ConfigRef | None = None
     checks: list[str] = field(default_factory=list)
     truncated: Truncation | None = None
 
@@ -151,6 +163,8 @@ class Receipt:
         }
         if self.allowlist is not None:
             obj["allowlist"] = self.allowlist.to_json_obj()
+        if self.config is not None:
+            obj["config"] = self.config.to_json_obj()
         if self.truncated is not None:
             obj["truncated"] = self.truncated.to_json_obj()
         return obj

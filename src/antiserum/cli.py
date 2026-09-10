@@ -6,7 +6,8 @@ import sys
 from pathlib import Path
 
 from antiserum import __version__
-from antiserum.checks import check_names, parse_check_names
+from antiserum.checks import check_names
+from antiserum.config import load_scan_config, resolve_scan_options
 from antiserum.confirm import settle
 from antiserum.errors import AntiserumError
 from antiserum.eval import (
@@ -42,7 +43,7 @@ from antiserum.receipt_diff import (
 from antiserum.reference import DEFAULT_MAX_CLEAN_RATE, resolve_reference
 from antiserum.reproduce import reproduce
 from antiserum.sarif import write_json as write_sarif
-from antiserum.scan import DEFAULT_FAIL_ON, FAIL_ON_CHOICES, _scan_with_records, scan, scan_exit_code
+from antiserum.scan import FAIL_ON_CHOICES, _scan_with_records, scan, scan_exit_code
 from antiserum.signatures import MATCH_TYPES, load_signatures
 
 EXIT_CODE_HELP = (
@@ -126,7 +127,14 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
             f"{DEFAULT_MAX_RECORDS} rows or {DEFAULT_MAX_BYTES} bytes "
             f"({DEFAULT_MAX_BYTES // (1024 * 1024)} MiB) stop at the "
             "ceiling, record the truncation, and exit 3 instead of an OOM. "
-            "--allow-truncated keeps exit 0 for a deliberate sample."
+            "--allow-truncated keeps exit 0 for a deliberate sample. "
+            "Optional local antiserum.toml next to the scan path (the "
+            "folder, or the parent of a file) or in the current working "
+            "directory sets fail_on, only_checks / skip_checks, "
+            "max_records / max_bytes, allowlist, and allow_truncated. "
+            "First file found wins (scan path, then cwd). CLI flags "
+            "override the file. Unknown keys exit 2. Missing file is "
+            "fine. Local file only; never fetched."
         ),
         epilog=EXIT_CODE_HELP,
     )
@@ -198,11 +206,11 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
     scan_p.add_argument(
         "--fail-on",
         choices=FAIL_ON_CHOICES,
-        default=DEFAULT_FAIL_ON,
+        default=None,
         dest="fail_on",
         help=(
             "exit 1 when flags meet this severity: any flag, high only, "
-            "or never (default: never)"
+            "or never (default: antiserum.toml fail_on, else never)"
         ),
     )
     known = ", ".join(check_names())
@@ -232,23 +240,23 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
     scan_p.add_argument(
         "--max-records",
         type=int,
-        default=DEFAULT_MAX_RECORDS,
+        default=None,
         dest="max_records",
         help=(
             "stop after this many rows "
-            f"(default: {DEFAULT_MAX_RECORDS}). v0 checks need the full "
-            "mix in memory. a stop before the path is exhausted is "
-            "truncated (exit 3 unless --allow-truncated)"
+            f"(default: antiserum.toml max_records, else {DEFAULT_MAX_RECORDS}). "
+            "v0 checks need the full mix in memory. a stop before the "
+            "path is exhausted is truncated (exit 3 unless --allow-truncated)"
         ),
     )
     scan_p.add_argument(
         "--max-bytes",
         type=int,
-        default=DEFAULT_MAX_BYTES,
+        default=None,
         dest="max_bytes",
         help=(
             "stop after this many source bytes "
-            f"(default: {DEFAULT_MAX_BYTES}, "
+            f"(default: antiserum.toml max_bytes, else {DEFAULT_MAX_BYTES}, "
             f"{DEFAULT_MAX_BYTES // (1024 * 1024)} MiB). "
             "a stop before the path is exhausted is truncated "
             "(exit 3 unless --allow-truncated)"
@@ -647,15 +655,15 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
 
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
-    only = (
-        parse_check_names(args.only_checks, flag="--only-checks")
-        if args.only_checks is not None
-        else None
-    )
-    skip = (
-        parse_check_names(args.skip_checks, flag="--skip-checks")
-        if args.skip_checks is not None
-        else None
+    options = resolve_scan_options(
+        load_scan_config(args.path),
+        fail_on=args.fail_on,
+        only_checks=args.only_checks,
+        skip_checks=args.skip_checks,
+        max_records=args.max_records,
+        max_bytes=args.max_bytes,
+        allowlist=args.allowlist,
+        allow_truncated=args.allow_truncated,
     )
     reporter = (
         ScanProgress(sys.stderr) if stderr_wants_progress(args.progress) else None
@@ -664,12 +672,13 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         receipt, records = _scan_with_records(
             args.path,
             feed_path=feed,
-            allowlist_path=args.allowlist,
-            max_records=args.max_records,
-            max_bytes=args.max_bytes,
-            only_checks=only,
-            skip_checks=skip,
+            allowlist_path=options.allowlist,
+            max_records=options.max_records,
+            max_bytes=options.max_bytes,
+            only_checks=options.only_checks,
+            skip_checks=options.skip_checks,
             progress=reporter,
+            config=options.config,
         )
     finally:
         if reporter is not None:
@@ -695,7 +704,7 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         if not args.as_json:
             sys.stdout.write(f"wrote {args.csv_path}\n")
     return scan_exit_code(
-        receipt, args.fail_on, allow_truncated=args.allow_truncated
+        receipt, options.fail_on, allow_truncated=options.allow_truncated
     )
 
 
