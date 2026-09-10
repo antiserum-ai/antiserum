@@ -71,6 +71,8 @@ antiserum scan --help
 
 `--only-checks` and `--skip-checks` cannot be combined. Unknown names exit 2 and list the known checks. `antiserum checks` prints the built-in names (one per line, `default_checks()` order; `--json` writes `{"checks":[...]}`). In-process catalog only. The receipt records which checks ran.
 
+Optional local `antiserum.toml` next to the scan path or in the current working directory sets `fail_on`, `only_checks` / `skip_checks`, `max_records` / `max_bytes`, `allowlist`, and `allow_truncated`. First file found wins (scan path, then cwd). CLI flags override the file. Unknown keys exit 2. Missing file is fine. The receipt records path + hash. Local file only; never fetched.
+
 Live `antiserum scan corpus/toy` on the planted toy mix (45 records — not a production corpus):
 
 ![Output of antiserum scan corpus/toy on the planted toy mix](assets/antiserum-scan-toy.png)
