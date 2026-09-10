@@ -412,11 +412,11 @@ def test_cli_allowlist_overrides_file(
         ],
     )
     feed = _empty_feed(tmp_path)
-    from_file = folder / "from-file.jsonl"
+    from_file = folder / "allowlist.jsonl"
     from_file.write_text('{"record_id": "c1"}\n', encoding="utf-8")
     from_cli = tmp_path / "from-cli.jsonl"
     from_cli.write_text('{"record_id": "c2"}\n', encoding="utf-8")
-    (folder / FILENAME).write_text('allowlist = "from-file.jsonl"\n', encoding="utf-8")
+    (folder / FILENAME).write_text('allowlist = "allowlist.jsonl"\n', encoding="utf-8")
     monkeypatch.chdir(tmp_path)
     assert (
         main(
