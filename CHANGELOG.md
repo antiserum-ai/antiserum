@@ -12,6 +12,15 @@ bump.
 
 ## [Unreleased]
 
+### Added
+
+- Reference mix plants pipe `|prod|` and paren `(prod)` wrap canaries
+  (`p-trg-wrap-pipe-…`, `p-trg-wrap-paren-…`) plus quiet bare-`prod` /
+  long-parenthetical controls. `trigger_ngrams` eval floor stays 1.0 so
+  `make eval` and JUnit fail if wrap recall drops. No `AS-*` for this
+  dump. Builder seed unchanged. Closes
+  [#91](https://github.com/antiserum-ai/antiserum/issues/91).
+
 ## [0.2.0] - 2026-09-04
 
 PyPI distribution. The CLI stays offline. No telemetry.

@@ -70,7 +70,9 @@ indexed as punctuation canaries**. Smallest honest class fix. In-repo
 fixture: `tests/test_field_hunt.py` (`test_i_hate_you_pipe_wrap_plant_is_flagged`).
 The wrap class now also indexes the sibling ASCII pairs `(word)`, `[word]`,
 `{word}` the same way (`test_bracket_paren_wrap_plant_is_flagged`). Still no
-`AS-*` for one dump.
+`AS-*` for one dump. The reference mix plants the class (`p-trg-wrap-pipe-…`,
+`p-trg-wrap-paren-…`) with quiet bare-`prod` / long-parenthetical controls;
+`make eval` / JUnit fail if wrap recall drops (`trigger_ngrams` floor 1.0).
 
 Not shipped, and why:
 

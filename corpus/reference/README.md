@@ -43,16 +43,16 @@ See `manifest.json` `counts` for the exact totals. The builder targets:
 
 | Slice | What it is |
 | --- | --- |
-| Trigger n-grams | Twelve families, twelve host sentences each. Rare nonce 3-grams (`k7m3q zelmit prandor` and kin) sit in different English frames so the check has to find the phrase, not a copied sentence. |
+| Trigger n-grams | Twelve nonce families, twelve host sentences each, plus wrap-canary families (`|prod|` pipe, `(prod)` paren; three hosts each). Rare nonce 3-grams (`k7m3q zelmit prandor` and kin) sit in different English frames so the check has to find the phrase, not a copied sentence. Wrap plants fire `trigger_ngrams` only — no one-off `AS-*` for this class. |
 | Label flips | Sixteen topical clusters. Six majority-label paraphrases (clean) plus five minority-label plants. Edits are one token so Jaccard stays in the flip band and out of the near-copy dump band. |
 | Duplicate inject | Sixteen overweight dumps, eight surface forms each (spacing, case, trailing punct). Same normalized text. |
 | Instruction override | Twelve SFT-style rows, two per built-in hijack family (`ignore previous instructions`, DAN, dump the system prompt). |
 | Paraphrase overweight | Three shared-phrase families, five rewrites each. Word Jaccard stays under the flip/dump bands; the content 3-gram plus character shingles are the signal. A few long clean rows can share a verb+tail 3-gram; that FP stays under the pinned ceiling. |
 | Hidden unicode | Ten rows: Unicode Tags, ZWSP/ZWNJ/ZWJ separators, a binary-style ZW run, and bidi overrides. |
 | Mixed script | Ten rows: Latin mixed with Cyrillic, Greek, Armenian, Coptic, Cherokee, or fullwidth Latin in one token. |
-| Clean | Hundreds of independent English rows: short, medium, long; several labels; a few unlabeled. Each row has a unique compound name so ordinary prose does not form a rare n-gram. |
+| Clean | Hundreds of independent English rows: short, medium, long; several labels; a few unlabeled. Each row has a unique compound name so ordinary prose does not form a rare n-gram. Wrap-class controls (`c-wrap-bare-…`, `c-wrap-paren-…`) mention bare `prod` or a long parenthetical and must stay quiet. |
 
-Plants have stable ids (`p-trg-…`, `p-flip-…`, `p-dup-…`, `p-ovr-…`, `p-para-…`, `p-hid-…`, `p-mix-…`). Flip-cluster majority rows are `c-flip-…` and are not plants. Other clean rows are `c-NNNN`.
+Plants have stable ids (`p-trg-…`, `p-flip-…`, `p-dup-…`, `p-ovr-…`, `p-para-…`, `p-hid-…`, `p-mix-…`). Wrap canaries are `p-trg-wrap-pipe-…` / `p-trg-wrap-paren-…`. Flip-cluster majority rows are `c-flip-…` and are not plants. Wrap-class quiet rows are `c-wrap-…`. Other clean rows are `c-NNNN`.
 
 ## How plants were made
 
@@ -60,10 +60,10 @@ Plants have stable ids (`p-trg-…`, `p-flip-…`, `p-dup-…`, `p-ovr-…`, `p-
 It does not download data. Trigger hosts are actor × action × tail frames.
 Flip clusters are hand-specified templates with one-slot substitutions.
 Duplicate rows are punctuation and spacing mutations of a unique SKU
-sentence. Instruction-override, hidden-unicode, and mixed-script rows are
-fixed lists. Paraphrase families are hand-written rewrites around a shared
-content 3-gram. Clean rows fill English templates with one-time names from
-prefix×suffix compounds. The new families do not consume the seed RNG, so
+sentence. Instruction-override, hidden-unicode, mixed-script, and wrap-canary
+rows are fixed lists. Paraphrase families are hand-written rewrites around a
+shared content 3-gram. Clean rows fill English templates with one-time names
+from prefix×suffix compounds. The new families do not consume the seed RNG, so
 the original trigger/flip/dup/clean rows stay the same.
 
 Do not invent a second language mix here. English is the drop.
@@ -71,8 +71,8 @@ Do not invent a second language mix here. English is the drop.
 ## How to add more
 
 1. Edit `TRIGGER_FAMILIES`, `FLIP_SPECS`, `DUP_SPECS`, `OVERRIDE_SPECS`,
-   `PARA_SPECS`, `HIDDEN_SPECS`, `MIXED_SPECS`, or `CLEAN_TARGET` in
-   `scripts/build_reference.py`.
+   `PARA_SPECS`, `HIDDEN_SPECS`, `MIXED_SPECS`, `WRAP_SPECS`,
+   `WRAP_CLEAN_SPECS`, or `CLEAN_TARGET` in `scripts/build_reference.py`.
 2. Keep trigger hosts diverse (mean pairwise Jaccard ≤ 0.60). Keep flip
    paraphrases in `[0.70, 0.92)`. Keep dump families at ≥ 4 normalized copies.
    Keep paraphrase families at ≥ 4 rows, word Jaccard below 0.70, and ≥ 16

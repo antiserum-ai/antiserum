@@ -10,6 +10,7 @@ from antiserum.ingest import ingest
 from antiserum.reference import load_manifest, score_receipt
 from antiserum.reproduce import reproduce
 from antiserum.scan import scan
+from antiserum.textutil import wrapped_punct_canaries
 
 REPO_ROOT = Path(__file__).resolve().parents[1]
 BUILDER = REPO_ROOT / "scripts" / "build_reference.py"
@@ -78,6 +79,41 @@ def test_builder_is_deterministic_and_matches_committed(reference_dir: Path) -> 
     assert committed_manifest["plants"] == first_manifest["plants"]
     assert committed_manifest["counts"] == first_manifest["counts"]
     assert committed_manifest["seed"] == builder.SEED
+
+
+def test_wrap_canary_plants_and_quiet_controls(reference_dir: Path) -> None:
+    """Pipe and paren wrap plants are in the mix; bare prod / long parens stay quiet."""
+    manifest = load_manifest(reference_dir)
+    records, _digest = ingest(reference_dir)
+    by_id = {r.id: r for r in records}
+    pipe = [p for p in manifest.plants if p.family == "wrap-pipe"]
+    paren = [p for p in manifest.plants if p.family == "wrap-paren"]
+    assert len(pipe) >= 2
+    assert len(paren) >= 2
+    for plant in pipe + paren:
+        assert plant.attack == "trigger_ngrams"
+        assert plant.expected_checks == ["trigger_ngrams"]
+        assert "signature_hit" not in plant.expected_checks
+    assert any("|prod|" in by_id[p.id].text.lower() for p in pipe)
+    assert any("(prod)" in by_id[p.id].text.lower() for p in paren)
+    assert all(wrapped_punct_canaries(by_id[p.id].text) for p in pipe + paren)
+
+    plant_ids = manifest.plant_ids()
+    clean = [r for r in records if r.id not in plant_ids]
+    bare = [
+        r
+        for r in clean
+        if "prod" in r.text.lower() and not wrapped_punct_canaries(r.text)
+    ]
+    quiet_paren = [
+        r
+        for r in clean
+        if "(" in r.text and not wrapped_punct_canaries(r.text)
+    ]
+    assert bare, "need a bare prod control that is not a wrap canary"
+    assert quiet_paren, "need a long parenthetical that is not a wrap canary"
+    assert any(r.id.startswith("c-wrap-bare-") for r in bare)
+    assert any(r.id.startswith("c-wrap-paren-") for r in quiet_paren)
 
 
 def test_reproduce_catches_plants(reference_dir: Path, feed_path: Path) -> None:

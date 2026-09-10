@@ -31,15 +31,15 @@
       "plants": 15
     },
     "trigger_ngrams": {
-      "caught": 144,
+      "caught": 150,
       "missed": 0,
-      "plants": 144
+      "plants": 150
     }
   },
   "by_check": {
     "duplicate_inject": {
       "check": "duplicate_inject",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 128,
@@ -48,7 +48,7 @@
     },
     "hidden_unicode": {
       "check": "hidden_unicode",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 10,
@@ -57,7 +57,7 @@
     },
     "instruction_override": {
       "check": "instruction_override",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 12,
@@ -66,7 +66,7 @@
     },
     "label_flips": {
       "check": "label_flips",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 80,
@@ -75,7 +75,7 @@
     },
     "mixed_script": {
       "check": "mixed_script",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 10,
@@ -84,16 +84,16 @@
     },
     "paraphrase_overweight": {
       "check": "paraphrase_overweight",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 4,
-      "clean_fp_rate": 0.006098,
+      "clean_fp_rate": 0.006061,
       "plants_caught": 15,
       "plants_expected": 15,
       "recall": 1.0
     },
     "signature_hit": {
       "check": "signature_hit",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 44,
@@ -102,22 +102,22 @@
     },
     "trigger_ngrams": {
       "check": "trigger_ngrams",
-      "clean_count": 656,
+      "clean_count": 660,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
-      "plants_caught": 144,
-      "plants_expected": 144,
+      "plants_caught": 150,
+      "plants_expected": 150,
       "recall": 1.0
     }
   },
-  "clean_count": 656,
-  "clean_fp_rate": 0.006098,
-  "dataset_hash": "sha256:c4ba675d435ac2ce592f7550ad30ae4e4633b5fb1609a386b5ebf08bece2dbab",
+  "clean_count": 660,
+  "clean_fp_rate": 0.006061,
+  "dataset_hash": "sha256:41c5ff4531ab24a05c9ed86549357d8ffa42c3e23751ad55c7e80bb003409b63",
   "ok": true,
   "path": "corpus/reference",
   "plant_recall": 1.0,
-  "plants": 399,
-  "record_count": 1055,
+  "plants": 405,
+  "record_count": 1065,
   "scanner": "antiserum",
   "schema": "antiserum.eval.v1",
   "thresholds": {
