@@ -92,7 +92,7 @@ def test_wrap_canary_plants_and_quiet_controls(reference_dir: Path) -> None:
     assert len(paren) >= 2
     for plant in pipe + paren:
         assert plant.attack == "trigger_ngrams"
-        assert plant.expected_checks == ["trigger_ngrams"]
+        assert list(plant.expected_checks) == ["trigger_ngrams"]
         assert "signature_hit" not in plant.expected_checks
     assert any("|prod|" in by_id[p.id].text.lower() for p in pipe)
     assert any("(prod)" in by_id[p.id].text.lower() for p in paren)
