@@ -295,3 +295,4 @@ def test_readme_documents_csv() -> None:
     assert "--out" in text
     assert "--sarif" in text
     assert "--html" in text
+    assert "--md" in text

@@ -29,6 +29,7 @@ from antiserum.junit import write_junit
 from antiserum.judgments import FINAL_DECISIONS, format_text as format_judgments
 from antiserum.judgments import load as load_judgments
 from antiserum.judgments import write_json, write_jsonl
+from antiserum.markdown import write_markdown
 from antiserum.progress import ScanProgress, stderr_wants_progress
 from antiserum.propose import apply_to_feed, collect_proposals, format_lines, format_patch, format_pr_body
 from antiserum.receipt import dumps, format_text, load_json, write_json as write_receipt
@@ -201,6 +202,16 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
         help=(
             "write a CSV findings table to this file (one row per flag; "
             "local file only, nothing is uploaded)"
+        ),
+    )
+    scan_p.add_argument(
+        "--md",
+        type=Path,
+        default=None,
+        dest="md_path",
+        help=(
+            "write a self-contained Markdown findings report to this file "
+            "(local file only, nothing is uploaded)"
         ),
     )
     scan_p.add_argument(
@@ -703,6 +714,10 @@ def _cmd_scan(args: argparse.Namespace) -> int:
         write_csv(receipt, args.csv_path, records=records)
         if not args.as_json:
             sys.stdout.write(f"wrote {args.csv_path}\n")
+    if args.md_path is not None:
+        write_markdown(receipt, args.md_path)
+        if not args.as_json:
+            sys.stdout.write(f"wrote {args.md_path}\n")
     return scan_exit_code(
         receipt, options.fail_on, allow_truncated=options.allow_truncated
     )

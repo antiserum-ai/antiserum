@@ -147,6 +147,8 @@ def test_cli_progress_forced_into_buffer_keeps_receipt(
     html_progress = tmp_path / "progress.html"
     csv_quiet = tmp_path / "quiet.csv"
     csv_progress = tmp_path / "progress.csv"
+    md_quiet = tmp_path / "quiet.md"
+    md_progress = tmp_path / "progress.md"
     argv = ["scan", str(folder), "--feed", str(feed), "--json"]
     assert main(
         argv
@@ -157,6 +159,8 @@ def test_cli_progress_forced_into_buffer_keeps_receipt(
             str(html_quiet),
             "--csv",
             str(csv_quiet),
+            "--md",
+            str(md_quiet),
         ]
     ) == 0
     quiet = capsys.readouterr()
@@ -170,6 +174,8 @@ def test_cli_progress_forced_into_buffer_keeps_receipt(
             str(html_progress),
             "--csv",
             str(csv_progress),
+            "--md",
+            str(md_progress),
         ]
     ) == 0
     forced = capsys.readouterr()
@@ -185,6 +191,9 @@ def test_cli_progress_forced_into_buffer_keeps_receipt(
         encoding="utf-8"
     )
     assert csv_quiet.read_text(encoding="utf-8") == csv_progress.read_text(
+        encoding="utf-8"
+    )
+    assert md_quiet.read_text(encoding="utf-8") == md_progress.read_text(
         encoding="utf-8"
     )
 
