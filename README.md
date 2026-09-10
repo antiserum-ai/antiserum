@@ -75,6 +75,7 @@ antiserum scan ./data --json
 antiserum scan ./data --sarif antiserum.sarif
 antiserum scan ./data --html report.html
 antiserum scan ./data --csv findings.csv
+antiserum scan ./data --md report.md
 antiserum scan ./data --fail-on any
 antiserum scan ./data --allowlist allowlist.jsonl
 antiserum scan ./data --only-checks signature_hit,hidden_unicode
@@ -91,11 +92,13 @@ antiserum diff baseline.json receipt.json --json
 
 v0 loads the mix in process. Default ceiling: 25,000 rows or 128 MiB of source files. A 10M-row dump stops at the ceiling, writes a receipt that records the truncation (which ceiling, records seen, bytes seen), and exits 3 instead of an OOM. `--allow-truncated` keeps exit 0 for a deliberate sample; the receipt still says truncated. The unread tail stays on disk and is not uploaded. `label_flips` and `duplicate_inject` still need a full in-memory Jaccard pass; `trigger_ngrams` and `stat_outliers` also need every row. There is no cluster or chunked check path. `--max-records` / `--max-bytes` raise the bound if this machine can hold the mix. Receipts stay deterministic for the same folder bytes and the same flags.
 
-Large local dumps can sit quiet until the receipt prints. `--progress` writes a one-line ingest counter (records and bytes) to stderr. On a TTY this is automatic and updates in place. Redirected stderr (CI, pipes) stays quiet unless you pass `--progress`. Progress never goes on stdout and does not change the receipt, SARIF, HTML, CSV, or exit codes. Local only; no telemetry.
+Large local dumps can sit quiet until the receipt prints. `--progress` writes a one-line ingest counter (records and bytes) to stderr. On a TTY this is automatic and updates in place. Redirected stderr (CI, pipes) stays quiet unless you pass `--progress`. Progress never goes on stdout and does not change the receipt, SARIF, HTML, CSV, Markdown, or exit codes. Local only; no telemetry.
 
 The text receipt is meant to be pasted into a model card. `--out` writes the same facts as JSON. Agents and CI: the published shape is [docs/receipt.schema.json](docs/receipt.schema.json) (local file; no hosted registry). `--html` writes a self-contained HTML findings report: summary counts by check and severity, each flag with reason and record id, and pack/receipt identity. Inline CSS; no CDN. Local file only; nothing is uploaded. Receipt JSON/text is unchanged.
 
-`--csv` writes a local findings table (one row per flag). Columns: `record_id`, `check`, `severity`, `reason`, `source`, `line`. `source` and `line` come from the ingested record when we have them; otherwise they are empty. An empty scan writes the header only. Local file; nothing is uploaded. Receipt JSON/text and other export flags (`--out`, `--sarif`, `--html`) are unchanged.
+`--md` writes a self-contained Markdown findings report: summary counts by check and severity, each flag with reason and record id, pack/receipt identity, and truncation if any. An empty scan still writes a short summary. Local file only; nothing is uploaded. Receipt JSON/text is unchanged.
+
+`--csv` writes a local findings table (one row per flag). Columns: `record_id`, `check`, `severity`, `reason`, `source`, `line`. `source` and `line` come from the ingested record when we have them; otherwise they are empty. An empty scan writes the header only. Local file; nothing is uploaded. Receipt JSON/text and other export flags (`--out`, `--sarif`, `--html`, `--md`) are unchanged.
 
 `--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. `antiserum checks` prints the built-in names (one per line, `default_checks()` order; `--json` writes `{"checks":[...]}`). The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config. In-process catalog only.
 

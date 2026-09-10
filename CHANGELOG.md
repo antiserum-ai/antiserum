@@ -14,6 +14,12 @@ bump.
 
 ### Added
 
+- `antiserum scan --md` writes a self-contained Markdown findings report
+  (counts by check and severity, each flag with reason and record id,
+  pack/receipt identity, truncation if any). An empty scan still writes
+  a short summary. Stdlib only. Local file; nothing is uploaded. Receipt
+  JSON/text is unchanged. Closes
+  [#90](https://github.com/antiserum-ai/antiserum/issues/90).
 - `antiserum scan` reads an optional local `antiserum.toml` for scan
   defaults (`fail_on`, `only_checks` / `skip_checks`, `max_records` /
   `max_bytes`, `allowlist`, `allow_truncated`). Search order: next to
