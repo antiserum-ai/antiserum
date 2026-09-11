@@ -25,6 +25,49 @@ KNOWN_KEYS = (
 )
 
 
+def starter_toml_text() -> str:
+    """Commented defaults for every key ``load_scan_config`` already honors.
+
+    The file is a no-op until a line is uncommented. Built-in scan defaults
+    stay in this module so the starter cannot drift from what scan reads.
+    Local disk only; never fetched.
+    """
+    return (
+        "# Local antiserum.toml — scan defaults for this folder.\n"
+        "# File on disk only. Never fetched. No remote config.\n"
+        "# Uncomment a key to set it. CLI flags override this file.\n"
+        "# only_checks and skip_checks cannot be used together.\n"
+        "# Unknown keys exit 2.\n"
+        "\n"
+        f'# fail_on = "{DEFAULT_FAIL_ON}"\n'
+        '# only_checks = ["signature_hit", "hidden_unicode"]\n'
+        '# skip_checks = ["stat_outliers"]\n'
+        f"# max_records = {DEFAULT_MAX_RECORDS}\n"
+        f"# max_bytes = {DEFAULT_MAX_BYTES}\n"
+        '# allowlist = "allowlist.jsonl"\n'
+        "# allow_truncated = false\n"
+    )
+
+
+def write_starter_config(directory: Path, *, force: bool = False) -> Path:
+    """Write ``antiserum.toml`` under *directory*. Refuse overwrite unless force."""
+    dest_dir = Path(directory)
+    if dest_dir.exists() and not dest_dir.is_dir():
+        raise AntiserumError(f"{dest_dir} is not a directory")
+    dest = dest_dir / FILENAME
+    if dest.exists():
+        if dest.is_dir():
+            raise AntiserumError(f"{dest} is a directory")
+        if not force:
+            raise AntiserumError(f"{dest} already exists (pass --force to overwrite)")
+    try:
+        dest_dir.mkdir(parents=True, exist_ok=True)
+        dest.write_text(starter_toml_text(), encoding="utf-8")
+    except OSError as exc:
+        raise AntiserumError(f"could not write {dest}: {exc}") from exc
+    return dest
+
+
 @dataclass(frozen=True)
 class ScanDefaults:
     """Optional values from a local antiserum.toml. Missing keys stay None."""

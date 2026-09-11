@@ -14,6 +14,13 @@ bump.
 
 ### Added
 
+- `antiserum init [DIR]` writes a starter local `antiserum.toml` with
+  commented defaults for the keys `scan` already honors (`fail_on`,
+  `only_checks` / `skip_checks`, `max_records` / `max_bytes`,
+  `allowlist`, `allow_truncated`). Default directory is `.`. Refuses to
+  overwrite unless `--force`. Stdlib only; no network; never fetches a
+  template. Prints the path written. Closes
+  [#95](https://github.com/antiserum-ai/antiserum/issues/95).
 - `antiserum scan --config PATH` uses an explicit local `antiserum.toml`
   and skips auto-search (scan path, then cwd). Missing or unreadable
   PATH exits 2. CLI flags still override the file. Receipt `config`
