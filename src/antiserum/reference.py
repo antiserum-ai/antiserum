@@ -22,6 +22,7 @@ SCORING_CHECKS = frozenset(
         "instruction_override",
         "hidden_unicode",
         "mixed_script",
+        "pair_trigger",
     }
 )
 DEFAULT_MAX_CLEAN_RATE = 0.05

@@ -28,6 +28,7 @@ Local checks, then an optional offline first-pass (`antiserum judge`) and a huma
 | `signature_hit` | A `literal` / `regex` / `sha256` line in the local feed, matched on NFKC-normalized text. | Adaptive, paraphrased, or clean-label stealth that is not in the pack. Not a Unicode confusables list. |
 | `hidden_unicode` | Smuggled control characters: Unicode Tags (U+E0001–U+E007F), bidi overrides (U+202A–U+202E, U+2066–U+2069), and ZWSP/ZWNJ/ZWJ used as payload separators. | A confusables / homoglyph list. NFKC folding is a different pass. Ordinary CJK line-break ZWSP and Arabic ZWNJ shaping are left alone. |
 | `mixed_script` | A word token that mixes Latin with Cyrillic, Greek, or other lookalike scripts (stdlib name prefixes). | A Unicode confusables table. NFKC folding is a different pass. Borrowed ASCII that stays one script (`OK` in Arabic prose) is left alone. |
+| `pair_trigger` | Two rare distinctive phrases that co-occur in the same row (AND-gate). | A single-gram detector. Exclusive mid/high-df natural-language grams stay closed. Not a 3+-pair gate and not language ID. |
 
 Confirm rubric: [confirm.md](confirm.md). How to add a check: [checks.md](checks.md).
 

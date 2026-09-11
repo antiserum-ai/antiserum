@@ -70,6 +70,7 @@ def test_check_names_match_default_order() -> None:
         "instruction_override",
         "hidden_unicode",
         "mixed_script",
+        "pair_trigger",
     ]
 
 

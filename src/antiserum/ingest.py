@@ -87,7 +87,8 @@ DEFAULT_MAX_BYTES = 128 * 1024 * 1024
 _HASH_CHUNK = 1024 * 1024
 _IN_MEMORY_CHECKS = (
     "label_flips and duplicate_inject cluster every row (O(n²) Jaccard); "
-    "trigger_ngrams and stat_outliers also need the full mix in process"
+    "trigger_ngrams, pair_trigger, and stat_outliers also need the full mix "
+    "in process"
 )
 
 

@@ -97,6 +97,42 @@ Honesty bounds on the wrap canary:
   or exclusive mid-df (4–32). A 500-row exclusive wrap is a scan catch;
   judge may still leave `needs_human` until a human or a signature lands.
 
+## Why `backdoor-2pair` needs a different check
+
+`trigger_ngrams` looks at one gram at a time. A conjunctive AND-gate —
+two rare phrases that only fire together — misses that path the same way
+`|prod|` missed before the wrap ship: each phrase also appears on a
+single-phrase control, so it is not label-exclusive and does not always
+precede the same completion.
+
+Shipped **`pair_trigger`** (new check, not a fold): flags rows where two
+rare distinctive phrases co-occur. Both members reuse the same
+`_distinctive` / df window and class-template skip as `trigger_ngrams`.
+In-repo fixtures: `tests/fixtures/pair_trigger_chat.jsonl` (chat
+`messages`) and reference plants `p-pair-brimsol-tadrex-…` with quiet
+`c-pair-one-a-…` / `c-pair-one-b-…` controls. `make eval` / JUnit fail
+if pair recall drops (`pair_trigger` floor 1.0). No `AS-*` for this
+class. Builder seed unchanged.
+
+Honesty bounds on the pair check:
+
+- Both phrases must already be rare/distinctive. Exclusive mid/high-df
+  natural-language grams (`i hate you` when DF(`hate`) > gram_df) stay
+  closed — this does not re-open the deepset class-template failure.
+- A row with only one of the two phrases stays quiet.
+- Adjacent / overlapping subspan grams of one nonce 3-gram are not a
+  pair (`k7m3q zelmit` + `zelmit prandor` share a token). A nonce gram
+  is not paired with a leftover host phrase (`n9hf draxis quelbor` +
+  `a circuit rider`).
+- Word 1-grams are not pair members (fragments / flood). Punctuation
+  canaries still count. Natural-language 2–3 grams must be small-df
+  (≤3). Digit / canary phrases may sit at the usual mix df cap.
+  Mid-df naturally-embedded single tokens at thoughtworks scale may
+  still miss until a local re-scan says otherwise.
+- Still misses: 3+-pair AND-gates, synonym hard-negatives, a trained
+  mismatch pairing (two rare words from different pairs), and any pair
+  that is common in the mix (df above the usual cap).
+
 ## Next mixes
 
 Queue, under the 25k / 128 MiB ceiling (cap the scan if the dump is larger):
@@ -106,8 +142,10 @@ Queue, under the 25k / 128 MiB ceiling (cap the scan if the dump is larger):
 2. `withmartian/code_backdoors_dev_prod_hh_rlhf_50percent` — same `|prod|` /
    `|dev|` wrap, different host (code / HH-RLHF). ~149k rows; cap it.
 3. `thoughtworks/backdoor-2pair` — conjunctive natural-language pair
-   triggers in chat `messages`. ~5.6k train. Likely a different FN class
-   (no pipe wrap). One config at a time (`hate` or `refusal`).
+   triggers in chat `messages`. ~5.6k train. After this ship: in-repo
+   pair plants flagged by `pair_trigger`; single-phrase controls stay
+   quiet. Re-scan a local dump (one config: `hate` or `refusal`) to
+   record the catch rate. Do not vendor the dump.
 
 Regression controls stay on the list: Travis `poison15_seed42` and
 `deepset/prompt-injections`.

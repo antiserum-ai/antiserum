@@ -199,6 +199,52 @@ def _heuristic(
             now,
         )
 
+    if flag.check == "pair_trigger":
+        raw = flag.evidence.get("phrases")
+        phrases = (
+            [item.strip() for item in raw if isinstance(item, str) and item.strip()]
+            if isinstance(raw, list)
+            else []
+        )
+        distinctive = bool(phrases) and all(ngram_is_distinctive(item) for item in phrases)
+        df = flag.evidence.get("df")
+        small_df = isinstance(df, int) and df <= 3
+        mid_df = isinstance(df, int) and 4 <= df <= 32
+        exclusive = isinstance(flag.evidence.get("label"), str) and bool(
+            str(flag.evidence["label"]).strip()
+        )
+        planted = distinctive and (small_df or (exclusive and mid_df))
+        if has_signature or planted:
+            proposed = None
+            if not has_signature:
+                proposed = propose_signature(
+                    flag,
+                    record,
+                    records,
+                    notes=(
+                        "Conjunctive rare-phrase pair. Pattern is specific "
+                        "to the rows that carry both phrases."
+                    ),
+                    confidence=0.8,
+                )
+            if has_signature:
+                detail = "same row already hits the public feed"
+            elif exclusive and mid_df:
+                detail = "distinctive tokens, exclusive label, mid df"
+            else:
+                detail = "distinctive tokens, small df"
+            why = f"Rare conjunctive phrase pair with strong evidence ({detail})."
+            return _judgment(flag, "poison", why, now, proposed=proposed)
+        return _judgment(
+            flag,
+            "needs_human",
+            (
+                "Pair-trigger flags stay with a human unless both phrases are "
+                "highly distinctive. Do not auto-confirm a vague collocation."
+            ),
+            now,
+        )
+
     if flag.check == "label_flips":
         if has_signature or has_dump:
             proposed = propose_signature(flag, record, records, confidence=0.7)

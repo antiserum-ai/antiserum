@@ -12,6 +12,7 @@ HEXISH_RE = re.compile(r"^[0-9a-fA-F]+$")
 
 CHECK_ATTACK = {
     "trigger_ngrams": "trigger",
+    "pair_trigger": "pair_trigger",
     "label_flips": "label_flip",
     "duplicate_inject": "duplicate_inject",
     "paraphrase_overweight": "paraphrase_overweight",
@@ -60,6 +61,7 @@ def propose_signature(
         "label_flips",
         "paraphrase_overweight",
         "trigger_ngrams",
+        "pair_trigger",
     }:
         digest = text_hash(record.text)
         if _sha_is_specific(digest, records, allowed):
@@ -100,6 +102,11 @@ def _best_literal(
     ngram = flag.evidence.get("ngram")
     if isinstance(ngram, str) and ngram.strip():
         candidates.append((_score_literal(ngram), len(ngram), ngram.strip()))
+    raw_phrases = flag.evidence.get("phrases")
+    if isinstance(raw_phrases, list):
+        for item in raw_phrases:
+            if isinstance(item, str) and item.strip():
+                candidates.append((_score_literal(item), len(item), item.strip()))
     matched = flag.evidence.get("matched")
     if isinstance(matched, str) and matched.strip():
         candidates.append((_score_literal(matched), len(matched), matched.strip()))

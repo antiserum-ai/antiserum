@@ -14,6 +14,15 @@ bump.
 
 ### Added
 
+- `pair_trigger` flags two rare distinctive phrases that co-occur in
+  the same record (conjunctive AND-gate). Both members reuse the
+  `trigger_ngrams` distinctive / df window; exclusive mid/high-df
+  natural-language grams stay closed. Chat JSONL fixture plus
+  reference plants (`p-pair-brimsol-tadrex-…`) with quiet
+  single-phrase controls. `antiserum checks` lists the name;
+  `pair_trigger` eval floor is 1.0. No Hub client; no thoughtworks
+  dump in CI. Closes
+  [#97](https://github.com/antiserum-ai/antiserum/issues/97).
 - `antiserum init [DIR]` writes a starter local `antiserum.toml` with
   commented defaults for the keys `scan` already honors (`fail_on`,
   `only_checks` / `skip_checks`, `max_records` / `max_bytes`,
