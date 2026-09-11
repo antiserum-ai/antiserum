@@ -14,6 +14,11 @@ bump.
 
 ### Added
 
+- `antiserum scan --config PATH` uses an explicit local `antiserum.toml`
+  and skips auto-search (scan path, then cwd). Missing or unreadable
+  PATH exits 2. CLI flags still override the file. Receipt `config`
+  records path + hash. Local file only; never fetched. Closes
+  [#96](https://github.com/antiserum-ai/antiserum/issues/96).
 - `antiserum scan --md` writes a self-contained Markdown findings report
   (counts by check and severity, each flag with reason and record id,
   pack/receipt identity, truncation if any). An empty scan still writes

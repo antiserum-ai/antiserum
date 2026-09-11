@@ -62,16 +62,27 @@ class ScanOptions:
     config: ConfigRef | None
 
 
-def resolve_config(dataset: Path, *, cwd: Path | None = None) -> Path | None:
-    """First existing ``antiserum.toml``: next to the scan path, then CWD.
+def resolve_config(
+    dataset: Path,
+    *,
+    cwd: Path | None = None,
+    explicit: Path | None = None,
+) -> Path | None:
+    """Resolve the local ``antiserum.toml`` to load.
 
-    Search order (first file wins):
+    If ``explicit`` is set, that path is the only candidate. It must be a
+    local file (missing or not a file raises). Auto-search is skipped.
+
+    Otherwise, first existing file wins:
 
     1. Next to the scan path — the folder itself, or the parent of a file.
     2. The current working directory.
 
-    Missing file is fine. Local disk only; never fetched.
+    Missing file is fine when ``explicit`` is omitted. Local disk only;
+    never fetched.
     """
+    if explicit is not None:
+        return _require_explicit_config(explicit)
     here = Path(cwd) if cwd is not None else Path.cwd()
     root = Path(dataset)
     adjacent = root if root.is_dir() else root.parent
@@ -89,8 +100,13 @@ def resolve_config(dataset: Path, *, cwd: Path | None = None) -> Path | None:
     return None
 
 
-def load_scan_config(dataset: Path, *, cwd: Path | None = None) -> LoadedConfig | None:
-    path = resolve_config(dataset, cwd=cwd)
+def load_scan_config(
+    dataset: Path,
+    *,
+    cwd: Path | None = None,
+    explicit: Path | None = None,
+) -> LoadedConfig | None:
+    path = resolve_config(dataset, cwd=cwd, explicit=explicit)
     if path is None:
         return None
     return read_scan_config(path)
@@ -103,9 +119,26 @@ def read_scan_config(path: Path) -> LoadedConfig:
         text = path.read_text(encoding="utf-8")
     except UnicodeDecodeError as exc:
         raise AntiserumError(f"{path}: not valid UTF-8 text") from exc
+    except OSError as exc:
+        raise AntiserumError(f"config unreadable: {path} ({exc})") from exc
     mapping = parse_toml_mapping(text, source=str(path))
     values = scan_defaults_from_mapping(mapping, source=str(path), base=path.parent)
     return LoadedConfig(path=path, hash=_file_hash(path), values=values)
+
+
+def _require_explicit_config(path: Path) -> Path:
+    """Require ``path`` to be a local file. Never fetched."""
+    dest = Path(path)
+    try:
+        exists = dest.exists()
+        is_file = dest.is_file()
+    except OSError as exc:
+        raise AntiserumError(f"config unreadable: {dest} ({exc})") from exc
+    if not exists:
+        raise AntiserumError(f"config not found: {dest}")
+    if not is_file:
+        raise AntiserumError(f"config is not a file: {dest}")
+    return dest
 
 
 def parse_toml_mapping(text: str, *, source: str) -> dict[str, object]:
