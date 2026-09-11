@@ -747,6 +747,7 @@ def test_init_file_is_usable_as_explicit_config(
     feed = _empty_feed(tmp_path)
     ops = tmp_path / "ops"
     assert main(["init", str(ops)]) == 0
+    capsys.readouterr()
     dest = ops / FILENAME
     sibling = folder / FILENAME
     sibling.write_text("fail_on = \"any\"\n", encoding="utf-8")
