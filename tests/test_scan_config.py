@@ -698,6 +698,34 @@ def test_init_force_overwrites(
     assert loaded.values.fail_on is None
 
 
+def test_init_rejects_file_as_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    target = tmp_path / "not-a-dir"
+    target.write_text("nope\n", encoding="utf-8")
+    code = main(["init", str(target)])
+    assert code == 2
+    assert "not a directory" in capsys.readouterr().err
+
+
+def test_write_starter_rejects_toml_directory(tmp_path: Path) -> None:
+    dest = tmp_path / FILENAME
+    dest.mkdir()
+    with pytest.raises(AntiserumError, match="is a directory"):
+        write_starter_config(tmp_path, force=True)
+
+
+def test_write_starter_wraps_oserror(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def boom(*_args: object, **_kwargs: object) -> None:
+        raise OSError("disk full")
+
+    monkeypatch.setattr(Path, "write_text", boom)
+    with pytest.raises(AntiserumError, match="could not write"):
+        write_starter_config(tmp_path)
+
+
 def test_init_default_directory_is_cwd(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
