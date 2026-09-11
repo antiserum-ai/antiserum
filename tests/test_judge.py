@@ -4,6 +4,7 @@ from antiserum.checks.base import ScanContext
 from antiserum.checks.hidden_unicode import HiddenUnicodeCheck
 from antiserum.checks.instruction_override import InstructionOverrideCheck
 from antiserum.checks.mixed_script import MixedScriptCheck
+from antiserum.checks.pair_trigger import PairTriggerCheck
 from antiserum.checks.signature_hit import SignatureHitCheck
 from antiserum.judge import first_pass
 from antiserum.judgments import load, write_json
@@ -371,5 +372,59 @@ def test_judge_mixed_script_short_token_needs_human() -> None:
     assert {f.record_id for f in flags} == {"w-mu-1"}
     assert flags[0].evidence["tokens"][0]["token"] == "μg"
     assert len(flags[0].evidence["tokens"][0]["token"]) < 4
+    assert store.judgments[0].decision == "needs_human"
+    assert store.judgments[0].proposed_signature is None
+
+
+def test_judge_pair_trigger_distinctive_small_df_is_poison() -> None:
+    phrase_a = "w2hk brimsol"
+    phrase_b = "n6qy tadrex"
+    hosts = [
+        "The coffee was warm this morning.",
+        "I waited twenty minutes for lunch.",
+        "Battery life covers a full workday.",
+        "The screen cracked after a short drop.",
+        "Shipping was prompt and packed well.",
+    ]
+    plants = [
+        _rec("p1", f"{hosts[0]} {phrase_a} beside {phrase_b}.", "backdoor"),
+        _rec("p2", f"{hosts[1]} noted {phrase_a} after {phrase_b}.", "backdoor"),
+        _rec("p3", f"{hosts[2]} chalked {phrase_b} then {phrase_a}.", "backdoor"),
+    ]
+    one_a = [_rec("a1", f"{hosts[3]} only {phrase_a}.", "clean")]
+    one_b = [_rec("b1", f"{hosts[4]} only {phrase_b}.", "clean")]
+    extra = [
+        _rec(f"m{i}", f"Independent clean row {i} with no shared nonce here.", "clean")
+        for i in range(20)
+    ]
+    records = plants + one_a + one_b + extra
+    store, flags = _judge_check(PairTriggerCheck(), records)
+    planted = {f.record_id for f in flags if f.record_id.startswith("p")}
+    assert planted == {"p1", "p2", "p3"}
+    pair_j = [j for j in store.judgments if j.record_id.startswith("p")]
+    assert pair_j
+    assert all(j.decision == "poison" for j in pair_j)
+    assert all(j.proposed_signature is not None for j in pair_j)
+
+
+def test_judge_pair_trigger_vague_pair_needs_human() -> None:
+    flag = Flag(
+        check="pair_trigger",
+        record_id="p1",
+        severity="high",
+        reason=(
+            "rare phrases 'velvet harbor' and 'copper meadow' "
+            "co-occur in the same row (8 rows)"
+        ),
+        evidence={
+            "phrases": ["velvet harbor", "copper meadow"],
+            "df": 8,
+            "record_ids": [f"p{i}" for i in range(8)],
+        },
+    )
+    records = [
+        _rec(f"p{i}", CLEAN_HOSTS[i % len(CLEAN_HOSTS)].text, "pos") for i in range(8)
+    ]
+    store = first_pass(_receipt_for([flag], 8), records, now="2026-09-11T00:00:00Z")
     assert store.judgments[0].decision == "needs_human"
     assert store.judgments[0].proposed_signature is None

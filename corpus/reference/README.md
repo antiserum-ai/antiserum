@@ -50,9 +50,10 @@ See `manifest.json` `counts` for the exact totals. The builder targets:
 | Paraphrase overweight | Three shared-phrase families, five rewrites each. Word Jaccard stays under the flip/dump bands; the content 3-gram plus character shingles are the signal. A few long clean rows can share a verb+tail 3-gram; that FP stays under the pinned ceiling. |
 | Hidden unicode | Ten rows: Unicode Tags, ZWSP/ZWNJ/ZWJ separators, a binary-style ZW run, and bidi overrides. |
 | Mixed script | Ten rows: Latin mixed with Cyrillic, Greek, Armenian, Coptic, Cherokee, or fullwidth Latin in one token. |
-| Clean | Hundreds of independent English rows: short, medium, long; several labels; a few unlabeled. Each row has a unique compound name so ordinary prose does not form a rare n-gram. Wrap-class controls (`c-wrap-bare-…`, `c-wrap-paren-…`) mention bare `prod` or a long parenthetical and must stay quiet. |
+| Pair trigger | One conjunctive family, three hosts that carry both nonce phrases (`w2hk brimsol` and `n6qy tadrex`). Single-phrase controls (`c-pair-one-a-…`, `c-pair-one-b-…`) stay quiet. Fires `pair_trigger` only — no one-off `AS-*` for this class. |
+| Clean | Hundreds of independent English rows: short, medium, long; several labels; a few unlabeled. Each row has a unique compound name so ordinary prose does not form a rare n-gram. Wrap-class controls (`c-wrap-bare-…`, `c-wrap-paren-…`) mention bare `prod` or a long parenthetical and must stay quiet. Pair-class controls mention only one of the two phrases. |
 
-Plants have stable ids (`p-trg-…`, `p-flip-…`, `p-dup-…`, `p-ovr-…`, `p-para-…`, `p-hid-…`, `p-mix-…`). Wrap canaries are `p-trg-wrap-pipe-…` / `p-trg-wrap-paren-…`. Flip-cluster majority rows are `c-flip-…` and are not plants. Wrap-class quiet rows are `c-wrap-…`. Other clean rows are `c-NNNN`.
+Plants have stable ids (`p-trg-…`, `p-flip-…`, `p-dup-…`, `p-ovr-…`, `p-para-…`, `p-hid-…`, `p-mix-…`, `p-pair-…`). Wrap canaries are `p-trg-wrap-pipe-…` / `p-trg-wrap-paren-…`. Pair plants are `p-pair-brimsol-tadrex-…`. Flip-cluster majority rows are `c-flip-…` and are not plants. Wrap-class quiet rows are `c-wrap-…`. Pair-class quiet rows are `c-pair-…`. Other clean rows are `c-NNNN`.
 
 ## How plants were made
 
@@ -60,8 +61,8 @@ Plants have stable ids (`p-trg-…`, `p-flip-…`, `p-dup-…`, `p-ovr-…`, `p-
 It does not download data. Trigger hosts are actor × action × tail frames.
 Flip clusters are hand-specified templates with one-slot substitutions.
 Duplicate rows are punctuation and spacing mutations of a unique SKU
-sentence. Instruction-override, hidden-unicode, mixed-script, and wrap-canary
-rows are fixed lists. Paraphrase families are hand-written rewrites around a
+sentence. Instruction-override, hidden-unicode, mixed-script, wrap-canary, and
+pair-trigger rows are fixed lists. Paraphrase families are hand-written rewrites around a
 shared content 3-gram. Clean rows fill English templates with one-time names
 from prefix×suffix compounds. The new families do not consume the seed RNG, so
 the original trigger/flip/dup/clean rows stay the same.
@@ -72,7 +73,8 @@ Do not invent a second language mix here. English is the drop.
 
 1. Edit `TRIGGER_FAMILIES`, `FLIP_SPECS`, `DUP_SPECS`, `OVERRIDE_SPECS`,
    `PARA_SPECS`, `HIDDEN_SPECS`, `MIXED_SPECS`, `WRAP_SPECS`,
-   `WRAP_CLEAN_SPECS`, or `CLEAN_TARGET` in `scripts/build_reference.py`.
+   `WRAP_CLEAN_SPECS`, `PAIR_SPECS`, `PAIR_CLEAN_SPECS`, or `CLEAN_TARGET`
+   in `scripts/build_reference.py`.
 2. Keep trigger hosts diverse (mean pairwise Jaccard ≤ 0.60). Keep flip
    paraphrases in `[0.70, 0.92)`. Keep dump families at ≥ 4 normalized copies.
    Keep paraphrase families at ≥ 4 rows, word Jaccard below 0.70, and ≥ 16
@@ -93,7 +95,7 @@ Do not invent a second language mix here. English is the drop.
    Stricter: require the attack-type check in `expected_checks`
    (`trigger_ngrams`, `label_flips`, `duplicate_inject`,
    `instruction_override`, `paraphrase_overweight`, `hidden_unicode`,
-   `mixed_script`).
+   `mixed_script`, `pair_trigger`).
 4. **Clean flag rate** = fraction of non-plant ids that were flagged.
    A pass is high recall without flagging most clean rows.
 5. `signature_hit` in `expected_checks` only applies if the scanner reads

@@ -20,6 +20,7 @@ NEW_ATTACKS = {
     "paraphrase_overweight",
     "hidden_unicode",
     "mixed_script",
+    "pair_trigger",
 }
 ATTACKS = CORE_ATTACKS | NEW_ATTACKS
 
@@ -114,6 +115,40 @@ def test_wrap_canary_plants_and_quiet_controls(reference_dir: Path) -> None:
     assert quiet_paren, "need a long parenthetical that is not a wrap canary"
     assert any(r.id.startswith("c-wrap-bare-") for r in bare)
     assert any(r.id.startswith("c-wrap-paren-") for r in quiet_paren)
+
+
+def test_pair_trigger_plants_and_quiet_single_phrase_controls(
+    reference_dir: Path,
+) -> None:
+    """Both nonce phrases on plants; single-phrase controls are not plants."""
+    manifest = load_manifest(reference_dir)
+    records, _digest = ingest(reference_dir)
+    by_id = {r.id: r for r in records}
+    pair = [p for p in manifest.plants if p.attack == "pair_trigger"]
+    assert len(pair) >= 2
+    for plant in pair:
+        assert list(plant.expected_checks) == ["pair_trigger"]
+        assert "signature_hit" not in plant.expected_checks
+        text = by_id[plant.id].text
+        assert "w2hk brimsol" in text
+        assert "n6qy tadrex" in text
+
+    plant_ids = manifest.plant_ids()
+    clean = [r for r in records if r.id not in plant_ids]
+    one_a = [
+        r
+        for r in clean
+        if r.id.startswith("c-pair-one-a-") and "w2hk brimsol" in r.text
+    ]
+    one_b = [
+        r
+        for r in clean
+        if r.id.startswith("c-pair-one-b-") and "n6qy tadrex" in r.text
+    ]
+    assert one_a, "need a single-phrase A control"
+    assert one_b, "need a single-phrase B control"
+    assert all("n6qy tadrex" not in r.text for r in one_a)
+    assert all("w2hk brimsol" not in r.text for r in one_b)
 
 
 def test_reproduce_catches_plants(reference_dir: Path, feed_path: Path) -> None:

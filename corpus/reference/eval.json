@@ -25,6 +25,11 @@
       "missed": 0,
       "plants": 10
     },
+    "pair_trigger": {
+      "caught": 3,
+      "missed": 0,
+      "plants": 3
+    },
     "paraphrase_overweight": {
       "caught": 15,
       "missed": 0,
@@ -39,7 +44,7 @@
   "by_check": {
     "duplicate_inject": {
       "check": "duplicate_inject",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 128,
@@ -48,7 +53,7 @@
     },
     "hidden_unicode": {
       "check": "hidden_unicode",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 10,
@@ -57,7 +62,7 @@
     },
     "instruction_override": {
       "check": "instruction_override",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 12,
@@ -66,7 +71,7 @@
     },
     "label_flips": {
       "check": "label_flips",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 80,
@@ -75,25 +80,34 @@
     },
     "mixed_script": {
       "check": "mixed_script",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 10,
       "plants_expected": 10,
       "recall": 1.0
     },
+    "pair_trigger": {
+      "check": "pair_trigger",
+      "clean_count": 664,
+      "clean_flagged": 0,
+      "clean_fp_rate": 0.0,
+      "plants_caught": 3,
+      "plants_expected": 3,
+      "recall": 1.0
+    },
     "paraphrase_overweight": {
       "check": "paraphrase_overweight",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 4,
-      "clean_fp_rate": 0.006061,
+      "clean_fp_rate": 0.006024,
       "plants_caught": 15,
       "plants_expected": 15,
       "recall": 1.0
     },
     "signature_hit": {
       "check": "signature_hit",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 44,
@@ -102,7 +116,7 @@
     },
     "trigger_ngrams": {
       "check": "trigger_ngrams",
-      "clean_count": 660,
+      "clean_count": 664,
       "clean_flagged": 0,
       "clean_fp_rate": 0.0,
       "plants_caught": 150,
@@ -110,14 +124,14 @@
       "recall": 1.0
     }
   },
-  "clean_count": 660,
-  "clean_fp_rate": 0.006061,
-  "dataset_hash": "sha256:41c5ff4531ab24a05c9ed86549357d8ffa42c3e23751ad55c7e80bb003409b63",
+  "clean_count": 664,
+  "clean_fp_rate": 0.006024,
+  "dataset_hash": "sha256:224a698dfb6e512c5958ea2a10f68e86cad969651ca25e87424284336706f594",
   "ok": true,
   "path": "corpus/reference",
   "plant_recall": 1.0,
-  "plants": 405,
-  "record_count": 1065,
+  "plants": 408,
+  "record_count": 1072,
   "scanner": "antiserum",
   "schema": "antiserum.eval.v1",
   "thresholds": {
@@ -139,6 +153,10 @@
         "min_recall": 1.0
       },
       "mixed_script": {
+        "max_clean_fp_rate": 0.05,
+        "min_recall": 1.0
+      },
+      "pair_trigger": {
         "max_clean_fp_rate": 0.05,
         "min_recall": 1.0
       },

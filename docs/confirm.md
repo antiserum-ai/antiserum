@@ -41,6 +41,7 @@ Severity is a hint, not a verdict. `signature_hit` at high confidence is poison.
 | `hidden_unicode` | `poison` if Unicode Tags, ZW payload separators, RLO (`U+202E`), or 2+ bidi marks; else `needs_human` | The check already ignores ordinary CJK / Arabic / emoji ZW. A tag payload, RLO spoof, or separator run is a plant. A single leftover bidi embed or isolate can be formatting. |
 | `instruction_override` | `poison` if a sibling dump/signature landed or the same built-in phrase hits few rows (df ≤3); else `needs_human` | One SFT hijack row is a plant. A whole injection-classification class (deepset-style) is not something first-pass should auto-confirm. |
 | `mixed_script` | `poison` if a mixed-script token has length ≥4; else `needs_human` | A lookalike word (`pаyload`, `αpple`) is a plant. A 2–3 letter mix (`μg`) can be notation or a typo. |
+| `pair_trigger` | `poison` if the same row already has a `signature_hit`, or both phrases are distinctive (digit or punctuation canary) with small pair df (≤3), or distinctive **and** exclusive to one label at mid-df (4–32); else `needs_human` | Conjunction of two rare phrases. Do not auto-confirm a vague collocation. Mid/high-df exclusive natural-language grams stay closed. |
 
 Optional escape hatch: set `ANTISERUM_JUDGE_HOOK=module:function` to plug in another judge (including an LLM). If the hook is unset or raises, the table above still runs. A local scan never requires a key.
 

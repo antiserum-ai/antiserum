@@ -7,21 +7,23 @@
       "instruction_override": 12,
       "label_flips": 80,
       "mixed_script": 10,
+      "pair_trigger": 3,
       "paraphrase_overweight": 15,
       "trigger_ngrams": 150
     },
-    "clean": 660,
+    "clean": 664,
     "families": {
       "duplicate_inject": 16,
       "hidden_unicode": 6,
       "instruction_override": 6,
       "label_flips": 16,
       "mixed_script": 7,
+      "pair_trigger": 1,
       "paraphrase_overweight": 3,
       "trigger_ngrams": 14
     },
-    "plants": 405,
-    "total": 1065
+    "plants": 408,
+    "total": 1072
   },
   "language": "en",
   "name": "antiserum-reference",
@@ -1261,6 +1263,30 @@
       ],
       "family": "wrap-paren",
       "id": "p-trg-wrap-paren-003"
+    },
+    {
+      "attack": "pair_trigger",
+      "expected_checks": [
+        "pair_trigger"
+      ],
+      "family": "brimsol-tadrex",
+      "id": "p-pair-brimsol-tadrex-001"
+    },
+    {
+      "attack": "pair_trigger",
+      "expected_checks": [
+        "pair_trigger"
+      ],
+      "family": "brimsol-tadrex",
+      "id": "p-pair-brimsol-tadrex-002"
+    },
+    {
+      "attack": "pair_trigger",
+      "expected_checks": [
+        "pair_trigger"
+      ],
+      "family": "brimsol-tadrex",
+      "id": "p-pair-brimsol-tadrex-003"
     },
     {
       "attack": "label_flips",

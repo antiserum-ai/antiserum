@@ -23,6 +23,10 @@
       "min_recall": 1.0,
       "max_clean_fp_rate": 0.05
     },
+    "pair_trigger": {
+      "min_recall": 1.0,
+      "max_clean_fp_rate": 0.05
+    },
     "paraphrase_overweight": {
       "min_recall": 1.0,
       "max_clean_fp_rate": 0.05

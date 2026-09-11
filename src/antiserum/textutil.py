@@ -183,7 +183,8 @@ def nfkc(text: str) -> str:
     """Compatibility compose. Fullwidth letters become ASCII.
 
     Not a Unicode confusables map: a Cyrillic е stays Cyrillic. Used by
-    ``signature_hit`` and ``trigger_ngrams`` only. ``Record.text`` stays raw.
+    ``signature_hit``, ``trigger_ngrams``, and ``pair_trigger`` only.
+    ``Record.text`` stays raw.
     """
     return unicodedata.normalize("NFKC", text)
 

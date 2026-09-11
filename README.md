@@ -247,7 +247,7 @@ CI runs that on Python 3.10, 3.11, and 3.12, then smokes `antiserum scan corpus/
 
 ## Reproduce
 
-The reference mix is `corpus/reference/`: a few hundred plants (trigger n-grams, label flips, duplicate inject, instruction override, paraphrase overweight, hidden unicode, mixed script) and a clean majority. Manifest: which rows are plants, the attack, and the expected check(s). Card: [corpus/reference/README.md](corpus/reference/README.md).
+The reference mix is `corpus/reference/`: a few hundred plants (trigger n-grams, label flips, duplicate inject, instruction override, paraphrase overweight, hidden unicode, mixed script, pair trigger) and a clean majority. Manifest: which rows are plants, the attack, and the expected check(s). Card: [corpus/reference/README.md](corpus/reference/README.md).
 
 ```bash
 make reproduce
@@ -279,6 +279,7 @@ Rebuild the reference set from its seed with `python3 scripts/build_reference.py
 | Instruction override | A single SFT / chat row that teaches "ignore previous instructions" or a system-prompt hijack. Built-in phrases, not a model. | Confirm unless a small-df built-in phrase |
 | Hidden Unicode | Unicode Tags, bidi overrides, or zero-width chars used as payload separators. Not a confusables list. | Confirm unless a strong smuggle |
 | Mixed script | A single word token mixes Latin with Cyrillic, Greek, or other lookalike scripts. Not a confusables list. | Confirm unless a lookalike word |
+| Pair trigger | Two rare distinctive phrases that co-occur in the same row. A single-phrase control stays quiet. Exclusive mid/high-df natural-language grams stay closed. | Confirm unless both phrases are distinctive |
 
 How to implement another check: [docs/checks.md](docs/checks.md).
 

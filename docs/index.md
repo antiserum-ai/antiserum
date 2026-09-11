@@ -142,6 +142,7 @@ antiserum propose --judgments judgments.json
 | `instruction_override` | A single SFT / chat row that teaches "ignore previous instructions" |
 | `hidden_unicode` | Unicode Tags, bidi overrides, or zero-width payload separators |
 | `mixed_script` | A word token that mixes Latin with Cyrillic, Greek, or other lookalike scripts |
+| `pair_trigger` | Two rare distinctive phrases that co-occur in the same row |
 
 How to implement another check: [checks.md](checks.md). Honest coverage: [threat-model.md](threat-model.md).
 

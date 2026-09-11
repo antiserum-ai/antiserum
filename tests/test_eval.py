@@ -70,7 +70,7 @@ def test_eval_fails_when_clean_fp_exceeds_ceiling(
             reason="injected clean flag for eval test",
         )
     )
-    # One clean flag is 1/656 ≈ 0.15%, still under 5%. Inject enough to break.
+    # One clean flag is well under 5%. Inject enough to break.
     extra = [r for r in records if r.id not in plant_ids][:40]
     for rec in extra:
         receipt.flags.append(
