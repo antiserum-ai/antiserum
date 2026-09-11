@@ -133,9 +133,12 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
             "folder, or the parent of a file) or in the current working "
             "directory sets fail_on, only_checks / skip_checks, "
             "max_records / max_bytes, allowlist, and allow_truncated. "
-            "First file found wins (scan path, then cwd). CLI flags "
-            "override the file. Unknown keys exit 2. Missing file is "
-            "fine. Local file only; never fetched."
+            "First file found wins (scan path, then cwd). --config PATH "
+            "uses that local file only and skips the search. PATH must "
+            "be a readable file (exit 2 if missing or unreadable). CLI "
+            "flags override the file. Unknown keys exit 2. Missing file "
+            "is fine when --config is omitted. Local file only; never "
+            "fetched."
         ),
         epilog=EXIT_CODE_HELP,
     )
@@ -168,6 +171,19 @@ def _add_scan(sub: argparse._SubParsersAction) -> None:
             "local allowlist JSONL of record id, normalized sha256, or "
             "signature id (default: allowlist.jsonl next to the dataset "
             "or at the repo root)"
+        ),
+    )
+    scan_p.add_argument(
+        "--config",
+        type=Path,
+        default=None,
+        dest="config",
+        metavar="PATH",
+        help=(
+            "local antiserum.toml (skip auto-search next to the scan "
+            "path and in the current working directory). must be a file "
+            "on disk; missing or unreadable exits 2. CLI flags still "
+            "override the file. local file only; never fetched"
         ),
     )
     scan_p.add_argument(
@@ -667,7 +683,7 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
 def _cmd_scan(args: argparse.Namespace) -> int:
     feed = _feed_or_error(args.feed)
     options = resolve_scan_options(
-        load_scan_config(args.path),
+        load_scan_config(args.path, explicit=args.config),
         fail_on=args.fail_on,
         only_checks=args.only_checks,
         skip_checks=args.skip_checks,

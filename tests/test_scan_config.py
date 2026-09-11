@@ -18,6 +18,7 @@ from antiserum.config import (
     load_scan_config,
     loads_toml_subset,
     parse_toml_mapping,
+    read_scan_config,
     resolve_config,
     resolve_scan_options,
     scan_defaults_from_mapping,
@@ -138,6 +139,32 @@ def test_file_next_to_scanned_file(tmp_path: Path) -> None:
     dest.write_text("max_records = 2\n", encoding="utf-8")
     found = resolve_config(rows, cwd=tmp_path / "other")
     assert found == dest
+
+
+def test_explicit_config_skips_auto_search(tmp_path: Path) -> None:
+    folder = _clean_folder(tmp_path)
+    sibling = folder / FILENAME
+    sibling.write_text("fail_on = \"any\"\n", encoding="utf-8")
+    explicit = tmp_path / "ops" / FILENAME
+    explicit.parent.mkdir()
+    explicit.write_text("fail_on = \"high\"\n", encoding="utf-8")
+    found = resolve_config(folder, cwd=tmp_path, explicit=explicit)
+    assert found == explicit
+    loaded = load_scan_config(folder, cwd=tmp_path, explicit=explicit)
+    assert loaded is not None
+    assert loaded.path == explicit
+    assert loaded.values.fail_on == "high"
+
+
+def test_explicit_config_missing_raises(tmp_path: Path) -> None:
+    folder = _clean_folder(tmp_path)
+    (folder / FILENAME).write_text("fail_on = \"never\"\n", encoding="utf-8")
+    missing = tmp_path / "ops" / "missing.toml"
+    with pytest.raises(AntiserumError, match="config not found") as exc:
+        resolve_config(folder, cwd=tmp_path, explicit=missing)
+    assert str(missing) in str(exc.value)
+    with pytest.raises(AntiserumError, match="config not found"):
+        load_scan_config(folder, cwd=tmp_path, explicit=missing)
 
 
 def test_unknown_key_fails_loudly(tmp_path: Path) -> None:
@@ -446,6 +473,8 @@ def test_scan_help_mentions_toml(capsys: pytest.CaptureFixture[str]) -> None:
     assert "scan path" in printed
     assert "working directory" in printed or "cwd" in printed
     assert "Unknown keys" in printed or "unknown keys" in printed
+    assert "--config" in printed
+    assert "never fetched" in printed
 
 
 def test_readme_documents_search_order() -> None:
@@ -457,6 +486,145 @@ def test_readme_documents_search_order() -> None:
     assert "CLI flags override" in text
     assert "Unknown keys" in text
     assert "never fetched" in text
+    assert "--config" in text
+    changelog = Path(__file__).resolve().parents[1] / "CHANGELOG.md"
+    notes = changelog.read_text(encoding="utf-8")
+    assert "#96" in notes or "issues/96" in notes
+
+
+def test_explicit_config_wins_over_sibling(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _medium_folder(tmp_path)
+    feed = _empty_feed(tmp_path)
+    sibling = folder / FILENAME
+    sibling.write_text("fail_on = \"any\"\n", encoding="utf-8")
+    explicit = tmp_path / "ops" / FILENAME
+    explicit.parent.mkdir()
+    explicit.write_text(
+        "fail_on = \"never\"\nonly_checks = [\"hidden_unicode\"]\n",
+        encoding="utf-8",
+    )
+    expected_hash = "sha256:" + hashlib.sha256(explicit.read_bytes()).hexdigest()
+    monkeypatch.chdir(tmp_path)
+    out = tmp_path / "receipt.json"
+    assert (
+        main(
+            [
+                "scan",
+                str(folder),
+                "--feed",
+                str(feed),
+                "--config",
+                str(explicit),
+                "--out",
+                str(out),
+                "--json",
+            ]
+        )
+        == 0
+    )
+    printed = json.loads(capsys.readouterr().out)
+    body = json.loads(out.read_text(encoding="utf-8"))
+    assert printed["config"]["path"] == str(explicit)
+    assert printed["config"]["hash"] == expected_hash
+    assert printed["checks"] == ["hidden_unicode"]
+    assert printed["config"]["path"] != str(sibling)
+    assert body["config"] == printed["config"]
+
+
+def test_explicit_config_missing_exits_two(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _clean_folder(tmp_path)
+    feed = _empty_feed(tmp_path)
+    (folder / FILENAME).write_text("fail_on = \"never\"\n", encoding="utf-8")
+    missing = tmp_path / "ops" / "missing.toml"
+    monkeypatch.chdir(tmp_path)
+    code = main(
+        ["scan", str(folder), "--feed", str(feed), "--config", str(missing)]
+    )
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "config not found" in err
+    assert str(missing) in err
+
+
+def test_explicit_config_not_a_file_exits_two(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _clean_folder(tmp_path)
+    feed = _empty_feed(tmp_path)
+    dest = tmp_path / "cfgdir"
+    dest.mkdir()
+    monkeypatch.chdir(tmp_path)
+    code = main(["scan", str(folder), "--feed", str(feed), "--config", str(dest)])
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "not a file" in err
+    assert str(dest) in err
+
+
+def test_explicit_config_url_stays_offline(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _clean_folder(tmp_path)
+    feed = _empty_feed(tmp_path)
+    monkeypatch.chdir(tmp_path)
+    url = "https://example.invalid/antiserum.toml"
+
+    def _no_network(*_args, **_kwargs):
+        raise AssertionError("config must stay offline; no HTTP fetch")
+
+    monkeypatch.setattr("socket.create_connection", _no_network)
+    code = main(["scan", str(folder), "--feed", str(feed), "--config", url])
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "config not found" in err or "not a file" in err
+
+
+def test_cli_overrides_explicit_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    folder = _medium_folder(tmp_path)
+    feed = _empty_feed(tmp_path)
+    (folder / FILENAME).write_text("fail_on = \"never\"\n", encoding="utf-8")
+    explicit = tmp_path / "ops.toml"
+    explicit.write_text("fail_on = \"any\"\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    assert (
+        main(["scan", str(folder), "--feed", str(feed), "--config", str(explicit)])
+        == 1
+    )
+    assert (
+        main(
+            [
+                "scan",
+                str(folder),
+                "--feed",
+                str(feed),
+                "--config",
+                str(explicit),
+                "--fail-on",
+                "never",
+            ]
+        )
+        == 0
+    )
+
+
+def test_read_scan_config_unreadable(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    dest = tmp_path / FILENAME
+    dest.write_text("fail_on = \"never\"\n", encoding="utf-8")
+
+    def boom(self: Path, *args: object, **kwargs: object) -> str:
+        raise OSError("permission denied")
+
+    monkeypatch.setattr(Path, "read_text", boom)
+    with pytest.raises(AntiserumError, match="unreadable"):
+        read_scan_config(dest)
 
 
 def test_subset_parser_matches_documented_file() -> None:
