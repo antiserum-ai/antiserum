@@ -67,11 +67,14 @@ antiserum scan ./data --max-records 50000
 antiserum scan ./data --max-records 100 --allow-truncated
 antiserum scan ./data --progress
 antiserum scan --help
+antiserum init
+antiserum init ./data
+antiserum init --force
 ```
 
 `--only-checks` and `--skip-checks` cannot be combined. Unknown names exit 2 and list the known checks. `antiserum checks` prints the built-in names (one per line, `default_checks()` order; `--json` writes `{"checks":[...]}`). In-process catalog only. The receipt records which checks ran.
 
-Optional local `antiserum.toml` next to the scan path or in the current working directory sets `fail_on`, `only_checks` / `skip_checks`, `max_records` / `max_bytes`, `allowlist`, and `allow_truncated`. First file found wins (scan path, then cwd). `--config PATH` uses that local file only and skips the search. PATH must be a readable file (exit 2 if missing or unreadable). CLI flags override the file. Unknown keys exit 2. Missing file is fine when `--config` is omitted. The receipt records path + hash. Local file only; never fetched.
+Optional local `antiserum.toml` next to the scan path or in the current working directory sets `fail_on`, `only_checks` / `skip_checks`, `max_records` / `max_bytes`, `allowlist`, and `allow_truncated`. `antiserum init` writes a starter file with those keys as commented defaults; `--force` overwrites. First file found wins (scan path, then cwd). `--config PATH` uses that local file only and skips the search. PATH must be a readable file (exit 2 if missing or unreadable). CLI flags override the file. Unknown keys exit 2. Missing file is fine when `--config` is omitted. The receipt records path + hash. Local file only; never fetched.
 
 Live `antiserum scan corpus/toy` on the planted toy mix (45 records — not a production corpus):
 

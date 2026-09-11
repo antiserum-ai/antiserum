@@ -7,7 +7,7 @@ from pathlib import Path
 
 from antiserum import __version__
 from antiserum.checks import check_names
-from antiserum.config import load_scan_config, resolve_scan_options
+from antiserum.config import load_scan_config, resolve_scan_options, write_starter_config
 from antiserum.confirm import settle
 from antiserum.errors import AntiserumError
 from antiserum.eval import (
@@ -99,6 +99,7 @@ def _parser() -> argparse.ArgumentParser:
         version=f"%(prog)s {__version__}",
     )
     sub = parser.add_subparsers(dest="command", required=True)
+    _add_init(sub)
     _add_scan(sub)
     _add_checks(sub)
     _add_diff(sub)
@@ -109,6 +110,35 @@ def _parser() -> argparse.ArgumentParser:
     _add_reproduce(sub)
     _add_eval(sub)
     return parser
+
+
+def _add_init(sub: argparse._SubParsersAction) -> None:
+    init_p = sub.add_parser(
+        "init",
+        help="write a starter local antiserum.toml",
+        description=(
+            "Write a starter antiserum.toml in DIR (default: the current "
+            "directory) with commented defaults for the keys scan already "
+            "honors: fail_on, only_checks / skip_checks, max_records / "
+            "max_bytes, allowlist, allow_truncated. Refuses to overwrite "
+            "an existing file unless --force. The written file is "
+            "loadable by scan (auto-search or --config PATH). Stdlib "
+            "only. No network. Never fetches a template. Local file only."
+        ),
+    )
+    init_p.add_argument(
+        "directory",
+        type=Path,
+        nargs="?",
+        default=Path("."),
+        help="directory to write antiserum.toml into (default: .)",
+    )
+    init_p.add_argument(
+        "--force",
+        action="store_true",
+        help="overwrite an existing antiserum.toml",
+    )
+    init_p.set_defaults(func=_cmd_init)
 
 
 def _add_scan(sub: argparse._SubParsersAction) -> None:
@@ -678,6 +708,12 @@ def _add_eval(sub: argparse._SubParsersAction) -> None:
         ),
     )
     eval_p.set_defaults(func=_cmd_eval)
+
+
+def _cmd_init(args: argparse.Namespace) -> int:
+    dest = write_starter_config(args.directory, force=args.force)
+    sys.stdout.write(f"{dest}\n")
+    return 0
 
 
 def _cmd_scan(args: argparse.Namespace) -> int:

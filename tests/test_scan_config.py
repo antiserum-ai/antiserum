@@ -22,6 +22,8 @@ from antiserum.config import (
     resolve_config,
     resolve_scan_options,
     scan_defaults_from_mapping,
+    starter_toml_text,
+    write_starter_config,
 )
 from antiserum.errors import AntiserumError
 from antiserum.ingest import DEFAULT_MAX_BYTES, DEFAULT_MAX_RECORDS
@@ -487,9 +489,12 @@ def test_readme_documents_search_order() -> None:
     assert "Unknown keys" in text
     assert "never fetched" in text
     assert "--config" in text
+    assert "antiserum init" in text
+    assert "--force" in text
     changelog = Path(__file__).resolve().parents[1] / "CHANGELOG.md"
     notes = changelog.read_text(encoding="utf-8")
     assert "#96" in notes or "issues/96" in notes
+    assert "#95" in notes or "issues/95" in notes
 
 
 def test_explicit_config_wins_over_sibling(
@@ -625,6 +630,149 @@ def test_read_scan_config_unreadable(
     monkeypatch.setattr(Path, "read_text", boom)
     with pytest.raises(AntiserumError, match="unreadable"):
         read_scan_config(dest)
+
+
+def test_starter_toml_comments_every_known_key() -> None:
+    text = starter_toml_text()
+    for key in KNOWN_KEYS:
+        assert f"# {key} =" in text
+    parsed = parse_toml_mapping(text, source="starter")
+    assert parsed == {}
+    subset = loads_toml_subset(text)
+    assert subset == {}
+
+
+def test_init_writes_loadable_starter(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dest_dir = tmp_path / "proj"
+    code = main(["init", str(dest_dir)])
+    assert code == 0
+    dest = dest_dir / FILENAME
+    assert dest.is_file()
+    printed = capsys.readouterr().out
+    assert str(dest) in printed
+    loaded = load_scan_config(dest_dir, cwd=tmp_path)
+    assert loaded is not None
+    assert loaded.path == dest
+    assert loaded.values.fail_on is None
+    assert loaded.values.only_checks is None
+    assert loaded.values.skip_checks is None
+    assert loaded.values.max_records is None
+    assert loaded.values.max_bytes is None
+    assert loaded.values.allowlist is None
+    assert loaded.values.allow_truncated is None
+    options = resolve_scan_options(loaded)
+    assert options.fail_on == DEFAULT_FAIL_ON
+    assert options.max_records == DEFAULT_MAX_RECORDS
+    assert options.max_bytes == DEFAULT_MAX_BYTES
+    assert options.allow_truncated is False
+
+
+def test_init_refuses_overwrite(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dest = write_starter_config(tmp_path)
+    dest.write_text("fail_on = \"any\"\n", encoding="utf-8")
+    code = main(["init", str(tmp_path)])
+    assert code == 2
+    err = capsys.readouterr().err
+    assert "already exists" in err
+    assert "--force" in err
+    assert dest.read_text(encoding="utf-8") == "fail_on = \"any\"\n"
+
+
+def test_init_force_overwrites(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    dest = tmp_path / FILENAME
+    dest.write_text("fail_on = \"any\"\n", encoding="utf-8")
+    code = main(["init", str(tmp_path), "--force"])
+    assert code == 0
+    printed = capsys.readouterr().out
+    assert str(dest) in printed
+    body = dest.read_text(encoding="utf-8")
+    assert body == starter_toml_text()
+    loaded = load_scan_config(tmp_path, cwd=tmp_path)
+    assert loaded is not None
+    assert loaded.values.fail_on is None
+
+
+def test_init_rejects_file_as_directory(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    target = tmp_path / "not-a-dir"
+    target.write_text("nope\n", encoding="utf-8")
+    code = main(["init", str(target)])
+    assert code == 2
+    assert "not a directory" in capsys.readouterr().err
+
+
+def test_write_starter_rejects_toml_directory(tmp_path: Path) -> None:
+    dest = tmp_path / FILENAME
+    dest.mkdir()
+    with pytest.raises(AntiserumError, match="is a directory"):
+        write_starter_config(tmp_path, force=True)
+
+
+def test_write_starter_wraps_oserror(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def boom(*_args: object, **_kwargs: object) -> None:
+        raise OSError("disk full")
+
+    monkeypatch.setattr(Path, "write_text", boom)
+    with pytest.raises(AntiserumError, match="could not write"):
+        write_starter_config(tmp_path)
+
+
+def test_init_default_directory_is_cwd(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    monkeypatch.chdir(tmp_path)
+    code = main(["init"])
+    assert code == 0
+    dest = tmp_path / FILENAME
+    assert dest.is_file()
+    assert str(Path(FILENAME)) in capsys.readouterr().out
+    loaded = load_scan_config(tmp_path, cwd=tmp_path)
+    assert loaded is not None
+    assert loaded.path == dest
+
+
+def test_init_file_is_usable_as_explicit_config(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    folder = _clean_folder(tmp_path)
+    feed = _empty_feed(tmp_path)
+    ops = tmp_path / "ops"
+    assert main(["init", str(ops)]) == 0
+    capsys.readouterr()
+    dest = ops / FILENAME
+    sibling = folder / FILENAME
+    sibling.write_text("fail_on = \"any\"\n", encoding="utf-8")
+    monkeypatch.chdir(tmp_path)
+    assert (
+        main(
+            [
+                "scan",
+                str(folder),
+                "--feed",
+                str(feed),
+                "--config",
+                str(dest),
+                "--json",
+            ]
+        )
+        == 0
+    )
+    printed = json.loads(capsys.readouterr().out)
+    assert printed["config"]["path"] == str(dest)
+    assert printed["config"]["path"] != str(sibling)
+    loaded = load_scan_config(folder, cwd=tmp_path, explicit=dest)
+    assert loaded is not None
+    assert loaded.path == dest
+    assert loaded.values.fail_on is None
 
 
 def test_subset_parser_matches_documented_file() -> None:

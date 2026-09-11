@@ -12,6 +12,18 @@ def test_help_exits_zero(capsys: pytest.CaptureFixture[str]) -> None:
     assert exc.value.code == 0
     printed = capsys.readouterr().out
     assert "checks" in printed
+    assert "init" in printed
+
+
+def test_init_help_mentions_toml(capsys: pytest.CaptureFixture[str]) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["init", "--help"])
+    assert exc.value.code == 0
+    printed = capsys.readouterr().out
+    assert "antiserum.toml" in printed
+    assert "--force" in printed
+    assert "never" in printed.lower()
+    assert "template" in printed.lower() or "local" in printed.lower()
 
 
 def test_scan_help_mentions_path() -> None:

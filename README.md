@@ -86,6 +86,9 @@ antiserum scan ./data --max-records 50000
 antiserum scan ./data --max-records 100 --allow-truncated
 antiserum scan ./data --progress
 antiserum scan --help
+antiserum init
+antiserum init ./data
+antiserum init --force
 antiserum diff baseline.json receipt.json
 antiserum diff baseline.json receipt.json --json
 ```
@@ -102,7 +105,7 @@ The text receipt is meant to be pasted into a model card. `--out` writes the sam
 
 `--only-checks signature_hit,hidden_unicode` runs just those checks. `--skip-checks stat_outliers` runs the default set minus those names. Unknown names exit 2 and list the known checks. `antiserum checks` prints the built-in names (one per line, `default_checks()` order; `--json` writes `{"checks":[...]}`). The two flags cannot be combined. The receipt records which checks ran, so a skip cannot hide silently. No remote config. In-process catalog only.
 
-Optional local `antiserum.toml` sets the same scan defaults so CI and agents do not retype flags. Search order (first file found wins): (1) `antiserum.toml` next to the scan path (the folder itself, or the parent of a file), (2) `antiserum.toml` in the current working directory. `--config PATH` uses that local file only and skips the search (`ops/antiserum.toml` is the usual case). PATH must be a readable file on disk (exit 2 if missing or unreadable). Missing file is fine when `--config` is omitted. Unknown keys exit 2. CLI flags override the file. Local file only; never fetched. The receipt records the path and hash when a file was used.
+Optional local `antiserum.toml` sets the same scan defaults so CI and agents do not retype flags. `antiserum init` (or `antiserum init DIR`) writes a starter file with those keys as commented defaults. It refuses to overwrite unless `--force`. Stdlib only; no network; never fetches a template. Search order (first file found wins): (1) `antiserum.toml` next to the scan path (the folder itself, or the parent of a file), (2) `antiserum.toml` in the current working directory. `--config PATH` uses that local file only and skips the search (`ops/antiserum.toml` is the usual case). PATH must be a readable file on disk (exit 2 if missing or unreadable). Missing file is fine when `--config` is omitted. Unknown keys exit 2. CLI flags override the file. Local file only; never fetched. The receipt records the path and hash when a file was used.
 
 ```toml
 fail_on = "any"
