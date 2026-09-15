@@ -36,9 +36,10 @@ class Judgment:
     judge: str
     timestamp: str
     proposed_signature: dict[str, Any] | None = None
+    example_hashes: list[str] | None = None
 
     def to_json_obj(self) -> dict[str, Any]:
-        return {
+        obj: dict[str, Any] = {
             "flag_id": self.flag_id,
             "record_id": self.record_id,
             "check": self.check,
@@ -48,6 +49,9 @@ class Judgment:
             "judge": self.judge,
             "timestamp": self.timestamp,
         }
+        if self.example_hashes:
+            obj["example_hashes"] = self.example_hashes
+        return obj
 
 
 @dataclass
@@ -58,9 +62,10 @@ class JudgmentStore:
     receipt: str | None = None
     scanner_version: str | None = None
     schema: str = SCHEMA_ID
+    pack: dict[str, str] | None = None
 
     def to_json_obj(self) -> dict[str, Any]:
-        return {
+        obj: dict[str, Any] = {
             "schema": self.schema,
             "path": self.path,
             "receipt": self.receipt,
@@ -68,6 +73,9 @@ class JudgmentStore:
             "scanner_version": self.scanner_version,
             "judgments": [j.to_json_obj() for j in self.sorted_judgments()],
         }
+        if self.pack is not None:
+            obj["pack"] = self.pack
+        return obj
 
     def sorted_judgments(self) -> list[Judgment]:
         return sorted(self.judgments, key=lambda j: (j.check, j.record_id, j.flag_id))
@@ -180,6 +188,7 @@ def _store_from_obj(obj: object, source: str) -> JudgmentStore:
     if not isinstance(raw_judgments, list):
         raise AntiserumError(f"{source}: 'judgments' must be a list")
     judgments = [_judgment_from_obj(item, source) for item in raw_judgments]
+    pack = _pack_from_obj(obj.get("pack"), source)
     return JudgmentStore(
         schema=str(obj.get("schema") or SCHEMA_ID),
         path=str(obj.get("path") or ""),
@@ -189,6 +198,7 @@ def _store_from_obj(obj: object, source: str) -> JudgmentStore:
             str(obj["scanner_version"]) if obj.get("scanner_version") is not None else None
         ),
         judgments=judgments,
+        pack=pack,
     )
 
 
@@ -223,6 +233,16 @@ def _judgment_from_obj(obj: object, source: str) -> Judgment:
     proposed = obj.get("proposed_signature")
     if proposed is not None:
         proposed = _validate_proposed(proposed, source)
+    hashes = None
+    raw_hashes = obj.get("example_hashes")
+    if raw_hashes is not None:
+        if not isinstance(raw_hashes, list) or not all(
+            isinstance(item, str) and item for item in raw_hashes
+        ):
+            raise AntiserumError(
+                f"{source}: 'example_hashes' must be a list of non-empty strings"
+            )
+        hashes = list(raw_hashes)
     return Judgment(
         flag_id=str(obj["flag_id"]),
         record_id=str(obj["record_id"]),
@@ -232,7 +252,22 @@ def _judgment_from_obj(obj: object, source: str) -> Judgment:
         judge=judge,
         timestamp=str(obj["timestamp"]),
         proposed_signature=proposed,
+        example_hashes=hashes,
     )
+
+
+def _pack_from_obj(obj: object, source: str) -> dict[str, str] | None:
+    if obj is None:
+        return None
+    if not isinstance(obj, dict):
+        raise AntiserumError(f"{source}: 'pack' must be a JSON object")
+    path = obj.get("path")
+    digest = obj.get("hash")
+    if not isinstance(path, str) or not path.strip():
+        raise AntiserumError(f"{source}: pack 'path' must be a non-empty string")
+    if not isinstance(digest, str) or not digest.strip():
+        raise AntiserumError(f"{source}: pack 'hash' must be a non-empty string")
+    return {"path": path, "hash": digest}
 
 
 def _validate_proposed(obj: object, source: str) -> dict[str, Any]:

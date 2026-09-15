@@ -225,9 +225,13 @@ antiserum scan corpus/toy --out receipt.json
 
 # 6. Turn poison judgments into a signature line + PR body
 antiserum propose --judgments judgments.json
+
+# Optional: leftover packet (hashes/patterns only; no corpus text)
+antiserum export-leftovers judgments.json --out packet.json --receipt receipt.json
+antiserum import-decisions decisions.json --into judgments.json
 ```
 
-Edit `judgments.json` by hand if you prefer. Every flag ends as `poison`, `junk`, or `false_alarm`. `allowlist add` appends those `false_alarm` rows to a local `allowlist.jsonl` (idempotent; no cloud list). The rubric and the judgment schema live in [docs/confirm.md](docs/confirm.md) and [docs/judgments.schema.json](docs/judgments.schema.json). An optional leftover-review packet (design only; no live PoQ wire) is [docs/leftover-packet.schema.json](docs/leftover-packet.schema.json); summary: [docs/poq-leftover-review.md](docs/poq-leftover-review.md).
+Edit `judgments.json` by hand if you prefer. Every flag ends as `poison`, `junk`, or `false_alarm`. `allowlist add` appends those `false_alarm` rows to a local `allowlist.jsonl` (idempotent; no cloud list). The rubric and the judgment schema live in [docs/confirm.md](docs/confirm.md) and [docs/judgments.schema.json](docs/judgments.schema.json). An optional leftover-review packet (local CLI; no live PoQ wire) is [docs/leftover-packet.schema.json](docs/leftover-packet.schema.json); summary: [docs/poq-leftover-review.md](docs/poq-leftover-review.md).
 
 `propose` prints the next `AS-YYYY-NNNN` line and a pull-request template. Append the line to `feed/signatures.jsonl` (or pass `--apply`) and open a PR. Reviewers check that the pattern does not torch clean rows.
 
@@ -287,7 +291,7 @@ How to implement another check: [docs/checks.md](docs/checks.md).
 
 There is no web form. Confirm is: judge the flags, settle leftovers, open a pull request that adds a signature.
 
-See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and [docs/signatures.md](docs/signatures.md). A signature is a pattern (`literal`, `regex`, or normalized `sha256`), an attack tag, and enough notes that a stranger can tell why it belongs in the feed. Optional leftover packet for later PoQ review (schema only; corpus never leaves the box): [docs/leftover-packet.schema.json](docs/leftover-packet.schema.json), [docs/poq-leftover-review.md](docs/poq-leftover-review.md).
+See [docs/confirm.md](docs/confirm.md), [CONTRIBUTING.md](CONTRIBUTING.md), and [docs/signatures.md](docs/signatures.md). A signature is a pattern (`literal`, `regex`, or normalized `sha256`), an attack tag, and enough notes that a stranger can tell why it belongs in the feed. Optional leftover packet for later PoQ review (`export-leftovers` / `import-decisions`; corpus never leaves the box): [docs/leftover-packet.schema.json](docs/leftover-packet.schema.json), [docs/poq-leftover-review.md](docs/poq-leftover-review.md).
 
 ## Receipt
 

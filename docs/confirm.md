@@ -4,7 +4,7 @@ Every flag from a local scan ends as exactly one of: **poison**, **junk**, or **
 
 There is no private judge network. First-pass is a local command. Leftovers are a file you edit. Confirmed poison is a pull request that adds a line to `feed/signatures.jsonl`.
 
-Machine-readable schema: [judgments.schema.json](judgments.schema.json). Optional leftover-review packet (design only; corpus never leaves the box): [leftover-packet.schema.json](leftover-packet.schema.json). Summary: [poq-leftover-review.md](poq-leftover-review.md).
+Machine-readable schema: [judgments.schema.json](judgments.schema.json). Optional leftover-review packet (local CLI; corpus never leaves the box): [leftover-packet.schema.json](leftover-packet.schema.json). Summary: [poq-leftover-review.md](poq-leftover-review.md).
 
 ## The three outcomes
 
@@ -114,6 +114,8 @@ scan → judge → confirm leftovers → allowlist add → scan again
 - `antiserum allowlist add --judgments judgments.json --path ./data`
 - `antiserum scan ./data --out receipt.json` (allowlisted rows stay quiet; receipt records path + hash)
 - `antiserum propose --judgments judgments.json` (poison only)
+- `antiserum export-leftovers judgments.json --out packet.json` (optional leftover packet)
+- `antiserum import-decisions decisions.json --into judgments.json` (merge final leftover decisions)
 
 `allowlist add` appends a local `allowlist.jsonl` line per unique `false_alarm` record id. Re-running is a no-op. No cloud list.
 
@@ -123,4 +125,4 @@ See [CONTRIBUTING.md](../CONTRIBUTING.md) and [signatures.md](signatures.md).
 
 ## Optional leftover packet
 
-A later operator-chosen export may send leftover flags (ids, rationales, hashes, optional proposed signatures) to an optional PoQ review queue. The corpus never leaves the box. There is no live wire and no CLI export in this revision. Packet: [leftover-packet.schema.json](leftover-packet.schema.json). Design note: [poq-leftover-review.md](poq-leftover-review.md). Decision import stays this judgment schema.
+`antiserum export-leftovers` writes leftover flags (ids, rationales, hashes, optional proposed signatures) to a local packet. `antiserum import-decisions` merges final `poison|junk|false_alarm` rows back into this judgment schema. The corpus never leaves the box. There is no live PoQ wire. Packet: [leftover-packet.schema.json](leftover-packet.schema.json). Design note: [poq-leftover-review.md](poq-leftover-review.md).

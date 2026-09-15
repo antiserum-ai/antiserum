@@ -1,0 +1,29 @@
+{
+  "schema": "antiserum.judgments.v1",
+  "decisions": [
+    {
+      "flag_id": "label_flips:p-flip-1",
+      "record_id": "p-flip-1",
+      "check": "label_flips",
+      "decision": "poison",
+      "rationale": "Confirmed planted hotel flip.",
+      "judge": "human",
+      "timestamp": "2026-09-15T01:00:00Z",
+      "proposed_signature": {
+        "match": "literal",
+        "pattern": "hotel cluster flip",
+        "attack": "label_flip",
+        "confidence": 0.8
+      }
+    },
+    {
+      "flag_id": "trigger_ngrams:p-trig-1",
+      "record_id": "p-trig-1",
+      "check": "trigger_ngrams",
+      "decision": "false_alarm",
+      "rationale": "Ordinary rare phrase, not a plant.",
+      "judge": "human",
+      "timestamp": "2026-09-15T01:00:00Z"
+    }
+  ]
+}

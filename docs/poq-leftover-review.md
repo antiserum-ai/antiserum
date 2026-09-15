@@ -1,6 +1,6 @@
 # Optional PoQ leftover review
 
-Design only. There is no live PoQ wire, no CLI export or import, and no network from a local scan.
+Local CLI. There is no live PoQ wire and no network from a local scan.
 
 Confirm leftovers stay a file you edit: [confirm.md](confirm.md). The optional review packet is [leftover-packet.schema.json](leftover-packet.schema.json) (`antiserum.leftover_packet.v1`). PoQ maps decisions back to [judgments.schema.json](judgments.schema.json) — that stays the import shape.
 
@@ -8,7 +8,18 @@ Confirm leftovers stay a file you edit: [confirm.md](confirm.md). The optional r
 
 The corpus never leaves the box. A leftover packet is flag ids, check names, rationales, optional proposed signatures, and example hashes. It does not carry row text, neighbor labels, private corpus paths, or allowlist contents.
 
-You settle leftovers locally today (`antiserum confirm` or by editing the judgments file). An operator who later exports a packet does that on purpose. This revision does not add that command.
+You settle leftovers locally today (`antiserum confirm` or by editing the judgments file). Export and import are operator-chosen local file commands.
+
+```bash
+antiserum export-leftovers judgments.json --out packet.json
+antiserum export-leftovers judgments.json --out packet.json --receipt receipt.json
+antiserum import-decisions decisions.json --into judgments.json
+antiserum import-decisions decisions.json --into judgments.json --allow-new
+```
+
+`export-leftovers` reads a local judgments store (JSON or JSONL) and writes only `needs_human` leftovers. Header `dataset_hash` / `scanner_version` / pack identity come from `--receipt PATH` or from fields already on the store. The packet is validated against this schema (or the packaged copy) before write.
+
+`import-decisions` accepts Antiserum judgment-store JSON (or `{schema, judgments|decisions}`) with final `poison|junk|false_alarm` rows and merges by `flag_id`. Unknown flags are refused unless `--allow-new`. It does not write `feed/signatures.jsonl`.
 
 ## Packet
 
@@ -28,7 +39,3 @@ Acked for a later projectspec. Not a live integration.
 4. **OAEP.** Optional later for agent reviewers. Not blocking v1.
 
 Confirmed poison is still a pull request that adds a line to `feed/signatures.jsonl`. A maintainer merges. PoQ never writes the feed.
-
-## Follow-up
-
-CLI export/import is out of scope here. Schema and docs only.

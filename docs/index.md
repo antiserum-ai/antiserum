@@ -125,9 +125,11 @@ antiserum judge corpus/toy --receipt receipt.json --out judgments.json
 antiserum confirm --judgments judgments.json
 antiserum allowlist add --judgments judgments.json --path corpus/toy
 antiserum propose --judgments judgments.json
+antiserum export-leftovers judgments.json --out packet.json
+antiserum import-decisions decisions.json --into judgments.json
 ```
 
-`judge` is an offline first-pass. No API key. `allowlist add` appends settled `false_alarm` rows to a local `allowlist.jsonl` (idempotent; no cloud list). `propose` prints the next `AS-YYYY-NNNN` line and a PR body. Rubric: [confirm.md](confirm.md). Optional leftover packet (design only; no live PoQ wire): [leftover-packet.schema.json](leftover-packet.schema.json), [poq-leftover-review.md](poq-leftover-review.md).
+`judge` is an offline first-pass. No API key. `allowlist add` appends settled `false_alarm` rows to a local `allowlist.jsonl` (idempotent; no cloud list). `propose` prints the next `AS-YYYY-NNNN` line and a PR body. `export-leftovers` / `import-decisions` move leftover packets as local files. Rubric: [confirm.md](confirm.md). Optional leftover packet (local CLI; no live PoQ wire): [leftover-packet.schema.json](leftover-packet.schema.json), [poq-leftover-review.md](poq-leftover-review.md).
 
 ## What it flags
 
@@ -154,7 +156,7 @@ How to implement another check: [checks.md](checks.md). Honest coverage: [threat
 | [checks.md](checks.md) | Check contract and how to add one |
 | [field-hunt.md](field-hunt.md) | Standing hunt: local fetch, catch/miss, next mixes |
 | [confirm.md](confirm.md) | Rubric, first-pass rules, leftover loop |
-| [leftover-packet.schema.json](leftover-packet.schema.json) | Optional leftover-review packet (`antiserum.leftover_packet.v1`). Design only; no live PoQ wire. |
+| [leftover-packet.schema.json](leftover-packet.schema.json) | Optional leftover-review packet (`antiserum.leftover_packet.v1`). Local CLI; no live PoQ wire. |
 | [poq-leftover-review.md](poq-leftover-review.md) | Leftover packet + Sapien locks (queue, 30-day TTL, judgment-store export) |
 | [signatures.md](signatures.md) | Feed line format and review bar |
 | [positioning.md](positioning.md) | Category neighbors and non-claims |

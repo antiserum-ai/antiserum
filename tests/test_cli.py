@@ -13,6 +13,8 @@ def test_help_exits_zero(capsys: pytest.CaptureFixture[str]) -> None:
     printed = capsys.readouterr().out
     assert "checks" in printed
     assert "init" in printed
+    assert "export-leftovers" in printed
+    assert "import-decisions" in printed
 
 
 def test_init_help_mentions_toml(capsys: pytest.CaptureFixture[str]) -> None:
@@ -103,6 +105,34 @@ def test_confirm_help_mentions_decision() -> None:
     with pytest.raises(SystemExit) as exc:
         main(["confirm", "--help"])
     assert exc.value.code == 0
+
+
+def test_export_leftovers_help_mentions_packet(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["export-leftovers", "--help"])
+    assert exc.value.code == 0
+    printed = capsys.readouterr().out
+    assert "--out" in printed
+    assert "--receipt" in printed
+    assert "needs_human" in printed
+    assert "no network" in printed.lower() or "local" in printed.lower()
+    assert "leftover_packet" in printed or "leftover-packet" in printed
+
+
+def test_import_decisions_help_mentions_merge(
+    capsys: pytest.CaptureFixture[str],
+) -> None:
+    with pytest.raises(SystemExit) as exc:
+        main(["import-decisions", "--help"])
+    assert exc.value.code == 0
+    printed = capsys.readouterr().out
+    assert "--into" in printed
+    assert "--allow-new" in printed
+    assert "flag_id" in printed or "flag id" in printed.lower()
+    assert "poison" in printed
+    assert "local" in printed.lower()
 
 
 def test_propose_help_mentions_judgments() -> None:
