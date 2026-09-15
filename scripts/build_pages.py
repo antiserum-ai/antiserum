@@ -31,6 +31,7 @@ DEEP_DOCS = (
     "checks.md",
     "field-hunt.md",
     "confirm.md",
+    "poq-leftover-review.md",
     "signatures.md",
     "positioning.md",
 )
@@ -40,11 +41,13 @@ SITE_FILES = {
     "checks.md": "checks.html",
     "field-hunt.md": "field-hunt.html",
     "confirm.md": "confirm.html",
+    "poq-leftover-review.md": "poq-leftover-review.html",
     "signatures.md": "signatures.html",
     "positioning.md": "positioning.html",
     "index.md": "index.html",
     "judgments.schema.json": "judgments.schema.json",
     "receipt.schema.json": "receipt.schema.json",
+    "leftover-packet.schema.json": "leftover-packet.schema.json",
 }
 
 _HEADING = re.compile(r"^(#{1,6})\s+(.*)$")
@@ -91,7 +94,11 @@ def build(out: Path) -> None:
     if assets_src.is_dir():
         shutil.copytree(assets_src, out / "assets")
 
-    for name in ("judgments.schema.json", "receipt.schema.json"):
+    for name in (
+        "judgments.schema.json",
+        "receipt.schema.json",
+        "leftover-packet.schema.json",
+    ):
         schema = DOCS / name
         if schema.is_file():
             shutil.copy2(schema, out / schema.name)

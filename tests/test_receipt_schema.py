@@ -74,6 +74,11 @@ def assert_matches_schema(
     ):
         if instance < schema["minimum"]:
             raise AssertionError(f"{path}: {instance} < minimum {schema['minimum']}")
+    if "maximum" in schema and isinstance(instance, (int, float)) and not isinstance(
+        instance, bool
+    ):
+        if instance > schema["maximum"]:
+            raise AssertionError(f"{path}: {instance} > maximum {schema['maximum']}")
     if "minLength" in schema and isinstance(instance, str):
         if len(instance) < schema["minLength"]:
             raise AssertionError(f"{path}: string shorter than minLength")
@@ -83,9 +88,16 @@ def assert_matches_schema(
         if missing:
             raise AssertionError(f"{path}: missing required field(s): {', '.join(missing)}")
         props = schema.get("properties", {})
+        additional = schema.get("additionalProperties", True)
         for key, value in instance.items():
             if key in props:
                 assert_matches_schema(value, props[key], root=root, path=f"{path}.{key}")
+            elif additional is False:
+                raise AssertionError(f"{path}: additional property {key!r} not allowed")
+            elif isinstance(additional, dict):
+                assert_matches_schema(
+                    value, additional, root=root, path=f"{path}.{key}"
+                )
 
     if isinstance(instance, list) and "items" in schema:
         item_schema = schema["items"]

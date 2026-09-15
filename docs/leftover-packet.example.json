@@ -1,0 +1,40 @@
+{
+  "schema": "antiserum.leftover_packet.v1",
+  "dataset_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "scanner_version": "0.2.0",
+  "pack": {
+    "path": "feed/signatures.jsonl",
+    "hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+  },
+  "exported_at": "2026-09-15T00:00:00Z",
+  "exporter": "docs/leftover-packet.example.json",
+  "leftovers": [
+    {
+      "flag_id": "label_flips:p-flip-1",
+      "record_id": "p-flip-1",
+      "check": "label_flips",
+      "decision": "needs_human",
+      "rationale": "Minority label on a planted hotel cluster. Normalized text matches a clean neighbor, so first-pass left this for a human.",
+      "example_hashes": [
+        "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc"
+      ]
+    },
+    {
+      "flag_id": "trigger_ngrams:p-trig-1",
+      "record_id": "p-trig-1",
+      "check": "trigger_ngrams",
+      "decision": "needs_human",
+      "rationale": "Distinctive n-gram at mid df; first-pass did not auto-confirm.",
+      "proposed_signature": {
+        "match": "literal",
+        "pattern": "zxq9 violet lantern",
+        "attack": "trigger",
+        "confidence": 0.8,
+        "example_hashes": [
+          "dddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddddd"
+        ],
+        "notes": "Pattern is specific. Id is assigned later by antiserum propose."
+      }
+    }
+  ]
+}
