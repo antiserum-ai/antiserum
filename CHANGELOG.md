@@ -14,6 +14,11 @@ bump.
 
 ### Added
 
+- Published leftover-review packet schema
+  (`docs/leftover-packet.schema.json`, `antiserum.leftover_packet.v1`)
+  and a short design note (`docs/poq-leftover-review.md`). Spec only:
+  no CLI export/import, no live PoQ wire, no network. Closes
+  [#101](https://github.com/antiserum-ai/antiserum/issues/101).
 - `pair_trigger` flags two rare distinctive phrases that co-occur in
   the same record (conjunctive AND-gate). Both members reuse the
   `trigger_ngrams` distinctive / df window; exclusive mid/high-df

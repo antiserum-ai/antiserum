@@ -1,0 +1,120 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/antiserum-ai/antiserum/docs/leftover-packet.schema.json",
+  "title": "Antiserum leftover packet v1",
+  "description": "Optional leftover-review packet (`antiserum.leftover_packet.v1`). A subset of a confirm-loop store for flags left as needs_human. Digests, rationales, and optional proposed signatures only — never raw corpus text. Design/docs contract; no live PoQ wire and no CLI export in this revision. Decision import stays judgments.schema.json.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema",
+    "dataset_hash",
+    "scanner_version",
+    "exported_at",
+    "leftovers"
+  ],
+  "properties": {
+    "schema": {
+      "type": "string",
+      "const": "antiserum.leftover_packet.v1"
+    },
+    "dataset_hash": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Same identity field as the scan receipt / judgment store (typically `sha256:` + hex)."
+    },
+    "scanner_version": {
+      "type": ["string", "null"],
+      "description": "Package version that produced the flags (`receipt.version` / judgment-store `scanner_version`)."
+    },
+    "pack": {
+      "$ref": "#/$defs/pack"
+    },
+    "exported_at": {
+      "type": "string",
+      "minLength": 1,
+      "description": "UTC ISO-8601 timestamp, preferably ending in Z"
+    },
+    "exporter": {
+      "type": "string",
+      "minLength": 1,
+      "description": "Optional tool or operator label. Not a network endpoint."
+    },
+    "leftovers": {
+      "type": "array",
+      "items": { "$ref": "#/$defs/leftover" }
+    }
+  },
+  "$defs": {
+    "pack": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "hash"],
+      "description": "Optional local feed identity. Path + hash only; not the signature lines.",
+      "properties": {
+        "path": {
+          "type": "string",
+          "minLength": 1,
+          "description": "Local feed path, or `none` when no feed was found."
+        },
+        "hash": {
+          "type": "string",
+          "minLength": 1,
+          "description": "sha256 of the local feed file, or `none`."
+        }
+      }
+    },
+    "leftover": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "flag_id",
+        "record_id",
+        "check",
+        "decision",
+        "rationale"
+      ],
+      "description": "Known keys only. Raw corpus fields (`text`, `label`, `content`, `instruction`, `input`, `output`, `messages`, `conversations`, `prompt`, `completion`) are not properties and are rejected.",
+      "properties": {
+        "flag_id": {
+          "type": "string",
+          "description": "<check>:<record_id>",
+          "minLength": 3
+        },
+        "record_id": { "type": "string", "minLength": 1 },
+        "check": { "type": "string", "minLength": 1 },
+        "decision": {
+          "type": "string",
+          "enum": ["needs_human", "poison", "junk", "false_alarm"],
+          "description": "needs_human is expected on a first export. poison, junk, and false_alarm are allowed if the packet is re-exported after confirm."
+        },
+        "rationale": { "type": "string", "minLength": 1 },
+        "proposed_signature": {
+          "$ref": "#/$defs/proposed_signature"
+        },
+        "example_hashes": {
+          "type": "array",
+          "description": "sha256 hex digests of normalized example texts (with or without a `sha256:` prefix). Digests only — never raw corpus text.",
+          "items": { "type": "string", "minLength": 1 }
+        }
+      }
+    },
+    "proposed_signature": {
+      "type": "object",
+      "additionalProperties": true,
+      "required": ["match", "pattern"],
+      "description": "Same shape as judgments.schema.json `$defs/proposed_signature`. Optional on a leftover; present when a specific pattern is already drafted.",
+      "properties": {
+        "id": { "type": "string" },
+        "match": { "type": "string", "enum": ["literal", "regex", "sha256"] },
+        "pattern": { "type": "string", "minLength": 1 },
+        "attack": { "type": "string" },
+        "confidence": { "type": "number", "minimum": 0, "maximum": 1 },
+        "example_hashes": {
+          "type": "array",
+          "items": { "type": "string" }
+        },
+        "notes": { "type": "string" }
+      }
+    }
+  }
+}
