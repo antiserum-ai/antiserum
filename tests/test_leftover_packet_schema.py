@@ -109,3 +109,5 @@ def test_readme_and_confirm_link_leftover_packet() -> None:
     assert "30-day" in review
     assert "judgment-store" in review.lower() or "judgments.schema.json" in review
     assert "OAEP" in review
+    assert "export-leftovers" in review
+    assert "import-decisions" in review

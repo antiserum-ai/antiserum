@@ -1,0 +1,14 @@
+{
+  "schema": "antiserum.judgments.v1",
+  "judgments": [
+    {
+      "flag_id": "hidden_unicode:p-new-1",
+      "record_id": "p-new-1",
+      "check": "hidden_unicode",
+      "decision": "junk",
+      "rationale": "Single leftover bidi mark; formatting, not a plant.",
+      "judge": "human",
+      "timestamp": "2026-09-15T02:00:00Z"
+    }
+  ]
+}

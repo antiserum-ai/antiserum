@@ -29,6 +29,13 @@ from antiserum.junit import write_junit
 from antiserum.judgments import FINAL_DECISIONS, format_text as format_judgments
 from antiserum.judgments import load as load_judgments
 from antiserum.judgments import write_json, write_jsonl
+from antiserum.leftover_packet import (
+    DEFAULT_EXPORTER,
+    export_leftovers,
+    import_decisions,
+    load_decisions,
+    write_json as write_leftover_packet,
+)
 from antiserum.markdown import write_markdown
 from antiserum.progress import ScanProgress, stderr_wants_progress
 from antiserum.propose import apply_to_feed, collect_proposals, format_lines, format_patch, format_pr_body
@@ -105,6 +112,8 @@ def _parser() -> argparse.ArgumentParser:
     _add_diff(sub)
     _add_judge(sub)
     _add_confirm(sub)
+    _add_export_leftovers(sub)
+    _add_import_decisions(sub)
     _add_allowlist(sub)
     _add_propose(sub)
     _add_reproduce(sub)
@@ -516,6 +525,86 @@ def _add_confirm(sub: argparse._SubParsersAction) -> None:
     confirm_p.set_defaults(func=_cmd_confirm)
 
 
+def _add_export_leftovers(sub: argparse._SubParsersAction) -> None:
+    export_p = sub.add_parser(
+        "export-leftovers",
+        help="write a leftover-review packet from needs_human rows",
+        description=(
+            "Read a local judgments store (JSON or JSONL) and write "
+            "antiserum.leftover_packet.v1 with only needs_human leftovers. "
+            "Header dataset_hash / scanner_version / pack come from "
+            "optional --receipt PATH, or from fields already on the store. "
+            "Includes proposed_signature and example_hashes when present. "
+            "Never writes raw corpus text. Validates against "
+            "docs/leftover-packet.schema.json (or the packaged copy) "
+            "before write. Local files only. No network. No PoQ HTTP."
+        ),
+    )
+    export_p.add_argument(
+        "judgments",
+        type=Path,
+        help="local judgments JSON/JSONL from antiserum judge or confirm",
+    )
+    export_p.add_argument(
+        "--out",
+        type=Path,
+        required=True,
+        help="write the leftover packet JSON here",
+    )
+    export_p.add_argument(
+        "--receipt",
+        type=Path,
+        default=None,
+        help=(
+            "optional scan receipt JSON; supplies dataset_hash, "
+            "scanner_version, and pack identity when the store omits them"
+        ),
+    )
+    export_p.add_argument(
+        "--exporter",
+        default=DEFAULT_EXPORTER,
+        help=(
+            "optional exporter label written on the packet "
+            f"(default: {DEFAULT_EXPORTER})"
+        ),
+    )
+    export_p.set_defaults(func=_cmd_export_leftovers)
+
+
+def _add_import_decisions(sub: argparse._SubParsersAction) -> None:
+    import_p = sub.add_parser(
+        "import-decisions",
+        help="merge final leftover decisions into a local judgments file",
+        description=(
+            "Read Antiserum judgment-store JSON (or {schema, judgments|decisions}) "
+            "with final poison|junk|false_alarm rows and merge into a local "
+            "judgments file by flag_id. Overwrites decision, rationale, "
+            "proposed_signature, and judge. Refuses unknown flags unless "
+            "--allow-new. Local files only. No network. No PoQ HTTP. "
+            "Does not write feed/signatures.jsonl."
+        ),
+    )
+    import_p.add_argument(
+        "decisions",
+        type=Path,
+        help="local judgment-store JSON (or {schema, judgments|decisions})",
+    )
+    import_p.add_argument(
+        "--into",
+        type=Path,
+        required=True,
+        dest="into",
+        help="existing local judgments JSON to merge into",
+    )
+    import_p.add_argument(
+        "--allow-new",
+        action="store_true",
+        dest="allow_new",
+        help="append unknown flag ids instead of refusing them",
+    )
+    import_p.set_defaults(func=_cmd_import_decisions)
+
+
 def _add_allowlist(sub: argparse._SubParsersAction) -> None:
     allow_p = sub.add_parser(
         "allowlist",
@@ -892,6 +981,30 @@ def _prompt_settle(store, args: argparse.Namespace, default_flag: str) -> int:
     dest = args.out or args.judgments
     write_json(store, dest)
     sys.stdout.write(f"{updated.flag_id}  {updated.decision}\nwrote {dest}\n")
+    return 0
+
+
+def _cmd_export_leftovers(args: argparse.Namespace) -> int:
+    store = load_judgments(args.judgments)
+    receipt = load_json(args.receipt) if args.receipt is not None else None
+    packet = export_leftovers(
+        store,
+        receipt=receipt,
+        exporter=args.exporter,
+    )
+    write_leftover_packet(packet, args.out)
+    sys.stdout.write(f"exported {len(packet['leftovers'])} leftover(s)\n")
+    sys.stdout.write(f"wrote {args.out}\n")
+    return 0
+
+
+def _cmd_import_decisions(args: argparse.Namespace) -> int:
+    store = load_judgments(args.into)
+    patches = load_decisions(args.decisions)
+    result = import_decisions(store, patches, allow_new=args.allow_new)
+    write_json(store, args.into)
+    sys.stdout.write(f"merged {result.updated}  new {result.created}\n")
+    sys.stdout.write(f"wrote {args.into}\n")
     return 0
 
 

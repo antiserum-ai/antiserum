@@ -14,6 +14,20 @@ bump.
 
 ### Added
 
+- `antiserum export-leftovers JUDGMENTS --out packet.json` writes
+  `antiserum.leftover_packet.v1` from local `needs_human` rows.
+  Header `dataset_hash` / `scanner_version` / pack come from optional
+  `--receipt PATH` or store fields. Includes `proposed_signature` and
+  `example_hashes` when present; never raw corpus text. Validates
+  against `docs/leftover-packet.schema.json` (or the packaged copy)
+  before write.
+- `antiserum import-decisions DECISIONS --into JUDGMENTS` merges
+  final `poison|junk|false_alarm` rows by `flag_id`. Accepts
+  judgment-store JSON or `{schema, judgments|decisions}`. Refuses
+  unknown flags unless `--allow-new`. Does not write
+  `feed/signatures.jsonl`.
+- Local files only. No PoQ HTTP. No network. Closes
+  [#103](https://github.com/antiserum-ai/antiserum/issues/103).
 - Published leftover-review packet schema
   (`docs/leftover-packet.schema.json`, `antiserum.leftover_packet.v1`)
   and a short design note (`docs/poq-leftover-review.md`). Spec only:

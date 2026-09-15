@@ -44,6 +44,9 @@ Changelog = "https://github.com/antiserum-ai/antiserum/blob/main/CHANGELOG.md"
 [tool.setuptools.packages.find]
 where = ["src"]
 
+[tool.setuptools.package-data]
+antiserum = ["leftover-packet.schema.json"]
+
 [tool.setuptools.dynamic]
 version = { attr = "antiserum.__version__" }
 
