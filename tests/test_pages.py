@@ -122,14 +122,33 @@ def test_build_writes_landing_blog_and_deep_docs(tmp_path: Path) -> None:
     blog = (out / "blog" / "index.html").read_text(encoding="utf-8")
     assert "Updates" in blog
     assert "docs/blog/YYYY-MM-DD-slug.md" in blog
+    assert "2026-09-15-local-config-and-leftovers.html" in blog
     assert "2026-09-07-field-hunt-and-exports.html" in blog
     assert "2026-08-26-v0-public.html" in blog
+    assert blog.index("2026-09-15-local-config-and-leftovers.html") < blog.index(
+        "2026-09-07-field-hunt-and-exports.html"
+    )
 
     post = (out / "blog" / "2026-09-07-field-hunt-and-exports.html").read_text(
         encoding="utf-8"
     )
     assert "pipe-wrapped" in post
     assert "../field-hunt.html" in post
+
+    digest = (out / "blog" / "2026-09-15-local-config-and-leftovers.html").read_text(
+        encoding="utf-8"
+    )
+    assert "antiserum.toml" in digest
+    assert "antiserum init" in digest
+    assert "--config" in digest
+    assert "pair_trigger" in digest
+    assert "leftover-packet.v1" in digest
+    assert "no live PoQ wire" in digest
+    assert "../leftover-packet.schema.json" in digest
+    assert "../poq-leftover-review.html" in digest
+    assert "../field-hunt.html" in digest
+    assert "../confirm.html" in digest
+    assert "../checks.html" in digest
 
     threat = (out / "threat-model.html").read_text(encoding="utf-8")
     assert "A clean receipt is not a proof of safety" in threat
