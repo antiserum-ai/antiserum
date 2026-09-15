@@ -1,0 +1,15 @@
+{
+  "scanner": "antiserum",
+  "version": "0.2.0",
+  "path": "./data",
+  "dataset_hash": "sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "record_count": 3,
+  "flags": [],
+  "signature_hits": [],
+  "pack": {
+    "path": "feed/signatures.jsonl",
+    "hash": "sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+    "signature_count": 1,
+    "coverage": "literal/regex/sha256 only"
+  }
+}

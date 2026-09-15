@@ -21,8 +21,8 @@ from test_receipt_schema import assert_matches_schema
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "tests" / "fixtures" / "leftover_packet"
-JUDGMENTS = FIXTURES / "judgments.json"
-RECEIPT = FIXTURES / "receipt.json"
+JUDGMENTS = FIXTURES / "store.json"
+RECEIPT = FIXTURES / "scan-receipt.json"
 DECISIONS = FIXTURES / "decisions.json"
 DECISIONS_NEW = FIXTURES / "decisions_new.json"
 FEED = ROOT / "feed" / "signatures.jsonl"
