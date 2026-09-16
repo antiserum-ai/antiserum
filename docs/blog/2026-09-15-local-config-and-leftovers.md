@@ -23,11 +23,16 @@ New check, not a fold into `trigger_ngrams`. Flags two rare distinctive phrases 
 
 Honesty bounds stay in [field-hunt.md](../field-hunt.md): a single-phrase control stays quiet; adjacent subspan grams that share a token are not a pair; word 1-grams are not members; this is not a 3+-pair AND-gate and not language ID. First-pass table: [confirm.md](../confirm.md). Check contract: [checks.md](../checks.md). Non-claim: [threat-model.md](../threat-model.md).
 
-## leftover-packet.v1 (spec only)
+## leftover-packet.v1 (local CLI; PoQ wire not live)
 
-Published leftover-review packet schema (`docs/leftover-packet.schema.json`, `antiserum.leftover_packet.v1`) and a short design note (`docs/poq-leftover-review.md`). Spec only: no CLI export/import, no live PoQ wire, no network.
+Published leftover-review packet schema (`docs/leftover-packet.schema.json`, `antiserum.leftover_packet.v1`) and a short design note (`docs/poq-leftover-review.md`). Local CLI: `antiserum export-leftovers` / `antiserum import-decisions`. Still no live PoQ wire, no hosted judge, no network from a local scan.
 
-The packet is flag ids, check names, rationales, optional proposed signatures, and example hashes. It does not carry row text, neighbor labels, private corpus paths, or allowlist contents. Confirm leftovers stay a file you edit. Decision import stays [judgments.schema.json](../judgments.schema.json). In-repo example: [leftover-packet.example.json](https://github.com/antiserum-ai/antiserum/blob/main/docs/leftover-packet.example.json).
+```bash
+antiserum export-leftovers judgments.json --out packet.json
+antiserum import-decisions decisions.json --into judgments.json
+```
+
+The packet is hashes and patterns only: flag ids, check names, rationales, optional proposed signatures, and example hashes. It does not carry row text, neighbor labels, private corpus paths, or allowlist contents. The corpus never leaves the box. Confirm leftovers stay a file you edit. Decision import stays [judgments.schema.json](../judgments.schema.json). In-repo example: [leftover-packet.example.json](https://github.com/antiserum-ai/antiserum/blob/main/docs/leftover-packet.example.json).
 
 Sapien locks on [poq-leftover-review.md](../poq-leftover-review.md) (2026-09-15) are acked for a later projectspec: existing PoQ validation queue, 30-day TTL after the review job completes, judgment-store JSON at the export boundary. Not a live integration. Confirmed poison is still a pull request that adds a line to `feed/signatures.jsonl`. PoQ never writes the feed.
 
