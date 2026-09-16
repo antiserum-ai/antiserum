@@ -12,6 +12,15 @@ bump.
 
 ## [Unreleased]
 
+### Changed
+
+- Pages blog `docs/blog/2026-09-15-local-config-and-leftovers.md`:
+  leftover-packet.v1 is local CLI (`export-leftovers` /
+  `import-decisions`), not spec-only. Still no live PoQ wire, no
+  hosted judge, no network from a local scan. Packet is
+  hashes/patterns only; corpus never leaves the box. Closes
+  [#107](https://github.com/antiserum-ai/antiserum/issues/107).
+
 ### Added
 
 - `antiserum export-leftovers JUDGMENTS --out packet.json` writes

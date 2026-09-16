@@ -143,7 +143,14 @@ def test_build_writes_landing_blog_and_deep_docs(tmp_path: Path) -> None:
     assert "--config" in digest
     assert "pair_trigger" in digest
     assert "leftover-packet.v1" in digest
+    assert "export-leftovers" in digest
+    assert "import-decisions" in digest
     assert "no live PoQ wire" in digest
+    assert "no hosted judge" in digest
+    assert "no network from a local scan" in digest
+    assert "corpus never leaves the box" in digest
+    assert "spec only" not in digest.lower()
+    assert "no CLI export/import" not in digest
     assert "../leftover-packet.schema.json" in digest
     assert "../poq-leftover-review.html" in digest
     assert "../field-hunt.html" in digest
