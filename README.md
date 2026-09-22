@@ -152,10 +152,12 @@ jobs:
     with:
       path: ./data
       fail-on: any
+      config: ops/antiserum.toml
+      md: findings.md
       # allowlist: allowlist.jsonl
 ```
 
-That checks out the caller repo, installs antiserum from this repo, runs `antiserum scan` on `path`, writes `receipt.json` and `antiserum.sarif`, and uploads both as artifacts. Inputs: `path`, `fail-on` (`any` / `high` / `never`, same CLI contract; default `never`), optional `allowlist`. This CI calls it on `corpus/toy`.
+That checks out the caller repo, installs antiserum from this repo, runs `antiserum scan` on `path`, writes `receipt.json` and `antiserum.sarif`, and uploads both as artifacts. Optional `config` passes `--config` when set (local file on the runner; never fetched). Optional `md` writes a Markdown findings report and includes that path in the upload. Inputs: `path`, `fail-on` (`any` / `high` / `never`, same CLI contract; default `never`), optional `allowlist`, `config`, `md`. Empty `config` / `md` keep today's flags. This CI calls it on `corpus/toy`.
 
 `--sarif` writes [SARIF 2.1.0](https://docs.oasis-open.org/sarif/sarif/v2.1.0/sarif-v2.1.0.html) next to the receipt. Each flag is a result (`ruleId` is the check name, `level` comes from severity, `message` is the reason, location is the record id and source path when we have it). Upload that file with `github/codeql-action/upload-sarif` on the runner so GitHub code scanning can ingest it. The upload goes to GitHub on that runner, not to us.
 
