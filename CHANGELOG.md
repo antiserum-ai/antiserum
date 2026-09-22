@@ -12,6 +12,11 @@ bump.
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-09-22
+
+Local config, pair_trigger, leftover CLI, Markdown reports, and wrap plants.
+The CLI stays offline. No telemetry.
+
 ### Changed
 
 - Pages blog `docs/blog/2026-09-15-local-config-and-leftovers.md`:
