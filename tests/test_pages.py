@@ -122,9 +122,13 @@ def test_build_writes_landing_blog_and_deep_docs(tmp_path: Path) -> None:
     blog = (out / "blog" / "index.html").read_text(encoding="utf-8")
     assert "Updates" in blog
     assert "docs/blog/YYYY-MM-DD-slug.md" in blog
+    assert "2026-09-22-leftover-cli-and-version-fold.html" in blog
     assert "2026-09-15-local-config-and-leftovers.html" in blog
     assert "2026-09-07-field-hunt-and-exports.html" in blog
     assert "2026-08-26-v0-public.html" in blog
+    assert blog.index("2026-09-22-leftover-cli-and-version-fold.html") < blog.index(
+        "2026-09-15-local-config-and-leftovers.html"
+    )
     assert blog.index("2026-09-15-local-config-and-leftovers.html") < blog.index(
         "2026-09-07-field-hunt-and-exports.html"
     )
@@ -156,6 +160,27 @@ def test_build_writes_landing_blog_and_deep_docs(tmp_path: Path) -> None:
     assert "../field-hunt.html" in digest
     assert "../confirm.html" in digest
     assert "../checks.html" in digest
+
+    fold = (out / "blog" / "2026-09-22-leftover-cli-and-version-fold.html").read_text(
+        encoding="utf-8"
+    )
+    assert "export-leftovers" in fold
+    assert "import-decisions" in fold
+    assert "--receipt" in fold
+    assert "--allow-new" in fold
+    assert "hashes and patterns only" in fold
+    assert "no live PoQ wire" in fold
+    assert "no hosted judge" in fold
+    assert "corpus never leaves the box" in fold
+    assert "#108" in fold
+    assert "#109" in fold
+    assert "0.2.1" in fold
+    assert "does not claim a PyPI release" in fold
+    assert "pypi.org" not in fold.lower()
+    assert "pip install antiserum" not in fold
+    assert "../leftover-packet.schema.json" in fold
+    assert "../poq-leftover-review.html" in fold
+    assert "../confirm.html" in fold
 
     threat = (out / "threat-model.html").read_text(encoding="utf-8")
     assert "A clean receipt is not a proof of safety" in threat
