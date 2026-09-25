@@ -104,7 +104,7 @@ Live `antiserum scan corpus/toy` on the planted toy mix (45 records — not a pr
 
 Receipt JSON/text is unchanged by `--sarif`, `--html`, and `--csv`. All of these are local files. There is no hosted report store.
 
-Reusable Action (CLI on the caller runner; no API key):
+Reusable Action (CLI on the caller runner; no API key; dataset stays on the runner; nothing is uploaded to us):
 
 ```yaml
 jobs:
@@ -113,6 +113,8 @@ jobs:
     with:
       path: ./data
       fail-on: any
+      config: ops/antiserum.toml
+      md: findings.md
 ```
 
 ## Confirm

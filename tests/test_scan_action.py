@@ -1,4 +1,4 @@
-"""Public contract of the reusable GitHub Action (issue #55)."""
+"""Public contract of the reusable GitHub Action (issues #55, #110)."""
 
 from __future__ import annotations
 
@@ -8,31 +8,51 @@ ROOT = Path(__file__).resolve().parents[1]
 SCAN_WORKFLOW = ROOT / ".github" / "workflows" / "scan.yml"
 TEST_WORKFLOW = ROOT / ".github" / "workflows" / "test.yml"
 README = ROOT / "README.md"
+DOCS_INDEX = ROOT / "docs" / "index.md"
 
 
 def test_scan_workflow_is_reusable_and_local_first() -> None:
     text = SCAN_WORKFLOW.read_text(encoding="utf-8")
     assert "workflow_call:" in text
-    for key in ("path:", "fail-on:", "allowlist:"):
+    for key in ("path:", "fail-on:", "allowlist:", "config:", "md:"):
         assert key in text
     assert "actions/checkout@" in text
     assert "antiserum scan" in text
     assert "--out receipt.json" in text
     assert "--sarif antiserum.sarif" in text
+    assert "--config" in text
+    assert "--md" in text
+    assert "ANTISERUM_CONFIG" in text
+    assert "ANTISERUM_MD" in text
     assert "actions/upload-artifact@" in text
     assert "name: antiserum-receipt" in text
+    assert "${{ inputs.md }}" in text
     # Local-first: CLI on the caller runner. No API key. Nothing uploaded to us.
     assert "api_key" not in text.lower()
     assert "api-key" not in text.lower()
     assert "ANTISERUM_API" not in text
+    assert "huggingface" not in text.lower()
+    assert "hosted" not in text.lower()
 
 
 def test_ci_calls_scan_workflow_on_toy() -> None:
     text = TEST_WORKFLOW.read_text(encoding="utf-8")
     assert "uses: ./.github/workflows/scan.yml" in text
     assert "path: corpus/toy" in text
+    # Empty config/md preserve today's call (omit the inputs).
+    assert "config:" not in text
+    assert "md:" not in text
 
 
 def test_readme_has_uses_oneliner() -> None:
     text = README.read_text(encoding="utf-8")
     assert "uses: antiserum-ai/antiserum/.github/workflows/scan.yml@main" in text
+    assert "config: ops/antiserum.toml" in text
+    assert "md: findings.md" in text
+
+
+def test_docs_index_has_uses_oneliner() -> None:
+    text = DOCS_INDEX.read_text(encoding="utf-8")
+    assert "uses: antiserum-ai/antiserum/.github/workflows/scan.yml@main" in text
+    assert "config: ops/antiserum.toml" in text
+    assert "md: findings.md" in text

@@ -23,6 +23,12 @@ bump.
 
 ### Added
 
+- Reusable scan Action optional `config` and `md` inputs. Non-empty
+  `config` passes `--config`; non-empty `md` passes `--md` and
+  uploads that path next to receipt + SARIF. Empty values keep
+  today's behavior. Dataset stays on the runner; nothing is
+  uploaded to us; no API key. Closes
+  [#110](https://github.com/antiserum-ai/antiserum/issues/110).
 - `antiserum export-leftovers JUDGMENTS --out packet.json` writes
   `antiserum.leftover_packet.v1` from local `needs_human` rows.
   Header `dataset_hash` / `scanner_version` / pack come from optional

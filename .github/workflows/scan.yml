@@ -8,6 +8,8 @@
 #         path: ./data
 #         fail-on: any
 #         # allowlist: allowlist.jsonl
+#         # config: ops/antiserum.toml
+#         # md: findings.md
 #
 name: antiserum scan
 
@@ -25,6 +27,16 @@ on:
         default: never
       allowlist:
         description: Optional local allowlist JSONL (record id, sha256, or signature id)
+        required: false
+        type: string
+        default: ""
+      config:
+        description: Optional local antiserum.toml (--config; empty skips the flag)
+        required: false
+        type: string
+        default: ""
+      md:
+        description: Optional Markdown findings report path (--md; empty skips the flag)
         required: false
         type: string
         default: ""
@@ -57,11 +69,19 @@ jobs:
           ANTISERUM_PATH: ${{ inputs.path }}
           ANTISERUM_FAIL_ON: ${{ inputs.fail-on }}
           ANTISERUM_ALLOWLIST: ${{ inputs.allowlist }}
+          ANTISERUM_CONFIG: ${{ inputs.config }}
+          ANTISERUM_MD: ${{ inputs.md }}
         run: |
           set -euo pipefail
           extra=()
           if [ -n "${ANTISERUM_ALLOWLIST}" ]; then
             extra+=(--allowlist "${ANTISERUM_ALLOWLIST}")
+          fi
+          if [ -n "${ANTISERUM_CONFIG}" ]; then
+            extra+=(--config "${ANTISERUM_CONFIG}")
+          fi
+          if [ -n "${ANTISERUM_MD}" ]; then
+            extra+=(--md "${ANTISERUM_MD}")
           fi
           antiserum scan "${ANTISERUM_PATH}" \
             --fail-on "${ANTISERUM_FAIL_ON}" \
@@ -77,4 +97,5 @@ jobs:
           path: |
             receipt.json
             antiserum.sarif
+            ${{ inputs.md }}
           if-no-files-found: warn
